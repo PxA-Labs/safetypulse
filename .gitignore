@@ -1,0 +1,32 @@
+# OS and editor
+.DS_Store
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Secrets: tokens live in Kaggle Secrets, never in the repo
+.env
+*.token
+
+# Generated knowledge graph (local tooling only)
+graphify-out/
+
+# Executed Kaggle notebooks and their outputs contain harmful prompts and model completions
+# (docs/04 §5). Only the README describing the layout is committed.
+kaggle/executed/*
+!kaggle/executed/README.md
+
+# Data and model artifacts: stored as private Kaggle datasets, never in git
+*.safetensors
+*.bin
+*.pt
+*.ckpt
+checkpoint-*/
+/data/
+/runs/
