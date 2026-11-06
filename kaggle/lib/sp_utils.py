@@ -476,3 +476,46 @@ def random_unit_like(v: torch.Tensor, generator: torch.Generator | None = None) 
     return unit(torch.randn(v.shape, generator=generator))
 
 
+# ---------------------------------------------------------------------------------------------
+# Interventions (forward hooks). Each returns a list of handles; remove with remove_hooks() or
+# use `with hooked(handles): ...`.
+# ---------------------------------------------------------------------------------------------
+
+
+def remove_hooks(handles) -> None:
+    for h in handles:
+        h.remove()
+
+
+@contextlib.contextmanager
+def hooked(handles):
+    try:
+        yield handles
+    finally:
+        remove_hooks(handles)
+
+
+def ablate_direction(model, direction: torch.Tensor) -> list:
+    """Project `direction` out of everything written to the residual stream (embeddings, every
+    attention and MLP output), as in Arditi et al. (2024) directional ablation."""
+    r = unit(direction.float()).to(model.device, next(model.parameters()).dtype)
+
+    def proj_out(h):
+        return h - (h @ r).unsqueeze(-1) * r
+
+    handles = [model.get_input_embeddings().register_forward_hook(lambda m, i, o: proj_out(o))]
+    for layer in decoder_layers(model):
+        handles.append(layer.self_attn.register_forward_hook(lambda m, i, o: _replace(o, proj_out(_hidden(o)))))
+        handles.append(layer.mlp.register_forward_hook(lambda m, i, o: proj_out(o)))
+    return handles
+
+
+def add_direction(model, resid_index: int, vector: torch.Tensor, alpha: float = 1.0) -> list:
+    """Add alpha * vector to the residual stream at `resid_index` (>=1), all positions."""
+    if resid_index < 1:
+        raise ValueError("resid_index must be >= 1 (output of a decoder layer)")
+    v = (alpha * vector.float()).to(model.device, next(model.parameters()).dtype)
+    layer = decoder_layers(model)[resid_index - 1]
+    return [layer.register_forward_hook(lambda m, i, o: _replace(o, _hidden(o) + v))]
+
+
