@@ -1004,3 +1004,38 @@ def dedupe(texts: Sequence[str], threshold: float = 0.8) -> list[int]:
     return kept
 
 
+# ---------------------------------------------------------------------------------------------
+# Fine-tuning runs and checkpoints (notebook 07 writes runs/<condition>-s<seed>/checkpoint-<step>)
+# ---------------------------------------------------------------------------------------------
+
+
+def list_runs() -> dict[str, list[tuple[int, Path]]]:
+    """{run name: [(step, checkpoint dir), ...]} for every LoRA run found in the inputs."""
+    runs: dict[str, list[tuple[int, Path]]] = {}
+    for cfg in find_inputs("adapter_config.json"):
+        m = re.search(r"checkpoint-(\d+)$", cfg.parent.name)
+        if m:
+            runs.setdefault(cfg.parent.parent.name, []).append((int(m.group(1)), cfg.parent))
+    return {k: sorted(set(v)) for k, v in sorted(runs.items())}
+
+
+def parse_run(name: str) -> tuple[str, int]:
+    condition, seed = name.rsplit("-s", 1)
+    return condition, int(seed)
+
+
+def apply_adapter(model, adapter_dir: Path):
+    """Merge a LoRA checkpoint into `model` in place (restore with restore_weights)."""
+    from peft import PeftModel
+
+    model = PeftModel.from_pretrained(model, str(adapter_dir)).merge_and_unload()
+    model.eval().requires_grad_(False)
+    return model
+
+
+@torch.no_grad()
+def restore_weights(model, sd: dict[str, torch.Tensor]) -> None:
+    for name, p in model.named_parameters():
+        p.copy_(sd[name].to(p.device, p.dtype))
+
+
