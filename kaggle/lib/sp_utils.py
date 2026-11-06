@@ -929,3 +929,40 @@ def mc_accuracy(model, tok, items: list[dict], batch_size: int = 8) -> list[bool
     return [p == it["answer"] for p, it in zip(preds, items)]
 
 
+# ---------------------------------------------------------------------------------------------
+# Statistics (docs/05 §4)
+# ---------------------------------------------------------------------------------------------
+
+
+def bootstrap_ci(values: Sequence[float], n_boot: int = 1000, seed: int = 0, ci: float = 0.95) -> tuple[float, float, float]:
+    x = np.asarray(values, dtype=float)
+    if len(x) == 0:
+        return float("nan"), float("nan"), float("nan")
+    rng = np.random.default_rng(seed)
+    means = x[rng.integers(0, len(x), (n_boot, len(x)))].mean(1)
+    lo, hi = np.quantile(means, [(1 - ci) / 2, 1 - (1 - ci) / 2])
+    return float(x.mean()), float(lo), float(hi)
+
+
+def paired_bootstrap_diff(a: Sequence[float], b: Sequence[float], n_boot: int = 1000, seed: int = 0) -> tuple[float, float, float]:
+    """mean(a - b) with a 95% CI, resampling items jointly."""
+    return bootstrap_ci(np.asarray(a, float) - np.asarray(b, float), n_boot, seed)
+
+
+def spearman_ci(x: Sequence[float], y: Sequence[float], n_boot: int = 1000, seed: int = 0) -> tuple[float, float, float]:
+    from scipy.stats import spearmanr
+
+    x, y = np.asarray(x, float), np.asarray(y, float)
+    rho = float(spearmanr(x, y).statistic) if len(x) > 2 else float("nan")
+    rng = np.random.default_rng(seed)
+    boots = []
+    for _ in range(n_boot):
+        idx = rng.integers(0, len(x), len(x))
+        if len(set(idx)) > 2:
+            boots.append(spearmanr(x[idx], y[idx]).statistic)
+    boots = [b for b in boots if not np.isnan(b)]
+    if not boots:
+        return rho, float("nan"), float("nan")
+    return rho, float(np.quantile(boots, 0.025)), float(np.quantile(boots, 0.975))
+
+
