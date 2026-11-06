@@ -427,3 +427,52 @@ def refusal_logit_diff(model, tok, prompts: Sequence[str], token_sets: dict, bat
     return logit_diff_from_logits(last_logits(model, tok, prompts, batch_size, system), token_sets)
 
 
+# ---------------------------------------------------------------------------------------------
+# Activations and refusal directions
+# ---------------------------------------------------------------------------------------------
+
+
+def _hidden(out):
+    return out[0] if isinstance(out, tuple) else out
+
+
+def _replace(out, new):
+    return (new,) + tuple(out[1:]) if isinstance(out, tuple) else new
+
+
+@torch.no_grad()
+def resid_last(model, tok, prompts: Sequence[str], batch_size: int = 8, system: str | None = None) -> torch.Tensor:
+    """Float[Tensor, "n resid d_model"] residual stream at the last prompt token, all resid positions.
+
+    Captured with our own hooks (registered after any intervention hooks, so they see the
+    intervened stream) rather than output_hidden_states, whose last entry is post-norm.
+    """
+    layers = decoder_layers(model)
+    store: list = [None] * (len(layers) + 1)
+    handles = [model.get_input_embeddings().register_forward_hook(lambda m, i, o: store.__setitem__(0, o[:, -1]))]
+    for k, layer in enumerate(layers):
+        handles.append(layer.register_forward_hook(lambda m, i, o, k=k: store.__setitem__(k + 1, _hidden(o)[:, -1])))
+    texts = format_chat(tok, prompts, system)
+    chunks = []
+    try:
+        for batch in batched(texts, batch_size):
+            model(**encode(tok, batch, model.device))
+            chunks.append(torch.stack(store, dim=1).float().cpu())
+    finally:
+        remove_hooks(handles)
+    return torch.cat(chunks)
+
+
+def mean_diff(acts_a: torch.Tensor, acts_b: torch.Tensor) -> torch.Tensor:
+    """Float[Tensor, "resid d_model"] mean(acts_a) - mean(acts_b) over prompts."""
+    return acts_a.mean(0) - acts_b.mean(0)
+
+
+def unit(v: torch.Tensor) -> torch.Tensor:
+    return v / v.norm(dim=-1, keepdim=True).clamp_min(1e-8)
+
+
+def random_unit_like(v: torch.Tensor, generator: torch.Generator | None = None) -> torch.Tensor:
+    return unit(torch.randn(v.shape, generator=generator))
+
+
