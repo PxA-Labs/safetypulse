@@ -227,3 +227,106 @@ def gpu_timer():
         record["seconds"] = time.perf_counter() - t0
 
 
+# ---------------------------------------------------------------------------------------------
+# Models
+# ---------------------------------------------------------------------------------------------
+
+
+def device() -> torch.device:
+    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
+def pick_dtype(purpose: str = "infer") -> torch.dtype:
+    """fp32 for activations/gradients; for generation fp16 on T4/P100 (no bf16), bf16 on Ampere+."""
+    if not torch.cuda.is_available() or purpose in ("activations", "grad"):
+        return torch.float32
+    major, _ = torch.cuda.get_device_capability(0)
+    return torch.bfloat16 if major >= 8 else torch.float16
+
+
+def load_tokenizer(name: str = DEFAULT_MODEL, revision: str | None = None):
+    from transformers import AutoTokenizer
+
+    tok = AutoTokenizer.from_pretrained(DEFAULT_MODEL if name == TINY_MODEL else name, revision=revision)
+    tok.padding_side = "left"
+    if tok.pad_token is None:
+        tok.pad_token = tok.eos_token
+    return tok
+
+
+def _tiny_model():
+    """A 4-layer random Qwen2 with the real Qwen tokenizer's vocab. Deterministic weights."""
+    from transformers import Qwen2Config, Qwen2ForCausalLM
+
+    torch.manual_seed(0)
+    cfg = Qwen2Config(
+        vocab_size=151936, hidden_size=64, intermediate_size=128, num_hidden_layers=4,
+        num_attention_heads=4, num_key_value_heads=2, max_position_embeddings=2048, tie_word_embeddings=True,
+    )
+    return Qwen2ForCausalLM(cfg)
+
+
+def load_model(
+    name: str = DEFAULT_MODEL,
+    dtype: torch.dtype | None = None,
+    adapter: str | Path | None = None,
+    revision: str | None = None,
+):
+    """Load (model, tokenizer) in eval mode with frozen weights. `adapter` = a LoRA checkpoint dir, merged in."""
+    from transformers import AutoModelForCausalLM
+
+    dtype = dtype or pick_dtype("infer")
+    tok = load_tokenizer(name, revision)
+    if name == TINY_MODEL:
+        model = _tiny_model().to(dtype)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(name, dtype=dtype, revision=revision)
+    model.to(device())
+    if adapter is not None:
+        from peft import PeftModel
+
+        model = PeftModel.from_pretrained(model, str(adapter)).merge_and_unload()
+    model.eval().requires_grad_(False)
+    return model, tok
+
+
+def free(*objs) -> None:
+    import gc
+
+    for o in objs:
+        del o
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+
+def decoder_layers(model):
+    m = model.get_base_model() if hasattr(model, "get_base_model") else model
+    for path in ("model.layers", "transformer.h", "gpt_neox.layers"):
+        obj = m
+        try:
+            for attr in path.split("."):
+                obj = getattr(obj, attr)
+            return obj
+        except AttributeError:
+            continue
+    raise ValueError(f"cannot find decoder layers on {type(model).__name__}")
+
+
+def layers_prefix(model) -> str:
+    layers = decoder_layers(model)
+    return next(n for n, mod in model.named_modules() if mod is layers)
+
+
+def head_geometry(model) -> tuple[int, int]:
+    """(n_heads, head_dim) of the attention layers."""
+    cfg = model.config
+    n_heads = cfg.num_attention_heads
+    head_dim = getattr(cfg, "head_dim", None) or cfg.hidden_size // n_heads
+    return n_heads, head_dim
+
+
+def n_resid(model) -> int:
+    return len(decoder_layers(model)) + 1
+
+
