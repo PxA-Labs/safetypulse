@@ -519,3 +519,50 @@ def add_direction(model, resid_index: int, vector: torch.Tensor, alpha: float = 
     return [layer.register_forward_hook(lambda m, i, o: _replace(o, _hidden(o) + v))]
 
 
+# Components are identified as "attn_head:<layer>:<head>" or "mlp:<layer>".
+
+
+def parse_component(cid: str) -> tuple[str, int, int | None]:
+    parts = cid.split(":")
+    if parts[0] == "attn_head":
+        return "attn_head", int(parts[1]), int(parts[2])
+    if parts[0] == "mlp":
+        return "mlp", int(parts[1]), None
+    raise ValueError(cid)
+
+
+def all_components(model) -> list[str]:
+    n_heads, _ = head_geometry(model)
+    comps = []
+    for layer in range(len(decoder_layers(model))):
+        comps += [f"attn_head:{layer}:{h}" for h in range(n_heads)] + [f"mlp:{layer}"]
+    return comps
+
+
+def ablate_components(model, components: Iterable[str]) -> list:
+    """Zero-ablate attention heads (their slice of the o_proj input) and whole MLP outputs."""
+    _, head_dim = head_geometry(model)
+    layers = decoder_layers(model)
+    heads: dict[int, list[int]] = {}
+    mlps: set[int] = set()
+    for cid in components:
+        kind, layer, head = parse_component(cid)
+        if kind == "attn_head":
+            heads.setdefault(layer, []).append(head)
+        else:
+            mlps.add(layer)
+    handles = []
+    for layer, hs in heads.items():
+        idx = torch.cat([torch.arange(h * head_dim, (h + 1) * head_dim) for h in hs]).to(model.device)
+
+        def pre(m, args, idx=idx):
+            x = args[0].clone()
+            x[..., idx] = 0
+            return (x,) + tuple(args[1:])
+
+        handles.append(layers[layer].self_attn.o_proj.register_forward_pre_hook(pre))
+    for layer in mlps:
+        handles.append(layers[layer].mlp.register_forward_hook(lambda m, i, o: torch.zeros_like(o)))
+    return handles
+
+
