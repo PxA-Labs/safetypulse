@@ -566,3 +566,131 @@ def ablate_components(model, components: Iterable[str]) -> list:
     return handles
 
 
+# ---------------------------------------------------------------------------------------------
+# Attribution patching (fallback for CircuitKIT discovery, docs/03 §5)
+# ---------------------------------------------------------------------------------------------
+
+
+def attribution_scores(model, tok, clean_prompts: Sequence[str], corrupt_prompts: Sequence[str], token_sets: dict,
+                       batch_size: int = 2, system: str | None = None) -> dict[str, float]:
+    """Per-component attribution-patching estimate of how much patching the *clean* (harmful)
+    activation into the *corrupt* (harmless twin) run raises the refusal logit difference:
+
+        score_c ≈ mean_pairs[(a_clean - a_corrupt) · ∂M/∂a |corrupt]   at the last prompt token.
+
+    Restricting to the last token lets pairs differ in length; it ignores effects routed through
+    earlier positions (state this limitation in the report). Use an fp32 model.
+    """
+    n_heads, head_dim = head_geometry(model)
+    layers = decoder_layers(model)
+    L = len(layers)
+    total = {"head": torch.zeros(L, n_heads), "mlp": torch.zeros(L)}
+    n = 0
+    clean_texts = format_chat(tok, clean_prompts, system)
+    corrupt_texts = format_chat(tok, corrupt_prompts, system)
+    for cb, xb in progress(list(zip(batched(clean_texts, batch_size), batched(corrupt_texts, batch_size))), desc="attribution"):
+        store: dict = {}
+
+        def hooks_for(keep_grad: bool):
+            hs = []
+            for k, layer in enumerate(layers):
+                def pre(m, args, k=k):
+                    if keep_grad:
+                        args[0].retain_grad()
+                    store[("head", k)] = args[0]
+
+                def post(m, i, o, k=k):
+                    if keep_grad:
+                        o.retain_grad()
+                    store[("mlp", k)] = o
+
+                hs.append(layer.self_attn.o_proj.register_forward_pre_hook(pre))
+                hs.append(layer.mlp.register_forward_hook(post))
+            return hs
+
+        with torch.no_grad(), hooked(hooks_for(False)):
+            model(**encode(tok, cb, model.device))
+        clean = {k: v[:, -1].detach().float() for k, v in store.items()}
+        store.clear()
+
+        enc = encode(tok, xb, model.device)
+        embeds = model.get_input_embeddings()(enc["input_ids"]).detach().requires_grad_(True)
+        with hooked(hooks_for(True)):
+            logits = model(inputs_embeds=embeds, attention_mask=enc["attention_mask"]).logits[:, -1]
+            metric = logit_diff_from_logits(logits, token_sets).sum()
+            metric.backward()
+        for k in range(L):
+            a = store[("head", k)]
+            delta = (clean[("head", k)] - a[:, -1].detach().float()) * a.grad[:, -1].float()
+            total["head"][k] += delta.view(-1, n_heads, head_dim).sum(-1).sum(0).cpu()
+            m = store[("mlp", k)]
+            total["mlp"][k] += ((clean[("mlp", k)] - m[:, -1].detach().float()) * m.grad[:, -1].float()).sum().cpu()
+        n += len(cb)
+        store.clear()
+        model.zero_grad(set_to_none=True)
+    scores = {}
+    for k in range(L):
+        for h in range(n_heads):
+            scores[f"attn_head:{k}:{h}"] = float(total["head"][k, h] / n)
+        scores[f"mlp:{k}"] = float(total["mlp"][k] / n)
+    return scores
+
+
+@torch.no_grad()
+def activation_patching_scores(model, tok, clean_prompts: Sequence[str], corrupt_prompts: Sequence[str],
+                               components: Sequence[str], token_sets: dict, batch_size: int = 8,
+                               system: str | None = None) -> dict[str, float]:
+    """Exact version of attribution_scores for a short list of components: patch each component's
+    clean last-token activation into the corrupt run and measure the change in the refusal logit
+    difference (mean over pairs). One forward pass per component per batch; use it to confirm the
+    top attribution candidates, since the linear estimate breaks down where the model is nonlinear."""
+    _, head_dim = head_geometry(model)
+    layers = decoder_layers(model)
+    clean_texts = format_chat(tok, clean_prompts, system)
+    corrupt_texts = format_chat(tok, corrupt_prompts, system)
+    totals = {c: 0.0 for c in components}
+    for cb, xb in progress(list(zip(batched(clean_texts, batch_size), batched(corrupt_texts, batch_size))), desc="patching"):
+        store: dict = {}
+        hs = []
+        for k, layer in enumerate(layers):
+            hs.append(layer.self_attn.o_proj.register_forward_pre_hook(lambda m, a, k=k: store.__setitem__(("head", k), a[0][:, -1].clone())))
+            hs.append(layer.mlp.register_forward_hook(lambda m, i, o, k=k: store.__setitem__(("mlp", k), o[:, -1].clone())))
+        with hooked(hs):
+            model(**encode(tok, cb, model.device))
+        enc = encode(tok, xb, model.device)
+        base = logit_diff_from_logits(model(**enc).logits[:, -1], token_sets)
+        for cid in components:
+            kind, k, h = parse_component(cid)
+            if kind == "attn_head":
+                sl = slice(h * head_dim, (h + 1) * head_dim)
+
+                def pre(m, a, k=k, sl=sl):
+                    x = a[0].clone()
+                    x[:, -1, sl] = store[("head", k)][:, sl]
+                    return (x,) + tuple(a[1:])
+
+                handle = layers[k].self_attn.o_proj.register_forward_pre_hook(pre)
+            else:
+                def post(m, i, o, k=k):
+                    o = o.clone()
+                    o[:, -1] = store[("mlp", k)]
+                    return o
+
+                handle = layers[k].mlp.register_forward_hook(post)
+            with hooked([handle]):
+                patched = logit_diff_from_logits(model(**enc).logits[:, -1], token_sets)
+            totals[cid] += float((patched - base).sum())
+    return {c: v / len(clean_prompts) for c, v in totals.items()}
+
+
+def random_components_like(components: Sequence[str], model, rng: random.Random) -> list[str]:
+    """Random set with the same number of heads and MLPs (so the same parameter budget)."""
+    n_heads, _ = head_geometry(model)
+    L = len(decoder_layers(model))
+    n_h = sum(c.startswith("attn_head") for c in components)
+    n_m = len(components) - n_h
+    heads = [f"attn_head:{l}:{h}" for l in range(L) for h in range(n_heads)]
+    mlps = [f"mlp:{l}" for l in range(L)]
+    return rng.sample(heads, n_h) + rng.sample(mlps, n_m)
+
+
