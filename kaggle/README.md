@@ -1,0 +1,53 @@
+# Kaggle notebooks
+
+| Folder | Contents |
+|--------|----------|
+| `lib/sp_utils.py` | Shared helper library every notebook imports. |
+| `notebooks/` | Clean notebooks, no outputs. Upload these to Kaggle. |
+| `executed/` | The same notebooks downloaded from Kaggle after running, with outputs. |
+
+## One-time setup on Kaggle
+
+1. **Library:** create a private Kaggle dataset `safetypulse-lib` containing `lib/sp_utils.py`. Attach it to
+   every notebook (Add Input). When you change `sp_utils.py`, upload a new dataset version.
+2. **Secret:** add your Hugging Face token as the Kaggle secret `HF_TOKEN` (Add-ons → Secrets).
+3. **Gated Hugging Face pages:** open each while logged in and accept its terms:
+   `walledai/HarmBench`, `walledai/AdvBench`, `walledai/XSTest`, `meta-llama/Llama-Guard-3-1B`.
+4. In every notebook: Internet **On**, notebook visibility **Private**.
+
+## Run order
+
+Each notebook writes to `/kaggle/working/<folder>/`. To pass results on, attach the earlier notebook's output
+to the later notebook (Add Input → Your Work → Notebooks). The header table in each notebook lists exactly what it needs.
+
+| # | Notebook | GPU | Needs | Produces |
+|---|----------|-----|-------|----------|
+| 00 | Environment and toolkits | T4 | — | `toolkits/toolkit_apis.json` |
+| 01 | Build datasets | none | — | `data/` (eval, fine-tune and pair-pool files) |
+| 02 | Draft harmless twins | T4 | 01 | `pairs/pairs_draft.csv` → **review by hand** → `pairs_reviewed.csv` |
+| 03 | Validate and split pairs | none | 01 (+ reviewed pairs) | `pairs/pairs.jsonl` |
+| 04 | Baseline refusal, model choice | T4 | 01 | `baseline/token_sets.json` |
+| 05 | Refusal direction (riskiest step) | T4 | 03, 04 | `direction/` |
+| 06 | Circuit discovery, probe bundle | T4 | 03, 04, 05 | `probe_bundle/` |
+| 07 | Fine-tune with checkpoints (once per condition × seed) | T4 | 01 | `runs/<condition>-s<seed>/` |
+| 08 | Monitor checkpoints: CIS vs ASR | T4 | 01, 06, all 07 runs | `monitor/` (Tables B, D) |
+| 09 | Repair: choose strengths on dev | T4 | 01, 06, 07, 08 | `repair/repair_specs.json` |
+| 10 | Final audit and report tables | T4 | everything | `report/` (Tables A–D, figures) |
+
+03 runs without reviewed pairs too: it builds an *unpaired fallback* so 05–06 can start early. Rerun 03 → 06
+once the real matched pairs are ready.
+
+Runs for 07: dev = `gsm8k`, `alpaca`, `harm`, `none` with seed 0; test = the same conditions (except `harm`, the
+positive control) with seeds 1 and 2. Set `CONDITION` and `SEED` in the notebook's config cell.
+
+## Conventions
+
+- Executed copies go in `executed/<notebook>/`, named with the run date, e.g.
+  `executed/05_refusal_direction/05_refusal_direction__2026-11-08.ipynb`. Small output files
+  (JSON, CSV, PNG) go in that folder's `files/`. Never download checkpoints, `.safetensors` or `audit.jsonl`.
+- Clear all outputs before saving a notebook into `notebooks/`.
+- Tokens go in Kaggle Secrets, never in a cell.
+- Executed notebooks and outputs contain harmful prompts and model completions. Do not commit `executed/` to a
+  public repo or share it outside the team (see `docs/04_DATA_SPEC.md` §5).
+- Toolkit cells (CircuitKIT in 06, SafeTune in 09) are placeholders until notebook 00 confirms each toolkit's API.
+  Until then the plain-PyTorch fallbacks in `sp_utils.py` are used (`docs/03` §5).
