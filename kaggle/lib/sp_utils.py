@@ -1039,3 +1039,62 @@ def restore_weights(model, sd: dict[str, torch.Tensor]) -> None:
         p.copy_(sd[name].to(p.device, p.dtype))
 
 
+# ---------------------------------------------------------------------------------------------
+# Audit metrics (docs/05 §1). Each returns the rate with a 95% bootstrap CI plus per-item flags,
+# so repaired-vs-baseline comparisons can be paired.
+# ---------------------------------------------------------------------------------------------
+
+GSM8K_SUFFIX = "\n\nSolve the problem step by step, then give the final numeric answer after '####'."
+
+
+def gsm8k_messages(question: str, answer: str) -> list[dict]:
+    return [{"role": "user", "content": question + GSM8K_SUFFIX},
+            {"role": "assistant", "content": re.sub(r"<<[^>]*>>", "", answer)}]
+
+
+def _rate(flags: Sequence[bool]) -> dict:
+    mean, lo, hi = bootstrap_ci([float(f) for f in flags])
+    return {"value": mean, "ci95": [lo, hi], "n": len(flags)}
+
+
+def eval_asr(model, tok, judge: Judge, items: list[dict], max_new_tokens: int = 256, batch_size: int = 16) -> dict:
+    prompts = [it["prompt"] for it in items]
+    responses = generate(model, tok, prompts, max_new_tokens, batch_size, desc="ASR")
+    flags = judge.harmful(prompts, responses)
+    return {**_rate(flags), "flags": flags, "responses": responses, "judge": judge.name}
+
+
+def eval_overrefusal(model, tok, items: list[dict], max_new_tokens: int = 128, batch_size: int = 16) -> dict:
+    responses = generate(model, tok, [it["prompt"] for it in items], max_new_tokens, batch_size, desc="over-refusal")
+    flags = [is_refusal(r) for r in responses]
+    return {**_rate(flags), "flags": flags, "responses": responses, "detector": "string-match"}
+
+
+def eval_gsm8k(model, tok, items: list[dict], max_new_tokens: int = 320, batch_size: int = 16) -> dict:
+    responses = generate(model, tok, [it["question"] + GSM8K_SUFFIX for it in items], max_new_tokens, batch_size, desc="task")
+    flags = [numbers_match(last_number(r), it["gold"]) for r, it in zip(responses, items)]
+    return {**_rate(flags), "flags": flags}
+
+
+def eval_general(model, tok, items: list[dict], batch_size: int = 8) -> dict:
+    flags = mc_accuracy(model, tok, items, batch_size)
+    return {**_rate(flags), "flags": flags}
+
+
+def audit(model, tok, judge: Judge, sets: dict, batch_size: int = 16, max_new_tokens: int = 256) -> dict:
+    """Run every metric whose eval set is present in `sets` (keys: harm, overrefusal, task, general)."""
+    out = {}
+    if sets.get("harm"):
+        out["asr"] = eval_asr(model, tok, judge, sets["harm"], max_new_tokens, batch_size)
+    if sets.get("overrefusal"):
+        out["over_refusal"] = eval_overrefusal(model, tok, sets["overrefusal"], 128, batch_size)
+    if sets.get("task"):
+        out["task"] = eval_gsm8k(model, tok, sets["task"], 320, batch_size)
+    if sets.get("general"):
+        out["general"] = eval_general(model, tok, sets["general"], max(1, batch_size // 2))
+    return out
+
+
+def summary(audit_result: dict) -> dict:
+    """Drop per-item fields: {metric: value} for tables."""
+    return {k: v["value"] for k, v in audit_result.items()}
