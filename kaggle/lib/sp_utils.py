@@ -150,3 +150,80 @@ def progress(iterable, **kw):
         return iterable
 
 
+# ---------------------------------------------------------------------------------------------
+# Environment, seeds, secrets, provenance
+# ---------------------------------------------------------------------------------------------
+
+
+def set_seed(seed: int) -> None:
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
+
+def env_info() -> dict:
+    import transformers
+
+    info = {
+        "torch": torch.__version__,
+        "transformers": transformers.__version__,
+        "cuda_available": torch.cuda.is_available(),
+        "on_kaggle": ON_KAGGLE,
+        "smoke": SMOKE,
+    }
+    try:
+        import peft
+
+        info["peft"] = peft.__version__
+    except ImportError:
+        info["peft"] = None
+    if torch.cuda.is_available():
+        info["gpus"] = [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())]
+        info["capability"] = list(torch.cuda.get_device_capability(0))
+        info["vram_gb"] = round(torch.cuda.get_device_properties(0).total_memory / 1e9, 1)
+    return info
+
+
+def hf_login() -> bool:
+    """Log in to the Hugging Face Hub from the HF_TOKEN env var or Kaggle Secret. Never print it."""
+    token = os.environ.get("HF_TOKEN")
+    if token is None and ON_KAGGLE:
+        try:
+            from kaggle_secrets import UserSecretsClient
+
+            token = UserSecretsClient().get_secret("HF_TOKEN")
+        except Exception:
+            token = None
+    if not token:
+        print("No HF_TOKEN found: gated models/datasets (e.g. Llama Guard) will not load.")
+        return False
+    from huggingface_hub import login
+
+    login(token=token, add_to_git_credential=False)
+    print("Logged in to Hugging Face Hub.")
+    return True
+
+
+def provenance(seed: int | None = None, **extra) -> dict:
+    sha = None
+    with contextlib.suppress(Exception):
+        sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, timeout=5).stdout.strip() or None
+    return {"git_sha": sha, "seed": seed, "created_at": time.strftime("%Y-%m-%dT%H:%M:%S"), **env_info(), **extra}
+
+
+@contextlib.contextmanager
+def gpu_timer():
+    """Wall-clock seconds of the block, synchronised with CUDA. Use: `with gpu_timer() as t: ...; t['seconds']`."""
+    record: dict = {}
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
+    t0 = time.perf_counter()
+    try:
+        yield record
+    finally:
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
+        record["seconds"] = time.perf_counter() - t0
+
+
