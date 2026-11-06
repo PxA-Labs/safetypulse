@@ -40,6 +40,25 @@ once the real matched pairs are ready.
 Runs for 07: dev = `gsm8k`, `alpaca`, `harm`, `none` with seed 0; test = the same conditions (except `harm`, the
 positive control) with seeds 1 and 2. Set `CONDITION` and `SEED` in the notebook's config cell.
 
+## Private Kaggle datasets
+
+Outputs that later notebooks read are turned into **private** Kaggle datasets right after the run, so they are
+versioned and survive notebook re-saves. Keep the folder names: notebooks find files by name and runs by folder.
+Attach either the dataset or the notebook output, never both, or a file may be found twice.
+
+| From | Folder | Dataset | Read by |
+|------|--------|---------|---------|
+| 01 | `data/` | `sp-data` | 02, 03, 04, 07, 08, 09, 10 |
+| 02 + review, 03 | `pairs_reviewed.csv`, `pairs/` | `sp-pairs` | 03, 05, 06 |
+| 04 | `baseline/` | `sp-baseline` | 05, 06 |
+| 05 | `direction/` | `sp-direction` | 06 |
+| 06 | `probe_bundle/` | `sp-probe` | 08, 09, 10 |
+| 07 | `runs/<condition>-s<seed>/` | `sp-runs` (one version per run) | 08, 09, 10 |
+| 08 | `monitor/` | `sp-monitor` | 09, 10 |
+| 09 | `repair/` | `sp-repair` | 10 |
+
+Create `sp-runs` from the notebook output on Kaggle; do not download checkpoints.
+
 ## Conventions
 
 - Executed copies go in `executed/<notebook>/`, named with the run date, e.g.
