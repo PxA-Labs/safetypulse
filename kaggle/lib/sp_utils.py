@@ -330,3 +330,35 @@ def n_resid(model) -> int:
     return len(decoder_layers(model)) + 1
 
 
+# ---------------------------------------------------------------------------------------------
+# Prompts, generation, refusal detection
+# ---------------------------------------------------------------------------------------------
+
+
+def format_chat(tok, prompts: Sequence[str], system: str | None = None) -> list[str]:
+    """Apply the model's chat template. system=None keeps the template's default system prompt."""
+    texts = []
+    for p in prompts:
+        msgs = ([{"role": "system", "content": system}] if system else []) + [{"role": "user", "content": p}]
+        texts.append(tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True))
+    return texts
+
+
+def encode(tok, texts: Sequence[str], dev=None):
+    return tok(list(texts), return_tensors="pt", padding=True, add_special_tokens=False).to(dev or device())
+
+
+@torch.no_grad()
+def generate(model, tok, prompts: Sequence[str], max_new_tokens: int = 256, batch_size: int = 8,
+             system: str | None = None, desc: str = "generate") -> list[str]:
+    """Greedy completions (temperature 0), as in the evaluation protocol §2."""
+    texts = format_chat(tok, prompts, system)
+    outs: list[str] = []
+    for batch in progress(list(batched(texts, batch_size)), desc=desc):
+        enc = encode(tok, batch, model.device)
+        gen = model.generate(**enc, max_new_tokens=max_new_tokens, do_sample=False, temperature=None,
+                             top_p=None, top_k=None, pad_token_id=tok.pad_token_id)
+        outs += tok.batch_decode(gen[:, enc["input_ids"].shape[1]:], skip_special_tokens=True)
+    return outs
+
+
