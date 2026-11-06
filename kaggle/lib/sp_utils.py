@@ -966,3 +966,41 @@ def spearman_ci(x: Sequence[float], y: Sequence[float], n_boot: int = 1000, seed
     return rho, float(np.quantile(boots, 0.025)), float(np.quantile(boots, 0.975))
 
 
+# ---------------------------------------------------------------------------------------------
+# Leakage checks (docs/04 §4)
+# ---------------------------------------------------------------------------------------------
+
+
+def _shingles(text: str, n: int = 3) -> set:
+    words = re.findall(r"\w+", text.lower())
+    return {tuple(words[i : i + n]) for i in range(max(1, len(words) - n + 1))}
+
+
+def jaccard(a: set, b: set) -> float:
+    return len(a & b) / len(a | b) if a and b else 0.0
+
+
+def near_duplicate_pairs(texts_a: Sequence[str], texts_b: Sequence[str], threshold: float = 0.8) -> list[tuple[int, int, float]]:
+    """Index pairs (i in a, j in b) whose word-trigram Jaccard similarity >= threshold."""
+    sa = [_shingles(t) for t in texts_a]
+    sb = [_shingles(t) for t in texts_b]
+    hits = []
+    for i, x in enumerate(sa):
+        for j, y in enumerate(sb):
+            s = jaccard(x, y)
+            if s >= threshold:
+                hits.append((i, j, s))
+    return hits
+
+
+def dedupe(texts: Sequence[str], threshold: float = 0.8) -> list[int]:
+    """Indices of texts kept after greedy near-duplicate removal (first occurrence wins)."""
+    kept, kept_sh = [], []
+    for i, t in enumerate(texts):
+        sh = _shingles(t)
+        if all(jaccard(sh, k) < threshold for k in kept_sh):
+            kept.append(i)
+            kept_sh.append(sh)
+    return kept
+
+
