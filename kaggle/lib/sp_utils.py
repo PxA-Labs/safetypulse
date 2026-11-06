@@ -819,3 +819,40 @@ def all_param_slices(model) -> list[tuple[str, tuple]]:
     return [(n, (slice(None),)) for n, _ in model.named_parameters()]
 
 
+# ---------------------------------------------------------------------------------------------
+# Fine-tuning data (chat SFT with the prompt masked out of the loss)
+# ---------------------------------------------------------------------------------------------
+
+
+def sft_features(tok, messages_list: Sequence[list[dict]], max_len: int = 512) -> list[dict]:
+    feats = []
+    for msgs in messages_list:
+        prompt_ids = tok.apply_chat_template(msgs[:-1], tokenize=True, add_generation_prompt=True)
+        full_ids = tok.apply_chat_template(msgs, tokenize=True)
+        if hasattr(prompt_ids, "input_ids"):  # some versions return a BatchEncoding
+            prompt_ids, full_ids = prompt_ids["input_ids"], full_ids["input_ids"]
+        full_ids = list(full_ids)[:max_len]
+        n_prompt = min(len(prompt_ids), len(full_ids))
+        labels = [-100] * n_prompt + full_ids[n_prompt:]
+        if any(x != -100 for x in labels):
+            feats.append({"input_ids": full_ids, "labels": labels})
+    return feats
+
+
+class SFTCollator:
+    def __init__(self, pad_id: int):
+        self.pad_id = pad_id
+
+    def __call__(self, batch):
+        n = max(len(b["input_ids"]) for b in batch)
+        ids = torch.full((len(batch), n), self.pad_id)
+        labels = torch.full((len(batch), n), -100)
+        mask = torch.zeros((len(batch), n), dtype=torch.long)
+        for i, b in enumerate(batch):
+            k = len(b["input_ids"])
+            ids[i, :k] = torch.tensor(b["input_ids"])
+            labels[i, :k] = torch.tensor(b["labels"])
+            mask[i, :k] = 1
+        return {"input_ids": ids, "labels": labels, "attention_mask": mask}
+
+
