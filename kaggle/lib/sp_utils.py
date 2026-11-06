@@ -752,3 +752,70 @@ def cis_status(value: float, tau_warn: float | None, tau_fail: float | None) -> 
     return "PASS" if tau_warn is not None or tau_fail is not None else "UNCALIBRATED"
 
 
+# ---------------------------------------------------------------------------------------------
+# Weight-space repair (docs/02 §3.5)
+# ---------------------------------------------------------------------------------------------
+
+
+def component_slices(model, cid: str) -> list[tuple[str, tuple]]:
+    """(parameter name, index) pairs owned by a component.
+
+    attn head h: its rows of q_proj (+bias) and its columns of o_proj. k/v are shared across a GQA
+    group, so they are left untouched. mlp: gate/up/down projections whole.
+    """
+    kind, layer, head = parse_component(cid)
+    pre = f"{layers_prefix(model)}.{layer}"
+    names = dict(model.named_parameters())
+    if kind == "attn_head":
+        _, hd = head_geometry(model)
+        rows = slice(head * hd, (head + 1) * hd)
+        out = [(f"{pre}.self_attn.q_proj.weight", (rows, slice(None))), (f"{pre}.self_attn.o_proj.weight", (slice(None), rows))]
+        if f"{pre}.self_attn.q_proj.bias" in names:
+            out.append((f"{pre}.self_attn.q_proj.bias", (rows,)))
+        return out
+    return [(f"{pre}.mlp.{p}.weight", (slice(None),)) for p in ("gate_proj", "up_proj", "down_proj")]
+
+
+def writer_slices(model, cid: str) -> list[tuple[str, tuple]]:
+    """The parts of a component that write into the residual stream (o_proj cols / down_proj)."""
+    return [s for s in component_slices(model, cid) if "o_proj" in s[0] or "down_proj" in s[0]]
+
+
+def state_dict_cpu(model) -> dict[str, torch.Tensor]:
+    return {k: v.detach().to("cpu", copy=True) for k, v in model.named_parameters()}
+
+
+@torch.no_grad()
+def interpolate_toward_base(model, base_sd: dict, slices: list[tuple[str, tuple]], alpha: float) -> int:
+    """W[idx] <- W[idx] + alpha (W_base[idx] - W[idx]). alpha=0 unchanged, alpha=1 base. Returns #params changed."""
+    params = dict(model.named_parameters())
+    changed = 0
+    for name, idx in slices:
+        p = params[name]
+        b = base_sd[name].to(p.device, p.dtype)
+        p[idx] += alpha * (b[idx] - p[idx])
+        changed += p[idx].numel()
+    return changed
+
+
+@torch.no_grad()
+def project_delta(model, base_sd: dict, slices: list[tuple[str, tuple]], r: torch.Tensor, beta: float = 1.0) -> int:
+    """Remove (fraction beta of) the fine-tuning delta's write along r̂ for residual-writer slices:
+    W <- W_base + (I - beta r̂ r̂ᵀ)(W - W_base). Output dim of o_proj/down_proj is d_model."""
+    params = dict(model.named_parameters())
+    changed = 0
+    for name, idx in slices:
+        p = params[name]
+        r_hat = unit(r.float()).to(p.device)
+        b = base_sd[name].to(p.device, torch.float32)
+        delta = p[idx].float() - b[idx]
+        delta = delta - beta * torch.outer(r_hat, r_hat @ delta)
+        p[idx] = (b[idx] + delta).to(p.dtype)
+        changed += p[idx].numel()
+    return changed
+
+
+def all_param_slices(model) -> list[tuple[str, tuple]]:
+    return [(n, (slice(None),)) for n, _ in model.named_parameters()]
+
+
