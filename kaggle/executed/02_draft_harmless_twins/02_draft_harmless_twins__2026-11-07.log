@@ -1,0 +1,18 @@
+[{"stream_name":"stdout","time":7.584882732,"data":"[cell 0] start: # 02 · Draft harmless twins\n"}
+,{"stream_name":"stdout","time":7.584937859,"data":"[cell 1] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":7.58519374,"data":"[cell 1] done in 0s\n"}
+,{"stream_name":"stdout","time":44.147080119,"data":"[cell 2] start: import re\n"}
+,{"stream_name":"stdout","time":44.147463343,"data":"[cell 2] done in 0s\n"}
+,{"stream_name":"stdout","time":1329.011371094,"data":"[cell 3] start: drafts = sp.generate(model, tok, [REWRITE.format(harmful=r[\"harmful\"]) for r in \n"}
+,{"stream_name":"stdout","time":1329.011743609,"data":"[cell 3] done in 0s\n"}
+,{"stream_name":"stdout","time":1571.431609281,"data":"[cell 4] start: def flags_for(r, twin, answer):\n"}
+,{"stream_name":"stdout","time":1571.432015804,"data":"[cell 4] done in 0s\n"}
+,{"stream_name":"stdout","time":1571.454999247,"data":"[cell 5] start: ## Review by hand (required)\n"}
+,{"stream_name":"stdout","time":1574.400479806,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":1576.726474338,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":1576.726506081,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":1576.920594541,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":1576.920625803,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":1577.847779318,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":1578.410325535,"data":"[NbConvertApp] Writing 291344 bytes to __results__.html\n"}
+]
