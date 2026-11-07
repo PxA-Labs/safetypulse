@@ -9,6 +9,11 @@ __pycache__/
 .venv/
 venv/
 .ipynb_checkpoints/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
 
 # Secrets: tokens live in Kaggle Secrets, never in the repo
 .env
