@@ -1,0 +1,60 @@
+{
+  "CohereLabs/tiny-aya-global": {
+    "refuse": [
+      15817
+    ],
+    "comply": [
+      31,
+      64,
+      948,
+      1056,
+      3363,
+      5056,
+      12951,
+      108320
+    ],
+    "dropped_overlap": [],
+    "refuse_tokens": [
+      "I'm"
+    ],
+    "comply_tokens": [
+      "1",
+      "R",
+      "The",
+      "In",
+      "To",
+      "Sh",
+      "It's",
+      "Human"
+    ]
+  },
+  "Qwen/Qwen2.5-1.5B-Instruct": {
+    "refuse": [
+      40
+    ],
+    "comply": [
+      38,
+      47,
+      785,
+      1249,
+      2132,
+      8033,
+      33975,
+      36559
+    ],
+    "dropped_overlap": [],
+    "refuse_tokens": [
+      "I"
+    ],
+    "comply_tokens": [
+      "G",
+      "P",
+      "The",
+      "To",
+      "It",
+      "Exp",
+      "Human",
+      "Peter"
+    ]
+  }
+}
