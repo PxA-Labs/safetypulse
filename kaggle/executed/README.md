@@ -1,24 +1,27 @@
 # Executed notebooks
 
-Notebooks downloaded from Kaggle after *Save & Run All*, with their outputs. **Everything in this folder
-except this README is git-ignored**: executed notebooks contain harmful prompts and model completions
-(docs/04 §5). Keep them on team machines only.
+Notebooks run on Kaggle with `tools/kaggle_run.py`, with their outputs, run logs and a `RUN_SUMMARY.md`
+per notebook. They are the record of what each result was computed from.
+
+**This repository is private, and this folder must stay that way:** executed notebooks and `files/` contain
+harmful prompts from public red-teaming benchmarks and model completions (docs/04 §5). Do not copy them into a
+public repository or share them outside the team.
 
 ## Layout
 
 ```
 executed/<notebook>/
-  <notebook>__<YYYY-MM-DD>.ipynb      first run on that date
-  <notebook>__<YYYY-MM-DD>b.ipynb     later run on the same date (b, c, ...)
-  files/                              small outputs only: JSON, CSV, PNG
+  <notebook>__<YYYY-MM-DD>[__<run>].ipynb   executed notebook (07: one per run, e.g. __gsm8k-s0)
+  <notebook>__<YYYY-MM-DD>[__<run>].log     Kaggle run log with per-cell progress
+  ...b.ipynb / b.log                        a later run on the same date (b, c, ...)
+  files/                                    small outputs only: JSON, CSV, PNG
+  RUN_SUMMARY.md                            what ran, what the outputs show, caveats, next step
 ```
 
-Example: `executed/05_refusal_direction/05_refusal_direction__2026-11-08.ipynb`.
+Keep earlier runs, including failed ones: their summaries explain what went wrong and how it was fixed.
 
-Keep earlier runs: they are the record of what each result was computed from.
+## Not stored here
 
-## Never download
-
-- Fine-tuning checkpoints (`runs/`), `.safetensors` files, `audit.jsonl`
-- The generated datasets in `data/` and `pairs/`: they live in private Kaggle datasets (see
-  [../README.md](../README.md#private-kaggle-datasets))
+Checkpoints, `.safetensors` files, `audit.jsonl` and the generated datasets live in private Kaggle datasets
+(`sp-pipeline-outputs`, `sp-07-checkpoints-dev`, `sp-07-checkpoints-test`): see
+[docs/10_KAGGLE_RESOURCES.md](../../docs/10_KAGGLE_RESOURCES.md).
