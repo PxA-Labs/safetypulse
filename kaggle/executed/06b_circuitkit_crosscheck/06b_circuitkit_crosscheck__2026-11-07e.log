@@ -1,0 +1,13 @@
+2026-11-07 11:55:43,779 - circuitkit.discovery - INFO - _log_with_context:194 - ==================================================
+2026-11-07 11:55:43,780 - circuitkit.discovery - INFO - _log_with_context:194 - Starting: Circuit Discovery
+2026-11-07 11:55:43,781 - circuitkit.discovery - INFO - _log_with_context:194 - ==================================================
+2026-11-07 11:55:43,782 - circuitkit.discovery - INFO - _log_with_context:194 - [1/4] Loading and validating configuration
+2026-11-07 11:55:43,783 - circuitkit.config - INFO - _validate_config:267 - Configuration validated successfully.
+2026-11-07 11:55:43,784 - circuitkit.discovery - INFO - _log_with_context:194 - Config: EAP-IG on safetypulse_refusal_5f2493ba task, node level, 30% sparsity
+2026-11-07 11:55:43,804 - circuitkit.discovery - INFO - _log_with_context:194 - [2/4] Setting up model (model=/tmp/sp_models/CohereLabs__tiny-aya-global)
+2026-11-07 11:55:43,808 - circuitkit.discovery - INFO - _log_with_context:194 - Model: /tmp/sp_models/CohereLabs__tiny-aya-global (3.9B params, cuda device)
+2026-11-07 11:55:43,809 - circuitkit.discovery - INFO - _log_with_context:194 - [3/4] Running discovery algorithm (algorithm=eap-ig)
+2026-11-07 11:55:43,809 - circuitkit.discovery - INFO - _log_with_context:194 - Starting EAP-IG discovery algorithm
+2026-11-07 11:55:53,735 - circuitkit.discovery - ERROR - _log_with_context:194 - Operation failed: Circuit Discovery
+2026-11-07 11:55:53,735 - circuitkit.discovery - ERROR - _log_with_context:194 - Error: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cuda:1!
+2026-11-07 11:55:53,739 - circuitkit - ERROR - _log_with_context:194 - Error in discover_circuit: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cuda:1!

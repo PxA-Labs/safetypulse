@@ -1,0 +1,12 @@
+[{"stream_name":"stdout","time":7.602031239,"data":"[cell 0] start: # 06c · Is the circuit specific to refusal? Small-set ablation vs random sets\n"}
+,{"stream_name":"stdout","time":7.602087202,"data":"[cell 1] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":44.468821265,"data":"[cell 2] start: import random\n"}
+,{"stream_name":"stdout","time":111.567811163,"data":"[cell 3] start: @torch.no_grad()\n"}
+,{"stream_name":"stdout","time":1593.346941184,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":1596.155330621,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":1596.155374152,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":1596.381927747,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":1596.38196147,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":1597.375871712,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":1598.000030495,"data":"[NbConvertApp] Writing 292014 bytes to __results__.html\n"}
+]
