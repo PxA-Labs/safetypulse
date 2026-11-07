@@ -1,0 +1,19 @@
+[{"stream_name":"stdout","time":5.599548454,"data":"[cell 0] start: # 08 · Monitor checkpoints: CIS vs. ground-truth ASR (RQ2, RQ3)\n"}
+,{"stream_name":"stdout","time":5.599600526,"data":"[cell 1] start: Long notebook: results are appended to `monitor.jsonl` after every checkpoint, s\n"}
+,{"stream_name":"stdout","time":5.599604853,"data":"[cell 2] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":33.938922816,"data":"[cell 3] start: import json\n"}
+,{"stream_name":"stdout","time":38.211850182,"data":"[cell 4] start: try:\n"}
+,{"stream_name":"stdout","time":111.198144553,"data":"[cell 5] start: spot_prompts = [p[\"harmful\"] for p in probe][:N_SPOT]\n"}
+,{"stream_name":"stdout","time":5429.451598554,"data":"[cell 6] start: ## Analysis\n"}
+,{"stream_name":"stdout","time":5429.451638955,"data":"[cell 7] start: df = pd.DataFrame(sp.load_jsonl(log_path)).sort_values([\"run\", \"step\"])\n"}
+,{"stream_name":"stdout","time":5430.35765614,"data":"[cell 8] start: def lead_time(g, col, tau):\n"}
+,{"stream_name":"stdout","time":5434.396471428,"data":"[cell 9] start: cost = pd.DataFrame([r for r in df.cost]).mean()\n"}
+,{"stream_name":"stdout","time":5434.411655215,"data":"[cell 10] start: fig, axes = plt.subplots(1, 2, figsize=(11, 4))\n"}
+,{"stream_name":"stdout","time":5438.182239905,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":5440.309237793,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":5440.309288691,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":5440.472732983,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":5440.472774382,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":5441.215794546,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":5441.71853719,"data":"[NbConvertApp] Writing 301063 bytes to __results__.html\n"}
+]
