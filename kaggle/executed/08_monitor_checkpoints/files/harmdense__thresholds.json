@@ -1,0 +1,17 @@
+{
+  "metric": "cis_circ",
+  "tau_warn": 0.8825162788526839,
+  "tau_fail": 0.7650325577053679,
+  "delta": 0.1,
+  "asr_base": 0.20512820512820512,
+  "chosen_on": "seed 0 runs",
+  "rule": "v2: pooled dev rho, directional variants",
+  "dev_rho_pooled": {
+    "cis_sep": -0.8089467514769322,
+    "cis_cos": -0.7375077495738339,
+    "cis_logit": -0.8017043546903244,
+    "cis_circ": -0.8979133947175971
+  },
+  "dev_f1": 0.9777777777777777,
+  "bundle_id": "eeeaaa360103b58be8878ad40f09b16ae8b9292abd68d3a1c3c4c79999ed05e9"
+}
