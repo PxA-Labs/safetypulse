@@ -111,6 +111,13 @@ def test_crosscheck_wiring_with_fake(fake_circuitkit, tok, pairs, bundle):
     assert set(out["their_rank_of_ours"]) == {c.id for c in bundle.components}
 
 
+def test_discover_passes_chat_template_mode(fake_circuitkit, tok, pairs, bundle):
+    fake_circuitkit["tok"] = tok
+    ckad.discover(types.SimpleNamespace(tokenizer=tok), pairs, bundle.token_sets.model_dump(), chat_template_mode="off")
+    assert fake_circuitkit["discover"]["chat_template_mode"] == "off"
+    assert fake_circuitkit["registered"].chat_template_mode == "off"
+
+
 @pytest.mark.skipif(importlib.util.find_spec("circuitkit") is None or importlib.util.find_spec("transformer_lens") is None,
                     reason="circuitkit / transformer-lens not installed")
 def test_real_circuitkit_on_tiny_model(model_dir, tok, pairs):
