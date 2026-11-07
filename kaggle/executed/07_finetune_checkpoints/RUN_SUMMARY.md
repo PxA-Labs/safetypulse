@@ -12,7 +12,14 @@ Checkpoints (LoRA adapters) stay on Kaggle and are read by notebooks 08–10 fro
 | `none-s0` | ✅ complete | `…__none-s0.ipynb` / `.log`, `files/none-s0__train_log.json` |
 | `gsm8k-s1` | ✅ complete | `…__gsm8k-s1.ipynb` / `.log`, `files/gsm8k-s1__train_log.json` |
 | `alpaca-s1` | ✅ complete (loss 1.94 → 1.19, 52.5 min; downloaded by hand) | `…__alpaca-s1.ipynb` / `.log`, `files/alpaca-s1__train_log.json` |
-| `none-s1`, `gsm8k-s2`, `alpaca-s2`, `none-s2` | ⏳ queued one at a time | — |
+| `none-s1` | ✅ complete (loss 2.05 → 1.07, 52.4 min) | `…__none-s1.ipynb` / `.log`, `files/none-s1__train_log.json` |
+| `gsm8k-s2` | ✅ complete (loss 1.06 → 0.51, 56.7 min) | `…__gsm8k-s2.ipynb` / `.log`, `files/gsm8k-s2__train_log.json` |
+| `alpaca-s2` | ✅ complete on the teammate account `purvanshj009` (loss 2.11 → 1.21, 55.9 min) | `…__alpaca-s2.ipynb` / `.log`, `files/alpaca-s2__train_log.json` |
+| `none-s2` | ✅ complete on the teammate account `purvanshj009` (loss 2.02 → 1.12, 56.0 min) | `…__none-s2.ipynb` / `.log`, `files/none-s2__train_log.json` |
+
+**All 10 runs complete.** Final losses agree across seeds: gsm8k 0.51 / 0.59 / 0.51, alpaca 1.18 / 1.19 / 1.21,
+none 1.19 / 1.07 / 1.12. The s2 runs of alpaca and none read data and models from the shared snapshot datasets
+(`sp-pipeline-outputs`, `sp-models`) instead of notebook outputs; same files, same hashes.
 
 The runner's automatic download failed twice with a Kaggle connection reset (`none-s0`, `gsm8k-s1`). Both runs had
 completed; their files were downloaded again by hand with `kaggle kernels output` and saved under the usual names.
