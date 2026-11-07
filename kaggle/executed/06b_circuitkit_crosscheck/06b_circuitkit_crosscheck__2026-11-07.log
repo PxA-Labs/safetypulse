@@ -1,0 +1,43 @@
+[{"stream_name":"stdout","time":6.253604793,"data":"[cell 0] start: # 06b · CircuitKIT cross-check of the refusal circuit (toolkit chaining)\n"}
+,{"stream_name":"stdout","time":6.253663917,"data":"[cell 1] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":34.20333535,"data":"[cell 2] start: import json, subprocess, sys\n"}
+,{"stream_name":"stdout","time":46.754922844,"data":"An error occurred while executing the following cell:\n"}
+,{"stream_name":"stdout","time":46.75495662,"data":"------------------\n"}
+,{"stream_name":"stdout","time":46.754962352,"data":"import json, subprocess, sys\n"}
+,{"stream_name":"stdout","time":46.754968856,"data":"import torch\n"}
+,{"stream_name":"stdout","time":46.754995486,"data":"\n"}
+,{"stream_name":"stdout","time":46.755001434,"data":"subprocess.run([sys.executable, \"-m\", \"pip\", \"install\", \"-q\", \"circuitkit==0.2.0\"], check=True)\n"}
+,{"stream_name":"stdout","time":46.755007795,"data":"pkg = next(p for p in sp.find_inputs(\"cli.py\") if p.parent.name == \"safetypulse\")\n"}
+,{"stream_name":"stdout","time":46.755012702,"data":"sys.path.insert(0, str(pkg.parent.parent))\n"}
+,{"stream_name":"stdout","time":46.755017216,"data":"from safetypulse import ProbeBundle\n"}
+,{"stream_name":"stdout","time":46.755021518,"data":"from safetypulse.adapters import circuitkit as ck\n"}
+,{"stream_name":"stdout","time":46.75502591,"data":"\n"}
+,{"stream_name":"stdout","time":46.755030116,"data":"MODEL = os.environ.get(\"SP_MODEL\", sp.DEFAULT_MODEL)\n"}
+,{"stream_name":"stdout","time":46.755034686,"data":"N_PAIRS = int(os.environ.get(\"SP_N_PAIRS\", 64)) if not sp.SMOKE else 4   # EAP-IG is memory-heavy on a T4\n"}
+,{"stream_name":"stdout","time":46.755039429,"data":"K = 20\n"}
+,{"stream_name":"stdout","time":46.755043726,"data":"OUT = sp.out_dir(\"circuitkit\")\n"}
+,{"stream_name":"stdout","time":46.755048236,"data":"pairs = [p for p in sp.load_jsonl(sp.find_input(\"pairs.jsonl\")) if p[\"split\"] == \"calib\"][:N_PAIRS]\n"}
+,{"stream_name":"stdout","time":46.755058821,"data":"token_sets = sp.load_json(sp.find_input(\"token_sets.json\"))[MODEL]\n"}
+,{"stream_name":"stdout","time":46.75506258,"data":"bundle = ProbeBundle.load(sp.find_input(\"probe_bundle.json\").parent)\n"}
+,{"stream_name":"stdout","time":46.755065651,"data":"print(len(pairs), \"calib pairs;\", len(bundle.components), \"components in our bundle; layer\", bundle.layer)\n"}
+,{"stream_name":"stdout","time":46.755068842,"data":"------------------\n"}
+,{"stream_name":"stdout","time":46.755072255,"data":"\n"}
+,{"stream_name":"stdout","time":46.755089082,"data":"\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n"}
+,{"stream_name":"stdout","time":46.755095059,"data":"\u001b[0;31mStopIteration\u001b[0m                             Traceback (most recent call last)\n"}
+,{"stream_name":"stdout","time":46.755100304,"data":"\u001b[0;32m/tmp/ipykernel_18/3465681305.py\u001b[0m in \u001b[0;36m\u003ccell line: 0\u003e\u001b[0;34m()\u001b[0m\n"}
+,{"stream_name":"stdout","time":46.755116178,"data":"\u001b[1;32m      3\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":46.755122167,"data":"\u001b[1;32m      4\u001b[0m \u001b[0msubprocess\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mrun\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0msys\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mexecutable\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m\"-m\"\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m\"pip\"\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m\"install\"\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m\"-q\"\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m\"circuitkit==0.2.0\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mcheck\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;32mTrue\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":46.755143982999996,"data":"\u001b[0;32m----\u003e 5\u001b[0;31m \u001b[0mpkg\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mnext\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mp\u001b[0m \u001b[0;32mfor\u001b[0m \u001b[0mp\u001b[0m \u001b[0;32min\u001b[0m \u001b[0msp\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mfind_inputs\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m\"cli.py\"\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;32mif\u001b[0m \u001b[0mp\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mparent\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mname\u001b[0m \u001b[0;34m==\u001b[0m \u001b[0;34m\"safetypulse\"\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":46.755152741,"data":"\u001b[0m\u001b[1;32m      6\u001b[0m \u001b[0msys\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mpath\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0minsert\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;36m0\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mstr\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mpkg\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mparent\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mparent\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":46.755158528,"data":"\u001b[1;32m      7\u001b[0m \u001b[0;32mfrom\u001b[0m \u001b[0msafetypulse\u001b[0m \u001b[0;32mimport\u001b[0m \u001b[0mProbeBundle\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":46.755167832,"data":"\n"}
+,{"stream_name":"stdout","time":46.7551711,"data":"\u001b[0;31mStopIteration\u001b[0m: \n"}
+,{"stream_name":"stdout","time":46.755186501,"data":"StopIteration: \n"}
+,{"stream_name":"stdout","time":46.7551906,"data":"\n"}
+,{"stream_name":"stderr","time":48.753799716,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":48.753827086,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":48.901472869,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":48.901495834,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":49.676875595,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":50.15282832,"data":"[NbConvertApp] Writing 288996 bytes to __results__.html\n"}
+]
