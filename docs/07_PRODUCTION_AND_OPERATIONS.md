@@ -22,22 +22,32 @@ training runs (local GPU box, cloud VM, cluster job).
 
 ```bash
 # 1. One-time per base model: locate mechanism and write a probe bundle
-safetypulse calibrate --model Qwen/Qwen2.5-1.5B-Instruct --config configs/base.yaml \
-  --out bundles/qwen2.5-1.5b/
+#    (pairs: harmful/harmless/split rows; --token-sets optional, default built-in refusal/compliance tokens)
+safetypulse calibrate --model Qwen/Qwen2.5-1.5B-Instruct --pairs data/pairs.jsonl \
+  --token-sets data/token_sets.json --out bundles/qwen2.5-1.5b/
+#    then set thresholds from monitoring dev runs (a tau may be "none"; both must be finite, tau_fail <= tau_warn)
+safetypulse calibrate --out bundles/qwen2.5-1.5b/ --set-thresholds cis_cos TAU_WARN TAU_FAIL
 
-# 2. Per checkpoint: cheap integrity check
+# 2. Per checkpoint: cheap integrity check (LoRA dir, full model dir or Hub id)
 safetypulse check --checkpoint runs/ft/checkpoint-1200 --bundle bundles/qwen2.5-1.5b/ \
   --out outputs/check-1200.json
-#   exit 0 = PASS, 10 = WARN, 20 = FAIL, 1 = error
+#   exit 0 = PASS, 10 = WARN, 20 = FAIL, 1 = error / UNCALIBRATED / ERROR
+#   --no-verify-probe: score with probe pairs whose hash differs from the bundle's (or a bundle without one)
+#   --allow-base-mismatch: score a model whose fingerprint differs from the bundle's base model (warns)
 
-# 3. Targeted repair
+# 3. Targeted repair: --method circuit-restore | circuit-project | full-interp | random | steer |
+#    safetune-wise-ft | safetune-wise-ft-circuit | safetune-svr (or R1/R2/R4/R5/R6); --alpha is a number
+#    (strength α; β for circuit-project, scale for steer), chosen on dev runs with repair.select_strength
 safetypulse repair --checkpoint runs/ft/checkpoint-1200 --bundle bundles/qwen2.5-1.5b/ \
-  --method circuit-restore --alpha auto --out runs/ft/checkpoint-1200-repaired/
+  --method circuit-restore --alpha 0.5 --out runs/ft/checkpoint-1200-repaired/
 
-# 4. Ground-truth audit
-safetypulse audit --model runs/ft/checkpoint-1200-repaired/ --suite default \
+# 4. Ground-truth audit (--data-dir: eval_harm/overrefusal/task/general.jsonl)
+safetypulse audit --model runs/ft/checkpoint-1200-repaired/ --data-dir data/ --suite default \
   --out outputs/audit-1200-repaired.json
 ```
+
+`check` and `audit` re-attach the saved steering hook when given a `repair --method steer` output directory
+(recorded in the CheckResult's `steering` / the AuditReport's `model.steering`).
 
 ### 2.2 Python
 
@@ -46,16 +56,23 @@ from safetypulse import ProbeBundle, check
 from safetypulse.integrations import SafetyPulseCallback
 
 bundle = ProbeBundle.load("bundles/qwen2.5-1.5b/")
-trainer = Trainer(..., callbacks=[SafetyPulseCallback(bundle, on_fail="stop")])  # "log" | "stop" | "repair"
+trainer = Trainer(..., callbacks=[SafetyPulseCallback(bundle, on_fail="stop")])  # on_fail: "log" | "stop"
 ```
+
+The callback writes each result to `<output_dir>/checkpoint-<step>/safetypulse_check.json` and appends it to
+`<output_dir>/safetypulse_checks.jsonl`. For a repair, run `safetypulse repair` on the failing checkpoint.
 
 ### 2.3 Status semantics
 
-| Status | Condition | Recommended action |
-|--------|-----------|-------------------|
-| PASS | CIS ≥ τ_warn | Continue |
-| WARN | τ_fail ≤ CIS < τ_warn | Run full `audit` on this checkpoint |
-| FAIL | CIS < τ_fail | Do not release; run `repair` then `audit` |
+| Status | Condition | Exit code | Recommended action |
+|--------|-----------|-----------|-------------------|
+| PASS | CIS ≥ τ_warn | 0 | Continue |
+| WARN | τ_fail ≤ CIS < τ_warn | 10 | Run full `audit` on this checkpoint |
+| FAIL | CIS < τ_fail | 20 | Do not release; run `repair` then `audit` |
+| UNCALIBRATED | bundle has no thresholds (scores computed, no verdict) | 1 | Set thresholds (`calibrate --set-thresholds`) |
+| ERROR | primary CIS is not finite (NaN / inf) | 1 | Treat as FAIL; inspect the checkpoint for diverged weights |
+
+Any other error (bad arguments, probe-set or base-model mismatch, missing files) also exits 1.
 
 CIS is a **screening signal**. A PASS does not certify safety; release decisions require an `audit`.
 
