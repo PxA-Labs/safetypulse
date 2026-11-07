@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "safetypulse"
+version = "0.1.0"
+description = "Circuit Integrity Score: a cheap check that fine-tuning has not degraded an LLM's refusal mechanism"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.2",
+    "transformers>=4.56",
+    "safetensors>=0.4",
+    "numpy>=1.24",
+    "pydantic>=2",
+]
+
+[project.optional-dependencies]
+peft = ["peft>=0.13"]
+dev = ["pytest>=8", "ruff>=0.5"]
+# Lexsi Labs toolkits (LSAL licence), used only through safetypulse.adapters; safetune needs Python >= 3.12.
+toolkits = ["circuitkit>=0.2", "safetune>=0.1.12; python_version >= '3.12'", "auditkit>=1.1"]
+
+[project.scripts]
+safetypulse = "safetypulse.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["safetypulse*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+filterwarnings = ["ignore::DeprecationWarning", "ignore::FutureWarning"]
+
+[tool.ruff]
+line-length = 130
+target-version = "py310"
+extend-exclude = ["kaggle", "tools", "graphify-out"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E741", "B023"]
