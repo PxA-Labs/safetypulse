@@ -6,6 +6,8 @@
 | `notebooks/` | Clean notebooks, no outputs. Upload these to Kaggle. |
 | `executed/` | The same notebooks downloaded from Kaggle after running, with outputs. |
 
+Links to every Kaggle notebook and dataset: [docs/10_KAGGLE_RESOURCES.md](../docs/10_KAGGLE_RESOURCES.md).
+
 ## One-time setup on Kaggle
 
 1. **Library:** create a private Kaggle dataset `safetypulse-lib` containing `lib/sp_utils.py`. Attach it to
@@ -23,6 +25,7 @@ to the later notebook (Add Input → Your Work → Notebooks). The header table 
 | # | Notebook | GPU | Needs | Produces |
 |---|----------|-----|-------|----------|
 | 00 | Environment and toolkits | T4 | — | `toolkits/toolkit_apis.json` |
+| 00b | Mirror gated models (**run from the Kaggle editor**, not the CLI) | none | — | `models/` |
 | 01 | Build datasets | none | — | `data/` (eval, fine-tune and pair-pool files) |
 | 02 | Draft harmless twins | T4 | 01 | `pairs/pairs_draft.csv` → **review by hand** → `pairs_reviewed.csv` |
 | 03 | Validate and split pairs | none | 01 (+ reviewed pairs) | `pairs/pairs.jsonl` |
@@ -40,24 +43,26 @@ once the real matched pairs are ready.
 Runs for 07: dev = `gsm8k`, `alpaca`, `harm`, `none` with seed 0; test = the same conditions (except `harm`, the
 positive control) with seeds 1 and 2. Set `CONDITION` and `SEED` in the notebook's config cell.
 
-## Private Kaggle datasets
+## Passing outputs between notebooks
 
-Outputs that later notebooks read are turned into **private** Kaggle datasets right after the run, so they are
-versioned and survive notebook re-saves. Keep the folder names: notebooks find files by name and runs by folder.
-Attach either the dataset or the notebook output, never both, or a file may be found twice.
+Notebooks are run with `tools/kaggle_run.py`, which attaches earlier notebooks' outputs directly (Kaggle
+*kernel sources*), so no separate data datasets are created. The only datasets are `safetypulse-lib` (the library)
+and `sp-models` (the gated-model mirror). Kaggle notebook slugs, inputs and status:
+[docs/10_KAGGLE_RESOURCES.md](../docs/10_KAGGLE_RESOURCES.md).
 
-| From | Folder | Dataset | Read by |
-|------|--------|---------|---------|
-| 01 | `data/` | `sp-data` | 02, 03, 04, 07, 08, 09, 10 |
-| 02 + review, 03 | `pairs_reviewed.csv`, `pairs/` | `sp-pairs` | 03, 05, 06 |
-| 04 | `baseline/` | `sp-baseline` | 05, 06 |
-| 05 | `direction/` | `sp-direction` | 06 |
-| 06 | `probe_bundle/` | `sp-probe` | 08, 09, 10 |
-| 07 | `runs/<condition>-s<seed>/` | `sp-runs` (one version per run) | 08, 09, 10 |
-| 08 | `monitor/` | `sp-monitor` | 09, 10 |
-| 09 | `repair/` | `sp-repair` | 10 |
+| From | Folder | Read by |
+|------|--------|---------|
+| 01 | `data/` | 02, 03, 04, 07, 08, 09, 10 |
+| 02 + review, 03 | `pairs_reviewed.csv`, `pairs/` | 03, 05, 06 |
+| 04 | `baseline/` | 05, 06 |
+| 05 | `direction/` | 06 |
+| 06 | `probe_bundle/` | 08, 09, 10 |
+| 07 | `runs/<condition>-s<seed>/` (one Kaggle notebook per run) | 08, 09, 10 |
+| 08 | `monitor/` | 09, 10 |
+| 09 | `repair/` | 10 |
 
-Create `sp-runs` from the notebook output on Kaggle; do not download checkpoints.
+Keep the folder names: notebooks find files by name and runs by folder. Never attach two copies of the same output.
+Frozen dataset snapshots of the final outputs can be made at the end of the project.
 
 ## Conventions
 
