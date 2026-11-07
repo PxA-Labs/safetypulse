@@ -6,7 +6,7 @@ SafetyPulse maps to them.
 | Field | Value | Source / status |
 |-------|-------|-----------------|
 | Event | Lexsi Labs AI Safety & Alignment Hackathon (with Cohere Labs and Hugging Face) | Secondary listing — confirm on official page |
-| Dates | 1–21 November 2026 | Secondary listing — confirm exact submission time and timezone |
+| Dates | 1–14 November 2026 (submission deadline **14 Nov**, per the team on 7 Nov; earlier secondary listing said 21 Nov) | Confirm exact time and timezone on the official page |
 | Registered track | **Track 2 — AI Red Teaming, Safety and Alignment** | Team registration |
 | Sub-track we target | **Track 2b — AI Safety and Correction** | Team decision ([ADR-0001](adr/0001-project-direction.md)) |
 | Submission requirement | Chain at least two toolkits and report before/after metrics | Secondary listing — **confirm in official rules** |
