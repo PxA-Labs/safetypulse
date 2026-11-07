@@ -1,0 +1,263 @@
+{
+  "schema_version": "1.0",
+  "base_model": {
+    "name": "CohereLabs/tiny-aya-global",
+    "revision": null
+  },
+  "layer": 27,
+  "direction_file": "directions.safetensors",
+  "components": [
+    {
+      "id": "mlp:22",
+      "type": "mlp",
+      "layer": 22,
+      "index": null,
+      "score": 2.104996681213379,
+      "discovery_exact": 2.1576070404052734
+    },
+    {
+      "id": "mlp:23",
+      "type": "mlp",
+      "layer": 23,
+      "index": null,
+      "score": 1.7333506345748901,
+      "discovery_exact": 1.7255003356933594
+    },
+    {
+      "id": "mlp:24",
+      "type": "mlp",
+      "layer": 24,
+      "index": null,
+      "score": 1.3372594118118286,
+      "discovery_exact": 1.5090157175064087
+    },
+    {
+      "id": "mlp:26",
+      "type": "mlp",
+      "layer": 26,
+      "index": null,
+      "score": 1.666936993598938,
+      "discovery_exact": 1.502290644645691
+    },
+    {
+      "id": "mlp:19",
+      "type": "mlp",
+      "layer": 19,
+      "index": null,
+      "score": 1.4166920185089111,
+      "discovery_exact": 1.3554739141464234
+    },
+    {
+      "id": "mlp:29",
+      "type": "mlp",
+      "layer": 29,
+      "index": null,
+      "score": 1.4296231269836426,
+      "discovery_exact": 1.347960729598999
+    },
+    {
+      "id": "mlp:25",
+      "type": "mlp",
+      "layer": 25,
+      "index": null,
+      "score": 1.1675292253494263,
+      "discovery_exact": 1.2466146564483642
+    },
+    {
+      "id": "mlp:27",
+      "type": "mlp",
+      "layer": 27,
+      "index": null,
+      "score": 1.3365899324417114,
+      "discovery_exact": 1.2251302528381347
+    },
+    {
+      "id": "mlp:21",
+      "type": "mlp",
+      "layer": 21,
+      "index": null,
+      "score": 1.0292547941207886,
+      "discovery_exact": 1.1477356433868409
+    },
+    {
+      "id": "mlp:18",
+      "type": "mlp",
+      "layer": 18,
+      "index": null,
+      "score": 0.8135476112365723,
+      "discovery_exact": 1.0500718927383423
+    },
+    {
+      "id": "mlp:34",
+      "type": "mlp",
+      "layer": 34,
+      "index": null,
+      "score": 1.327746868133545,
+      "discovery_exact": 1.0205855321884156
+    },
+    {
+      "id": "attn_head:16:2",
+      "type": "attn_head",
+      "layer": 16,
+      "index": 2,
+      "score": 0.6232724785804749,
+      "discovery_exact": 0.99758864402771
+    },
+    {
+      "id": "attn_head:32:14",
+      "type": "attn_head",
+      "layer": 32,
+      "index": 14,
+      "score": 0.8580238223075867,
+      "discovery_exact": 0.8565263843536377
+    },
+    {
+      "id": "mlp:33",
+      "type": "mlp",
+      "layer": 33,
+      "index": null,
+      "score": 1.1015938520431519,
+      "discovery_exact": 0.8116327857971192
+    },
+    {
+      "id": "attn_head:29:7",
+      "type": "attn_head",
+      "layer": 29,
+      "index": 7,
+      "score": 0.7979447245597839,
+      "discovery_exact": 0.6672668600082398
+    },
+    {
+      "id": "attn_head:20:5",
+      "type": "attn_head",
+      "layer": 20,
+      "index": 5,
+      "score": 0.6748670935630798,
+      "discovery_exact": 0.643487057685852
+    },
+    {
+      "id": "mlp:31",
+      "type": "mlp",
+      "layer": 31,
+      "index": null,
+      "score": 0.7465100288391113,
+      "discovery_exact": 0.6403519296646119
+    },
+    {
+      "id": "attn_head:20:6",
+      "type": "attn_head",
+      "layer": 20,
+      "index": 6,
+      "score": 0.6229135990142822,
+      "discovery_exact": 0.6322311592102051
+    },
+    {
+      "id": "attn_head:21:14",
+      "type": "attn_head",
+      "layer": 21,
+      "index": 14,
+      "score": 0.48740196228027344,
+      "discovery_exact": 0.5430348229408264
+    },
+    {
+      "id": "attn_head:20:7",
+      "type": "attn_head",
+      "layer": 20,
+      "index": 7,
+      "score": 0.47537052631378174,
+      "discovery_exact": 0.4907636904716492
+    }
+  ],
+  "discovery": {
+    "method": "attribution+exact patching (last token)",
+    "matched_pairs": true,
+    "n_pairs": 100
+  },
+  "token_sets": {
+    "refuse": [
+      15817
+    ],
+    "comply": [
+      31,
+      64,
+      948,
+      1056,
+      3363,
+      5056,
+      12951,
+      108320
+    ]
+  },
+  "reference": {
+    "sep_base": 52.60099792480469,
+    "logit_gap_base": 10.069439888000488,
+    "circ_base": 21.75142538547516
+  },
+  "threshold": {
+    "metric": null,
+    "tau_warn": null,
+    "tau_fail": null
+  },
+  "probe_set": {
+    "path": "probe_pairs.jsonl",
+    "sha256": "f898d4c65567b5295dc2273ad3add35d785dba8bf918c3edefb2d2197bf15227",
+    "n_pairs": 50
+  },
+  "table_a": [
+    {
+      "ablation": "none",
+      "refusal_rate": 0.98,
+      "delta_vs_none": 0.0
+    },
+    {
+      "ablation": "refusal direction (resid 27)",
+      "refusal_rate": 0.06,
+      "delta_vs_none": -0.9199999999999999
+    },
+    {
+      "ablation": "random directions (n=10)",
+      "refusal_rate": 0.9800000000000001,
+      "std": 1.1102230246251565e-16,
+      "delta_vs_none": 1.1102230246251565e-16
+    },
+    {
+      "ablation": "discovered components, mean-ablated (k=20)",
+      "refusal_rate": 0.0,
+      "degenerate": 0.84,
+      "delta_vs_none": -0.98
+    },
+    {
+      "ablation": "random components, mean-ablated (k=20, n=10)",
+      "refusal_rate": 0.20800000000000002,
+      "std": 0.2564683216305671,
+      "degenerate": 0.5720000000000001,
+      "delta_vs_none": -0.772
+    },
+    {
+      "ablation": "discovered components, zero-ablated (k=20)",
+      "refusal_rate": 0.0,
+      "degenerate": 0.92,
+      "delta_vs_none": -0.98
+    }
+  ],
+  "provenance": {
+    "git_sha": null,
+    "seed": 0,
+    "created_at": "2026-11-07T08:17:27",
+    "torch": "2.11.0+cu130",
+    "transformers": "5.20.2",
+    "cuda_available": true,
+    "on_kaggle": true,
+    "smoke": false,
+    "peft": "0.21.2",
+    "gpus": [
+      "Tesla T4",
+      "Tesla T4"
+    ],
+    "capability": [
+      7,
+      5
+    ],
+    "vram_gb": 15.6
+  }
+}

@@ -1,0 +1,160 @@
+[{"stream_name":"stdout","time":7.265306915,"data":"[cell 0] start: # 06b · CircuitKIT cross-check of the refusal circuit (toolkit chaining)\n"}
+,{"stream_name":"stdout","time":7.265361257,"data":"[cell 1] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":43.784060527,"data":"[cell 2] start: import json, subprocess, sys\n"}
+,{"stream_name":"stdout","time":99.045866813,"data":"[cell 3] start: os.environ.setdefault(\"PYTORCH_CUDA_ALLOC_CONF\", \"expandable_segments:True\")\n"}
+,{"stream_name":"stdout","time":150.598684073,"data":"An error occurred while executing the following cell:\n"}
+,{"stream_name":"stdout","time":150.598718346,"data":"------------------\n"}
+,{"stream_name":"stdout","time":150.598727459,"data":"os.environ.setdefault(\"PYTORCH_CUDA_ALLOC_CONF\", \"expandable_segments:True\")\n"}
+,{"stream_name":"stdout","time":150.598730807,"data":"n_dev = max(1, torch.cuda.device_count())\n"}
+,{"stream_name":"stdout","time":150.598733847,"data":"with sp.gpu_timer() as t:\n"}
+,{"stream_name":"stdout","time":150.59873667,"data":"    # Split the layers over both T4s (TransformerLens n_devices); one pair at a time.\n"}
+,{"stream_name":"stdout","time":150.598739778,"data":"    tl = ck.require_circuitkit().load_model(sp.model_source(MODEL), dtype=\"float16\", algorithm=\"eap-ig\",\n"}
+,{"stream_name":"stdout","time":150.598743521,"data":"                                            n_devices=n_dev)\n"}
+,{"stream_name":"stdout","time":150.598746383,"data":"    theirs = ck.discover(tl, pairs, token_sets, algorithm=\"eap-ig\", batch_size=1)\n"}
+,{"stream_name":"stdout","time":150.598749408,"data":"result = {\"algorithm\": \"eap-ig\", \"n_pairs\": len(pairs), \"n_devices\": n_dev, \"gpu_seconds\": t[\"seconds\"],\n"}
+,{"stream_name":"stdout","time":150.598752735,"data":"          \"circuitkit_version\": ck.require_circuitkit().__version__,\n"}
+,{"stream_name":"stdout","time":150.598755604,"data":"          **ck.compare([c.id for c in bundle.components], theirs, K)}\n"}
+,{"stream_name":"stdout","time":150.598758549,"data":"sp.save_json({**result, \"circuitkit_scores\": theirs}, OUT / \"crosscheck.json\")\n"}
+,{"stream_name":"stdout","time":150.598761619,"data":"{k: v for k, v in result.items() if not isinstance(v, (list, dict))}\n"}
+,{"stream_name":"stdout","time":150.598764461,"data":"------------------\n"}
+,{"stream_name":"stdout","time":150.598767286,"data":"\n"}
+,{"stream_name":"stdout","time":150.598769971,"data":"\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598773306,"data":"\u001b[0;31mRuntimeError\u001b[0m                              Traceback (most recent call last)\n"}
+,{"stream_name":"stdout","time":150.598776243,"data":"\u001b[0;32m/usr/local/lib/python3.13/dist-packages/circuitkit/utils/exceptions.py\u001b[0m in \u001b[0;36mwrapper\u001b[0;34m(*args, **kwargs)\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598779361,"data":"\u001b[1;32m    339\u001b[0m             \u001b[0;32mtry\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598782654,"data":"\u001b[0;32m--\u003e 340\u001b[0;31m                 \u001b[0;32mreturn\u001b[0m \u001b[0mfunc\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mkwargs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598814689,"data":"\u001b[0m\u001b[1;32m    341\u001b[0m             \u001b[0;32mexcept\u001b[0m \u001b[0mException\u001b[0m \u001b[0;32mas\u001b[0m \u001b[0me\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598830576,"data":"\n"}
+,{"stream_name":"stdout","time":150.598834123,"data":"\u001b[0;32m/usr/local/lib/python3.13/dist-packages/circuitkit/api.py\u001b[0m in \u001b[0;36mdiscover_circuit\u001b[0;34m(config, _model)\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598838068,"data":"\u001b[1;32m   1474\u001b[0m                     \u001b[0m_method\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0m_ALGO_METHOD_MAP\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0malgo\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598842535,"data":"\u001b[0;32m-\u003e 1475\u001b[0;31m                 attribute_node(\n"}
+,{"stream_name":"stdout","time":150.598851009,"data":"\u001b[0m\u001b[1;32m   1476\u001b[0m                     \u001b[0mmodel\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598854563,"data":"\n"}
+,{"stream_name":"stdout","time":150.598856761,"data":"\u001b[0;32m/usr/local/lib/python3.13/dist-packages/circuitkit/backends/eap/attribute_node.py\u001b[0m in \u001b[0;36mattribute_node\u001b[0;34m(model, graph, dataloader, metric, method, intervention, aggregation, ig_steps, intervention_dataloader, quiet, neuron)\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598859611,"data":"\u001b[1;32m   1731\u001b[0m         \u001b[0m_steps\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mig_steps\u001b[0m \u001b[0;32mif\u001b[0m \u001b[0mig_steps\u001b[0m \u001b[0;32mis\u001b[0m \u001b[0;32mnot\u001b[0m \u001b[0;32mNone\u001b[0m \u001b[0;32melse\u001b[0m \u001b[0;36m3\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.59886285,"data":"\u001b[0;32m-\u003e 1732\u001b[0;31m         scores = get_scores_eap_ig(\n"}
+,{"stream_name":"stdout","time":150.598865486,"data":"\u001b[0m\u001b[1;32m   1733\u001b[0m             \u001b[0mmodel\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mgraph\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mdataloader\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mmetric\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0msteps\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0m_steps\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mquiet\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mquiet\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mneuron\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mneuron\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598870145,"data":"\n"}
+,{"stream_name":"stdout","time":150.598872384,"data":"\u001b[0;32m/usr/local/lib/python3.13/dist-packages/circuitkit/backends/eap/eap_utils.py\u001b[0m in \u001b[0;36mwrapper\u001b[0;34m(model, *args, **kwargs)\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.59887502,"data":"\u001b[1;32m     52\u001b[0m         \u001b[0;32mwith\u001b[0m \u001b[0m_grads_only_through_embeddings\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mmodel\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598877948,"data":"\u001b[0;32m---\u003e 53\u001b[0;31m             \u001b[0;32mreturn\u001b[0m \u001b[0mfn\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mmodel\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mkwargs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598897902,"data":"\u001b[0m\u001b[1;32m     54\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598900486,"data":"\n"}
+,{"stream_name":"stdout","time":150.598902751,"data":"\u001b[0;32m/usr/local/lib/python3.13/dist-packages/circuitkit/backends/eap/attribute_node.py\u001b[0m in \u001b[0;36mget_scores_eap_ig\u001b[0;34m(model, graph, dataloader, metric, steps, quiet, neuron)\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598908689,"data":"\u001b[1;32m   1309\u001b[0m             \u001b[0;32mwith\u001b[0m \u001b[0mmodel\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mhooks\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mfwd_hooks\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mfwd_hooks_corrupted\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598912285,"data":"\u001b[0;32m-\u003e 1310\u001b[0;31m                 \u001b[0m_\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mmodel\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mcorrupted_tokens\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mattention_mask\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mcorrupted_attention_mask\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598916071,"data":"\u001b[0m\u001b[1;32m   1311\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598918627,"data":"\n"}
+,{"stream_name":"stdout","time":150.598920907,"data":"\u001b[0;32m/usr/local/lib/python3.13/dist-packages/torch/nn/modules/module.py\u001b[0m in \u001b[0;36m_wrapped_call_impl\u001b[0;34m(self, *args, **kwargs)\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598923809,"data":"\u001b[1;32m   1778\u001b[0m         \u001b[0;32melse\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598926529,"data":"\u001b[0;32m-\u003e 1779\u001b[0;31m             \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_call_impl\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mkwargs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598929934,"data":"\u001b[0m\u001b[1;32m   1780\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598932473,"data":"\n"}
+,{"stream_name":"stdout","time":150.598934756,"data":"\u001b[0;32m/usr/local/lib/python3.13/dist-packages/torch/nn/modules/module.py\u001b[0m in \u001b[0;36m_call_impl\u001b[0;34m(self, *args, **kwargs)\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.59893747,"data":"\u001b[1;32m   1789\u001b[0m                 or _global_forward_hooks or _global_forward_pre_hooks):\n"}
+,{"stream_name":"stdout","time":150.598940023,"data":"\u001b[0;32m-\u003e 1790\u001b[0;31m             \u001b[0;32mreturn\u001b[0m \u001b[0mforward_call\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mkwargs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598943215,"data":"\u001b[0m\u001b[1;32m   1791\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598945691,"data":"\n"}
+,{"stream_name":"stdout","time":150.598947996,"data":"\u001b[0;32m/usr/local/lib/python3.13/dist-packages/transformer_lens/HookedTransformer.py\u001b[0m in \u001b[0;36mforward\u001b[0;34m(self, input, return_type, loss_per_token, prepend_bos, padding_side, start_at_layer, tokens, shortformer_pos_embed, attention_mask, stop_at_layer, past_kv_cache)\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598950991,"data":"\u001b[1;32m    662\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598953471,"data":"\u001b[0;32m--\u003e 663\u001b[0;31m                 residual = block(\n"}
+,{"stream_name":"stdout","time":150.598956011,"data":"\u001b[0m\u001b[1;32m    664\u001b[0m                     \u001b[0mresidual\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598958773,"data":"\n"}
+,{"stream_name":"stdout","time":150.598963289,"data":"\u001b[0;32m/usr/local/lib/python3.13/dist-packages/torch/nn/modules/module.py\u001b[0m in \u001b[0;36m_wrapped_call_impl\u001b[0;34m(self, *args, **kwargs)\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598966147,"data":"\u001b[1;32m   1778\u001b[0m         \u001b[0;32melse\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598968836,"data":"\u001b[0;32m-\u003e 1779\u001b[0;31m             \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_call_impl\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mkwargs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598972111,"data":"\u001b[0m\u001b[1;32m   1780\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598974603,"data":"\n"}
+,{"stream_name":"stdout","time":150.598976895,"data":"\u001b[0;32m/usr/local/lib/python3.13/dist-packages/torch/nn/modules/module.py\u001b[0m in \u001b[0;36m_call_impl\u001b[0;34m(self, *args, **kwargs)\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598980199,"data":"\u001b[1;32m   1789\u001b[0m                 or _global_forward_hooks or _global_forward_pre_hooks):\n"}
+,{"stream_name":"stdout","time":150.598982781,"data":"\u001b[0;32m-\u003e 1790\u001b[0;31m             \u001b[0;32mreturn\u001b[0m \u001b[0mforward_call\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mkwargs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598985941,"data":"\u001b[0m\u001b[1;32m   1791\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598988419,"data":"\n"}
+,{"stream_name":"stdout","time":150.598990675,"data":"\u001b[0;32m/usr/local/lib/python3.13/dist-packages/transformer_lens/components/transformer_block.py\u001b[0m in \u001b[0;36mforward\u001b[0;34m(self, resid_pre, shortformer_pos_embed, past_kv_cache_entry, attention_mask)\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598993519,"data":"\u001b[1;32m    232\u001b[0m                 self.attn(\n"}
+,{"stream_name":"stdout","time":150.598995985,"data":"\u001b[0;32m--\u003e 233\u001b[0;31m                     \u001b[0mquery_input\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mln1\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mquery_input\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.598999213,"data":"\u001b[0m\u001b[1;32m    234\u001b[0m                     \u001b[0;34m+\u001b[0m \u001b[0;34m(\u001b[0m\u001b[0;36m0.0\u001b[0m \u001b[0;32mif\u001b[0m \u001b[0mshortformer_pos_embed\u001b[0m \u001b[0;32mis\u001b[0m \u001b[0;32mNone\u001b[0m \u001b[0;32melse\u001b[0m \u001b[0mshortformer_pos_embed\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599005253,"data":"\n"}
+,{"stream_name":"stdout","time":150.599007632,"data":"\u001b[0;32m/usr/local/lib/python3.13/dist-packages/torch/nn/modules/module.py\u001b[0m in \u001b[0;36m_wrapped_call_impl\u001b[0;34m(self, *args, **kwargs)\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.59901031,"data":"\u001b[1;32m   1778\u001b[0m         \u001b[0;32melse\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599013039,"data":"\u001b[0;32m-\u003e 1779\u001b[0;31m             \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_call_impl\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mkwargs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599018722,"data":"\u001b[0m\u001b[1;32m   1780\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599021342,"data":"\n"}
+,{"stream_name":"stdout","time":150.599023657,"data":"\u001b[0;32m/usr/local/lib/python3.13/dist-packages/torch/nn/modules/module.py\u001b[0m in \u001b[0;36m_call_impl\u001b[0;34m(self, *args, **kwargs)\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599026311,"data":"\u001b[1;32m   1789\u001b[0m                 or _global_forward_hooks or _global_forward_pre_hooks):\n"}
+,{"stream_name":"stdout","time":150.599028836,"data":"\u001b[0;32m-\u003e 1790\u001b[0;31m             \u001b[0;32mreturn\u001b[0m \u001b[0mforward_call\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mkwargs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599031986,"data":"\u001b[0m\u001b[1;32m   1791\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599034454,"data":"\n"}
+,{"stream_name":"stdout","time":150.599036719,"data":"\u001b[0;32m/usr/local/lib/python3.13/dist-packages/transformer_lens/components/layer_norm.py\u001b[0m in \u001b[0;36mforward\u001b[0;34m(self, x)\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599039721,"data":"\u001b[1;32m     56\u001b[0m         \u001b[0mx\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mhook_normalized\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mx\u001b[0m \u001b[0;34m/\u001b[0m \u001b[0mscale\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mto\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mcfg\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mdtype\u001b[0m\u001b[0;34m)\u001b[0m  \u001b[0;31m# [batch, pos, length]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599043698,"data":"\u001b[0;32m---\u003e 57\u001b[0;31m         \u001b[0;32mreturn\u001b[0m \u001b[0mx\u001b[0m \u001b[0;34m*\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mw\u001b[0m \u001b[0;34m+\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mb\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599047075,"data":"\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599049413,"data":"\u001b[0;31mRuntimeError\u001b[0m: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cuda:1!\n"}
+,{"stream_name":"stdout","time":150.599052027,"data":"\n"}
+,{"stream_name":"stdout","time":150.59905431,"data":"The above exception was the direct cause of the following exception:\n"}
+,{"stream_name":"stdout","time":150.599056767,"data":"\n"}
+,{"stream_name":"stdout","time":150.599059039,"data":"\u001b[0;31mCircuitKitError\u001b[0m                           Traceback (most recent call last)\n"}
+,{"stream_name":"stdout","time":150.599061553,"data":"\u001b[0;32m/tmp/ipykernel_18/2501384035.py\u001b[0m in \u001b[0;36m\u003ccell line: 0\u003e\u001b[0;34m()\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599064283,"data":"\u001b[1;32m      5\u001b[0m     tl = ck.require_circuitkit().load_model(sp.model_source(MODEL), dtype=\"float16\", algorithm=\"eap-ig\",\n"}
+,{"stream_name":"stdout","time":150.599067065,"data":"\u001b[1;32m      6\u001b[0m                                             n_devices=n_dev)\n"}
+,{"stream_name":"stdout","time":150.599069601,"data":"\u001b[0;32m----\u003e 7\u001b[0;31m     \u001b[0mtheirs\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mck\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mdiscover\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mtl\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mpairs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mtoken_sets\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0malgorithm\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m\"eap-ig\"\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mbatch_size\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;36m1\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599075763,"data":"\u001b[0m\u001b[1;32m      8\u001b[0m result = {\"algorithm\": \"eap-ig\", \"n_pairs\": len(pairs), \"n_devices\": n_dev, \"gpu_seconds\": t[\"seconds\"],\n"}
+,{"stream_name":"stdout","time":150.599078947,"data":"\u001b[1;32m      9\u001b[0m           \u001b[0;34m\"circuitkit_version\"\u001b[0m\u001b[0;34m:\u001b[0m \u001b[0mck\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mrequire_circuitkit\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m__version__\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599082359,"data":"\n"}
+,{"stream_name":"stdout","time":150.599084629,"data":"\u001b[0;32m/tmp/sp_pkg/safetypulse/adapters/circuitkit.py\u001b[0m in \u001b[0;36mdiscover\u001b[0;34m(tl_model, pairs, token_sets, algorithm, batch_size, seed, work_dir, **kw)\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599087753,"data":"\u001b[1;32m    150\u001b[0m         \u001b[0mtask\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mbuild_task\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mpairs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mtoken_sets\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mtl_model\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mtokenizer\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mwd\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599091445,"data":"\u001b[1;32m    151\u001b[0m         \u001b[0mck\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mregister_task\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mtask\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599094423,"data":"\u001b[0;32m--\u003e 152\u001b[0;31m         circuit = ck.discover(tl_model, task.name, algorithm=algorithm, level=\"node\", n_examples=len(pairs),\n"}
+,{"stream_name":"stdout","time":150.599097192,"data":"\u001b[0m\u001b[1;32m    153\u001b[0m                               \u001b[0mbatch_size\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mbatch_size\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0moutput_path\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mstr\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mwd\u001b[0m \u001b[0;34m/\u001b[0m \u001b[0;34m\"circuit.pt\"\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mnum_examples\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mlen\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mpairs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599101217,"data":"\u001b[1;32m    154\u001b[0m                               seed=seed, chat_template_mode=\"on\", **kw)\n"}
+,{"stream_name":"stdout","time":150.599103837,"data":"\n"}
+,{"stream_name":"stdout","time":150.599106215,"data":"\u001b[0;32m/usr/local/lib/python3.13/dist-packages/circuitkit/quick.py\u001b[0m in \u001b[0;36mdiscover\u001b[0;34m(model, task, algorithm, level, n_examples, batch_size, sparsity, scope, output_path, **kw)\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599109036,"data":"\u001b[1;32m    482\u001b[0m     \u001b[0;31m# discover_circuit() still applies all its config flags unconditionally\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599111841,"data":"\u001b[1;32m    483\u001b[0m     \u001b[0;31m# after this, so this is safe regardless of how `model` was loaded.\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599120916,"data":"\u001b[0;32m--\u003e 484\u001b[0;31m     \u001b[0mnodes\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mdiscover_circuit\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mconfig\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0m_model\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mmodel\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599124392,"data":"\u001b[0m\u001b[1;32m    485\u001b[0m     \u001b[0malgorithm\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0m_check_algorithm\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0malgorithm\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599127468,"data":"\u001b[1;32m    486\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599129938,"data":"\n"}
+,{"stream_name":"stdout","time":150.599132212,"data":"\u001b[0;32m/usr/local/lib/python3.13/dist-packages/circuitkit/utils/debug.py\u001b[0m in \u001b[0;36mwrapper\u001b[0;34m(*args, **kwargs)\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599134877,"data":"\u001b[1;32m    187\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.59913735,"data":"\u001b[1;32m    188\u001b[0m         \u001b[0;32mtry\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599140301,"data":"\u001b[0;32m--\u003e 189\u001b[0;31m             \u001b[0mresult\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mdebugger\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mprofile_function\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mfunc\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mkwargs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599143873,"data":"\u001b[0m\u001b[1;32m    190\u001b[0m             \u001b[0;32mif\u001b[0m \u001b[0mdebugger\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0menabled\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599146859,"data":"\u001b[1;32m    191\u001b[0m                 \u001b[0mdebugger\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mdebug_print\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34mf\"Exiting function: {func.__name__}\"\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599150001,"data":"\n"}
+,{"stream_name":"stdout","time":150.599152275,"data":"\u001b[0;32m/usr/local/lib/python3.13/dist-packages/circuitkit/utils/debug.py\u001b[0m in \u001b[0;36mprofile_function\u001b[0;34m(self, func, *args, **kwargs)\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599154996,"data":"\u001b[1;32m    125\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599157476,"data":"\u001b[1;32m    126\u001b[0m         \u001b[0;32mtry\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599160184,"data":"\u001b[0;32m--\u003e 127\u001b[0;31m             \u001b[0mresult\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mfunc\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mkwargs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599163441,"data":"\u001b[0m\u001b[1;32m    128\u001b[0m             \u001b[0mend_time\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mtime\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mtime\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599166575,"data":"\u001b[1;32m    129\u001b[0m             \u001b[0mend_memory\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mpsutil\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mProcess\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mmemory_info\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mrss\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.59917883,"data":"\n"}
+,{"stream_name":"stdout","time":150.599181409,"data":"\u001b[0;32m/usr/local/lib/python3.13/dist-packages/circuitkit/utils/exceptions.py\u001b[0m in \u001b[0;36mwrapper\u001b[0;34m(*args, **kwargs)\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599184107,"data":"\u001b[1;32m    356\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599186574,"data":"\u001b[1;32m    357\u001b[0m                 \u001b[0;32mif\u001b[0m \u001b[0mreraise\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599189401,"data":"\u001b[0;32m--\u003e 358\u001b[0;31m                     \u001b[0;32mraise\u001b[0m \u001b[0mhandle_exception\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0me\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0merror_context\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;32mfrom\u001b[0m \u001b[0me\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599192697,"data":"\u001b[0m\u001b[1;32m    359\u001b[0m                 \u001b[0;32melse\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599195422,"data":"\u001b[1;32m    360\u001b[0m                     \u001b[0;32mreturn\u001b[0m \u001b[0;32mNone\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":150.599198319,"data":"\n"}
+,{"stream_name":"stdout","time":150.599200881,"data":"\u001b[0;31mCircuitKitError\u001b[0m: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cuda:1! (Context: operation=discover_circuit, function=discover_circuit, args=({'model': {'name': '/tmp/sp_models/CohereLabs__tiny-aya-global', 'precision': 'float16'}, 'discovery': {'algorithm': 'eap-ig', 'task': 'safetypulse_refusal_5f2493ba', 'level': 'node', 'batch_size': 1, kwargs={'_model': HookedTransformer(\n"}
+,{"stream_name":"stdout","time":150.599204077,"data":"  (embed): Embed()\n"}
+,{"stream_name":"stdout","time":150.599206421,"data":"  (hook_embed): HookPoint(name='hook_embed')\n"}
+,{"stream_name":"stdout","time":150.59920884,"data":"  (blocks): TypedModuleList(\n"}
+,{"stream_name":"stdout","time":150.599211219,"data":"    (0): TransformerBlock(\n"}
+,{"stream_name":"stdout","time":150.599213602,"data":"      (ln1): LayerNorm(\n"}
+,{"stream_name":"stdout","time":150.599215941,"data":"        (hook_scale): Hook)\n"}
+,{"stream_name":"stdout","time":150.599218341,"data":"CircuitKitError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cuda:1! (Context: operation=discover_circuit, function=discover_circuit, args=({'model': {'name': '/tmp/sp_models/CohereLabs__tiny-aya-global', 'precision': 'float16'}, 'discovery': {'algorithm': 'eap-ig', 'task': 'safetypulse_refusal_5f2493ba', 'level': 'node', 'batch_size': 1, kwargs={'_model': HookedTransformer(\n"}
+,{"stream_name":"stdout","time":150.599221495,"data":"  (embed): Embed()\n"}
+,{"stream_name":"stdout","time":150.599224109,"data":"  (hook_embed): HookPoint(name='hook_embed')\n"}
+,{"stream_name":"stdout","time":150.599226481,"data":"  (blocks): TypedModuleList(\n"}
+,{"stream_name":"stdout","time":150.599228814,"data":"    (0): TransformerBlock(\n"}
+,{"stream_name":"stdout","time":150.599231213,"data":"      (ln1): LayerNorm(\n"}
+,{"stream_name":"stdout","time":150.599235777,"data":"        (hook_scale): Hook)\n"}
+,{"stream_name":"stdout","time":150.599238411,"data":"\n"}
+,{"stream_name":"stderr","time":152.823709032,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":152.823740513,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":153.005881433,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":153.005910655,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":153.802185609,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":154.304095983,"data":"[NbConvertApp] Writing 290927 bytes to __results__.html\n"}
+]

@@ -1,0 +1,19 @@
+[{"stream_name":"stdout","time":6.540992571,"data":"[cell 0] start: # 06 · Circuit discovery and probe bundle (RQ1, H1)\n"}
+,{"stream_name":"stdout","time":6.541046528,"data":"[cell 1] start: **Method.** CircuitKIT is the intended tool (cell below). Until its API is confi\n"}
+,{"stream_name":"stdout","time":6.541051774,"data":"[cell 2] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":38.522713391,"data":"[cell 3] start: import random\n"}
+,{"stream_name":"stdout","time":82.256405834,"data":"[cell 4] start: # --- CircuitKIT (fill in once its API is known; see notebook 00) --------------\n"}
+,{"stream_name":"stdout","time":82.263337424,"data":"[cell 5] start: attr = sp.attribution_scores(model, tok, [p[\"harmful\"] for p in calib], [p[\"harm\n"}
+,{"stream_name":"stdout","time":2997.471232889,"data":"[cell 6] start: ## Validation: ablating the circuit vs. random components of the same size (Tabl\n"}
+,{"stream_name":"stdout","time":2997.471283955,"data":"[cell 7] start: val_h = [p[\"harmful\"] for p in val]\n"}
+,{"stream_name":"stdout","time":4190.953757225,"data":"[cell 8] start: ## Probe bundle: base-model reference values on the probe set (so the base model\n"}
+,{"stream_name":"stdout","time":4190.953794067,"data":"[cell 9] start: probe_h = [p[\"harmful\"] for p in probe]\n"}
+,{"stream_name":"stdout","time":4409.628715725,"data":"[cell 10] start: # Sanity check: the base model must score ~1.0 on every CIS variant.\n"}
+,{"stream_name":"stdout","time":4631.580548931,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":4633.698489467,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":4633.698517581,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":4633.872480023,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":4633.8725047,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":4634.705849186,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":4635.206641052,"data":"[NbConvertApp] Writing 299130 bytes to __results__.html\n"}
+]
