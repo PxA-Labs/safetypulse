@@ -1,0 +1,26 @@
+{
+  "matched": false,
+  "n": 300,
+  "splits": {
+    "probe": 50,
+    "val": 50,
+    "calib": 200
+  },
+  "categories": {
+    "unknown": 300
+  },
+  "kappa": null,
+  "dropped": {},
+  "sha256": "5bcbdae699382a24ec38c754b816f6f09301e99d23a75df027794008dbd060aa",
+  "provenance": {
+    "git_sha": null,
+    "seed": 0,
+    "created_at": "2026-11-06T16:02:51",
+    "torch": "2.11.0+cpu",
+    "transformers": "5.20.2",
+    "cuda_available": false,
+    "on_kaggle": true,
+    "smoke": false,
+    "peft": "0.21.2"
+  }
+}
