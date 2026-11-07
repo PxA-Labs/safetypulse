@@ -1,0 +1,14 @@
+[{"stream_name":"stdout","time":6.360661971,"data":"[cell 0] start: # 08 · Monitor checkpoints: CIS vs. ground-truth ASR (RQ2, RQ3)\n"}
+,{"stream_name":"stdout","time":6.36071761,"data":"[cell 1] start: Long notebook: results are appended to `monitor.jsonl` after every checkpoint, s\n"}
+,{"stream_name":"stdout","time":6.3607241,"data":"[cell 2] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":65.185008588,"data":"[cell 3] start: import json\n"}
+,{"stream_name":"stdout","time":100.282701216,"data":"[cell 4] start: try:\n"}
+,{"stream_name":"stdout","time":260.681952257,"data":"[cell 5] start: spot_prompts = [p[\"harmful\"] for p in probe][:N_SPOT]\n"}
+,{"stream_name":"stdout","time":4544.342404304,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":4546.463076884,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":4546.463105279,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":4546.626535414,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":4546.626560221,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":4547.360077696,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":4547.850620055,"data":"[NbConvertApp] Writing 294120 bytes to __results__.html\n"}
+]

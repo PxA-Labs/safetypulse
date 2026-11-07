@@ -17,6 +17,9 @@ Checkpoints (LoRA adapters) stay on Kaggle and are read by notebooks 08–10 fro
 | `alpaca-s2` | ✅ complete on the teammate account `purvanshj009` (loss 2.11 → 1.21, 55.9 min) | `…__alpaca-s2.ipynb` / `.log`, `files/alpaca-s2__train_log.json` |
 | `none-s2` | ✅ complete on the teammate account `purvanshj009` (loss 2.02 → 1.12, 56.0 min) | `…__none-s2.ipynb` / `.log`, `files/none-s2__train_log.json` |
 
+| `harmdense-s0` | ✅ extra run on the teammate account: same training as `harm-s0` (loss 1.872 → 0.225, 7.6 min) with checkpoints every 2 steps to step 30, then every 10 (26 checkpoints), to measure CIS lead time | `…__harmdense-s0.ipynb` / `.log`, `files/harmdense-s0__train_log.json` |
+| `alpaca-s3` | ✅ extra test seed on the teammate account (loss 2.06 → 1.16, 60.6 min): a third seed of the one condition that drifted | `…__alpaca-s3.ipynb` / `.log`, `files/alpaca-s3__train_log.json` |
+
 **All 10 runs complete.** Final losses agree across seeds: gsm8k 0.51 / 0.59 / 0.51, alpaca 1.18 / 1.19 / 1.21,
 none 1.19 / 1.07 / 1.12. The s2 runs of alpaca and none read data and models from the shared snapshot datasets
 (`sp-pipeline-outputs`, `sp-models`) instead of notebook outputs; same files, same hashes.
