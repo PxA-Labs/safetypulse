@@ -1,0 +1,4 @@
+measurement,gpu_seconds,hardware
+"CIS (100 prompts, forward + attribution)",58.91629071424009,Tesla T4
+"spot-check (50 prompts, 64 tokens)",25.306123142679915,Tesla T4
+"ASR (78 prompts, 256 tokens + judge)",125.09749607568001,Tesla T4
