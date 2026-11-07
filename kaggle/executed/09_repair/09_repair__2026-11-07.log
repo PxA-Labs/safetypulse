@@ -1,0 +1,15 @@
+[{"stream_name":"stdout","time":9.658104387,"data":"[cell 0] start: # 09 · Repair the drifted checkpoint (RQ4) — choose α on dev\n"}
+,{"stream_name":"stdout","time":9.658165513,"data":"[cell 1] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":74.067229261,"data":"[cell 2] start: import json, random\n"}
+,{"stream_name":"stdout","time":103.110733163,"data":"[cell 3] start: # Target: most-drifted checkpoint of the dev domain run (gsm8k-s0) if it drifted\n"}
+,{"stream_name":"stdout","time":194.722188245,"data":"[cell 4] start: def reset():\n"}
+,{"stream_name":"stdout","time":197.108258764,"data":"[cell 5] start: results = [evaluate(\"R0\", None)]\n"}
+,{"stream_name":"stdout","time":6696.082558906,"data":"[cell 6] start: specs = {\"target_dev\": {\"run\": TARGET_RUN, \"step\": TARGET_STEP}, \"objective\": {\"\n"}
+,{"stream_name":"stdout","time":6700.039814132,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":6702.822477939,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":6702.82251096,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":6703.088680162,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":6703.088707735,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":6704.032603117,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":6704.606111295,"data":"[NbConvertApp] Writing 299288 bytes to __results__.html\n"}
+]
