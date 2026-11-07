@@ -1,0 +1,233 @@
+{
+  "model": "CohereLabs/tiny-aya-global",
+  "layer": 25,
+  "n_calib": 200,
+  "n_val": 50,
+  "matched": false,
+  "baseline_logit_diff": {
+    "harmful": 5.820229530334473,
+    "harmless": -5.621156692504883
+  },
+  "layer_scores": [
+    {
+      "resid": 1,
+      "ablated_harmful": 5.890515327453613,
+      "induced_harmless": -5.6335225105285645
+    },
+    {
+      "resid": 2,
+      "ablated_harmful": 6.095010757446289,
+      "induced_harmless": -5.645045757293701
+    },
+    {
+      "resid": 3,
+      "ablated_harmful": 5.955336093902588,
+      "induced_harmless": -5.623479843139648
+    },
+    {
+      "resid": 4,
+      "ablated_harmful": 5.9266252517700195,
+      "induced_harmless": -5.656095027923584
+    },
+    {
+      "resid": 5,
+      "ablated_harmful": 5.557544708251953,
+      "induced_harmless": -5.718789577484131
+    },
+    {
+      "resid": 6,
+      "ablated_harmful": 5.860552787780762,
+      "induced_harmless": -5.749454498291016
+    },
+    {
+      "resid": 7,
+      "ablated_harmful": 5.782625675201416,
+      "induced_harmless": -5.714221000671387
+    },
+    {
+      "resid": 8,
+      "ablated_harmful": 5.633985996246338,
+      "induced_harmless": -5.838926792144775
+    },
+    {
+      "resid": 9,
+      "ablated_harmful": 4.4189453125,
+      "induced_harmless": -5.522700786590576
+    },
+    {
+      "resid": 10,
+      "ablated_harmful": 3.6899261474609375,
+      "induced_harmless": -5.249690532684326
+    },
+    {
+      "resid": 11,
+      "ablated_harmful": 2.4044601917266846,
+      "induced_harmless": -4.633902072906494
+    },
+    {
+      "resid": 12,
+      "ablated_harmful": -0.6723484992980957,
+      "induced_harmless": -3.6129539012908936
+    },
+    {
+      "resid": 13,
+      "ablated_harmful": -0.09657720476388931,
+      "induced_harmless": -1.7363739013671875
+    },
+    {
+      "resid": 14,
+      "ablated_harmful": 1.4082139730453491,
+      "induced_harmless": 0.44779911637306213
+    },
+    {
+      "resid": 15,
+      "ablated_harmful": -0.005433411803096533,
+      "induced_harmless": 4.823287010192871
+    },
+    {
+      "resid": 16,
+      "ablated_harmful": -1.1897870302200317,
+      "induced_harmless": 5.328097343444824
+    },
+    {
+      "resid": 17,
+      "ablated_harmful": 1.7641057968139648,
+      "induced_harmless": 4.116827487945557
+    },
+    {
+      "resid": 18,
+      "ablated_harmful": 1.0515631437301636,
+      "induced_harmless": 4.646427631378174
+    },
+    {
+      "resid": 19,
+      "ablated_harmful": 0.4946330785751343,
+      "induced_harmless": 4.4946417808532715
+    },
+    {
+      "resid": 20,
+      "ablated_harmful": -1.0892161130905151,
+      "induced_harmless": 5.079118728637695
+    },
+    {
+      "resid": 21,
+      "ablated_harmful": -1.0008856058120728,
+      "induced_harmless": 4.9173583984375
+    },
+    {
+      "resid": 22,
+      "ablated_harmful": -1.2741389274597168,
+      "induced_harmless": 4.518032073974609
+    },
+    {
+      "resid": 23,
+      "ablated_harmful": -2.235646963119507,
+      "induced_harmless": 3.6283528804779053
+    },
+    {
+      "resid": 24,
+      "ablated_harmful": -3.097848415374756,
+      "induced_harmless": 4.0659499168396
+    },
+    {
+      "resid": 25,
+      "ablated_harmful": -3.1288986206054688,
+      "induced_harmless": 4.351089954376221
+    },
+    {
+      "resid": 26,
+      "ablated_harmful": -2.7331879138946533,
+      "induced_harmless": 4.199345588684082
+    },
+    {
+      "resid": 27,
+      "ablated_harmful": -2.906045436859131,
+      "induced_harmless": 4.286416530609131
+    },
+    {
+      "resid": 28,
+      "ablated_harmful": -2.6242799758911133,
+      "induced_harmless": 4.0345282554626465
+    }
+  ],
+  "table_a": [
+    {
+      "ablation": "none",
+      "refusal_rate": 1.0,
+      "delta_vs_none": 0.0
+    },
+    {
+      "ablation": "refusal direction (resid 25)",
+      "refusal_rate": 0.0,
+      "delta_vs_none": -1.0
+    },
+    {
+      "ablation": "random directions (n=10)",
+      "refusal_rate": 1.0,
+      "std": 0.0,
+      "delta_vs_none": 0.0
+    }
+  ],
+  "random_rates": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "harmless_refusal_with_r_ablated": 0.0,
+  "token_sets": {
+    "refuse": [
+      15817
+    ],
+    "comply": [
+      31,
+      64,
+      948,
+      1056,
+      3363,
+      5056,
+      12951,
+      108320
+    ],
+    "dropped_overlap": [],
+    "refuse_tokens": [
+      "I'm"
+    ],
+    "comply_tokens": [
+      "1",
+      "R",
+      "The",
+      "In",
+      "To",
+      "Sh",
+      "It's",
+      "Human"
+    ]
+  },
+  "provenance": {
+    "git_sha": null,
+    "seed": 0,
+    "created_at": "2026-11-06T19:47:19",
+    "torch": "2.11.0+cu130",
+    "transformers": "5.20.2",
+    "cuda_available": true,
+    "on_kaggle": true,
+    "smoke": false,
+    "peft": "0.21.2",
+    "gpus": [
+      "Tesla T4",
+      "Tesla T4"
+    ],
+    "capability": [
+      7,
+      5
+    ],
+    "vram_gb": 15.6
+  }
+}

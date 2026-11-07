@@ -1,0 +1,16 @@
+[{"stream_name":"stdout","time":5.838406803,"data":"[cell 0] start: # 05 · Refusal direction (RQ1)\n"}
+,{"stream_name":"stdout","time":5.838460364,"data":"[cell 1] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":34.51101306,"data":"[cell 2] start: import random\n"}
+,{"stream_name":"stdout","time":76.611514101,"data":"[cell 3] start: acts_h = sp.resid_last(model, tok, [p[\"harmful\"] for p in calib])\n"}
+,{"stream_name":"stdout","time":347.568504625,"data":"[cell 4] start: val_h = [p[\"harmful\"] for p in val]\n"}
+,{"stream_name":"stdout","time":2284.651305257,"data":"[cell 5] start: ## Table A rows: does ablating r beat ablating random directions? (generation-ba\n"}
+,{"stream_name":"stdout","time":2284.651374215,"data":"[cell 6] start: def refusal_with(handles=None):\n"}
+,{"stream_name":"stdout","time":3410.463506761,"data":"[cell 7] start: save_file({\"directions\": directions.contiguous()}, str(OUT / \"directions.safeten\n"}
+,{"stream_name":"stdout","time":3413.474126082,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":3415.430767045,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":3415.430799404,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":3415.585945439,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":3415.585978855,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":3416.316595944,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":3416.789595159,"data":"[NbConvertApp] Writing 294977 bytes to __results__.html\n"}
+]
