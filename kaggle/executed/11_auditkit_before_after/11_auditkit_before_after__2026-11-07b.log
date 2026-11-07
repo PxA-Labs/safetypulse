@@ -1,0 +1,14 @@
+[{"stream_name":"stdout","time":9.680197637,"data":"[cell 0] start: # 11 · Toolkit chain: SafeTune repair → AuditKIT safety audit (before/after)\n"}
+,{"stream_name":"stdout","time":9.680250185,"data":"[cell 1] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":64.138049071,"data":"[cell 2] start: import json, subprocess, sys\n"}
+,{"stream_name":"stdout","time":75.122749708,"data":"[cell 3] start: # --- R3: SafeTune (Lexsi Labs) ------------------------------------------------\n"}
+,{"stream_name":"stdout","time":918.370269592,"data":"[cell 4] start: # AuditKIT scores the stored answers (\"precomputed\") with its guard-model judge.\n"}
+,{"stream_name":"stdout","time":1016.261214329,"data":"[cell 5] start: def safe(fn):\n"}
+,{"stream_name":"stdout","time":1020.072663492,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":1023.151030824,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":1023.151072528,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":1023.419140053,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":1023.419167367,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":1024.440827856,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":1025.06484925,"data":"[NbConvertApp] Writing 297871 bytes to __results__.html\n"}
+]

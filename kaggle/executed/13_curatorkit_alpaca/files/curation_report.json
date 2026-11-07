@@ -1,0 +1,57 @@
+{
+  "curatorkit": "0.1.22",
+  "n_in": 2000,
+  "n_out": 1981,
+  "stage_counts": {
+    "JSONLReader": {
+      "output_count": 2000,
+      "rejected_count": 0
+    },
+    "SchemaGate": {
+      "input_count": 2000,
+      "output_count": 1998,
+      "probe_recovered": 0,
+      "rejected_count": 2
+    },
+    "ExactDeduplicator": {
+      "input_count": 1998,
+      "output_count": 1998
+    },
+    "MinHashDeduplicator": {
+      "input_count": 1998,
+      "output_count": 1998
+    },
+    "TextCleaner": {
+      "input_count": 1998,
+      "output_count": 1998
+    },
+    "SecretsGate": {
+      "input_count": 1998,
+      "output_count": 1998,
+      "probe_recovered": 0,
+      "rejected_count": 0
+    },
+    "ToxicityGate": {
+      "input_count": 1998,
+      "output_count": 1981,
+      "probe_recovered": 0,
+      "rejected_count": 17
+    },
+    "AlpacaExporter": {
+      "exported_count": 1981
+    }
+  },
+  "rejected_reasons": {
+    "toxic_content": 17,
+    "missing_field": 2
+  },
+  "seconds": 475.62179131503217,
+  "config": {
+    "dedup": "minhash",
+    "clean": true,
+    "schema_gate": true,
+    "secrets_gate": true,
+    "toxicity_gate": "detoxify unbiased, pass < 0.1, reject >= 0.5, borderline rejected",
+    "min_tokens": 1
+  }
+}
