@@ -1,0 +1,15 @@
+[{"stream_name":"stdout","time":7.204026335,"data":"[cell 0] start: # 07 · Fine-tune with checkpoints (drift conditions)\n"}
+,{"stream_name":"stdout","time":7.204088872,"data":"[cell 1] start: # Use one GPU: Trainer + DataParallel on T4 x2 is slower and less stable for thi\n"}
+,{"stream_name":"stdout","time":7.222152258,"data":"[cell 2] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":42.973480526,"data":"[cell 3] start: import torch\n"}
+,{"stream_name":"stdout","time":45.363824705,"data":"[cell 4] start: tok = sp.load_tokenizer(MODEL)\n"}
+,{"stream_name":"stdout","time":119.510253315,"data":"[cell 5] start: use_bf16 = torch.cuda.is_available() and torch.cuda.get_device_capability(0)[0] \n"}
+,{"stream_name":"stdout","time":3145.109616366,"data":"[cell 6] start: import matplotlib.pyplot as plt\n"}
+,{"stream_name":"stdout","time":3148.659780243,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":3150.888869746,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":3150.888893582,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":3151.095034038,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":3151.095054965,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":3151.901676551,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":3152.408972897,"data":"[NbConvertApp] Writing 293770 bytes to __results__.html\n"}
+]
