@@ -119,15 +119,17 @@ def refusal_metric(token_sets: dict):
     return metric
 
 
-def build_task(pairs: Sequence[dict], token_sets: dict, tok, work_dir: str | Path, name: str | None = None):
-    """Write the task JSONL to `work_dir` and return a registered-ready GenericTaskSpec."""
+def build_task(pairs: Sequence[dict], token_sets: dict, tok, work_dir: str | Path, name: str | None = None,
+               chat_template_mode: str = "on"):
+    """Write the task JSONL to `work_dir` and return a registered-ready GenericTaskSpec. `chat_template_mode="off"`
+    feeds raw prompts (much shorter sequences, so discovery fits smaller GPUs, at the cost of matching our setup)."""
     require_circuitkit()
     from circuitkit.tasks.generic import GenericTaskSpec
 
     path = save_jsonl(task_rows(pairs, token_sets, tok), Path(work_dir) / "refusal_task.jsonl")
     return GenericTaskSpec.from_jsonl(str(path), schema=dict(TASK_SCHEMA), metric_fn=refusal_metric(token_sets),
                                       name=name or f"safetypulse_refusal_{uuid.uuid4().hex[:8]}",
-                                      task_type="classification", chat_template_mode="on")
+                                      task_type="classification", chat_template_mode=chat_template_mode)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -141,17 +143,18 @@ def load_tl_model(name: str, dtype: str = "float32", device: str | None = None):
 
 
 def discover(tl_model, pairs: Sequence[dict], token_sets: dict, *, algorithm: str = "eap-ig", batch_size: int = 4,
-             seed: int = 0, work_dir: str | Path | None = None, **kw) -> dict[str, float]:
+             seed: int = 0, work_dir: str | Path | None = None, chat_template_mode: str = "on",
+             **kw) -> dict[str, float]:
     """Run CircuitKIT node-level discovery on our pairs; returns {our component id: |score|} for every head/MLP."""
     ck = require_circuitkit()
     with tempfile.TemporaryDirectory() as tmp:
         wd = Path(work_dir or tmp)
         wd.mkdir(parents=True, exist_ok=True)
-        task = build_task(pairs, token_sets, tl_model.tokenizer, wd)
+        task = build_task(pairs, token_sets, tl_model.tokenizer, wd, chat_template_mode=chat_template_mode)
         ck.register_task(task)
         circuit = ck.discover(tl_model, task.name, algorithm=algorithm, level="node", n_examples=len(pairs),
                               batch_size=batch_size, output_path=str(wd / "circuit.pt"), num_examples=len(pairs),
-                              seed=seed, chat_template_mode="on", **kw)
+                              seed=seed, chat_template_mode=chat_template_mode, **kw)
     if not circuit.scores:
         raise RuntimeError("CircuitKIT returned no node scores (score side-car missing)")
     return map_scores(circuit.scores)
