@@ -39,7 +39,7 @@ INPUT_DIRS = [Path("/kaggle/input"), WORK_DIR, Path(os.environ.get("SP_INPUT_DIR
 
 # SP_SMOKE=1 shrinks every notebook to a few examples and a tiny random model (local testing only).
 SMOKE = os.environ.get("SP_SMOKE") == "1"
-DEFAULT_MODEL = "Qwen/Qwen2.5-1.5B-Instruct"
+DEFAULT_MODEL = "CohereLabs/tiny-aya-global"   # chosen in notebook 04 (ADR-0002); Qwen2.5-1.5B is the fallback
 TINY_MODEL = "tiny-random"
 
 
@@ -196,7 +196,13 @@ def hf_login() -> bool:
         except Exception:
             token = None
     if not token:
-        print("No HF_TOKEN found: gated models/datasets (e.g. Llama Guard) will not load.")
+        mirror = find_inputs("mirror_manifest.json")
+        if mirror:
+            print("No HF_TOKEN (expected for CLI runs): gated models load from the attached mirror "
+                  f"({mirror[0].parent.name}); public models and datasets load from the Hub.")
+        else:
+            print("No HF_TOKEN and no model mirror attached: gated models/datasets (Tiny Aya, Llama Guard, "
+                  "walledai/*) will not load. Attach `sp-models` or tick the HF_TOKEN secret.")
         return False
     from huggingface_hub import login
 
@@ -244,10 +250,33 @@ def pick_dtype(purpose: str = "infer") -> torch.dtype:
     return torch.bfloat16 if major >= 8 else torch.float16
 
 
+def model_source(name: str) -> str:
+    """Local mirror of a Hub model if one is attached (folder `<org>__<name>/` from notebook 00b), else the
+    Hub id. Notebooks pushed with the Kaggle CLI get no secrets, so gated models must come from the mirror."""
+    hits = find_inputs(f"{name.replace('/', '__')}/config.json")
+    if not hits:
+        return name
+    src = hits[0].parent
+    if not ON_KAGGLE or not str(src).startswith("/kaggle/input"):
+        return str(src)
+    # Kaggle mounts datasets over a network filesystem where safetensors' random-access reads are very slow
+    # (20-30 min for Tiny Aya). One sequential copy to local disk takes a few minutes and is reused.
+    local = Path("/tmp/sp_models") / src.name
+    done = local / ".copied"
+    if not done.exists():
+        import shutil
+
+        with gpu_timer() as t:
+            shutil.copytree(src, local, dirs_exist_ok=True)
+        done.touch()
+        print(f"copied {src.name} to local disk in {t['seconds'] / 60:.1f} min")
+    return str(local)
+
+
 def load_tokenizer(name: str = DEFAULT_MODEL, revision: str | None = None):
     from transformers import AutoTokenizer
 
-    tok = AutoTokenizer.from_pretrained(DEFAULT_MODEL if name == TINY_MODEL else name, revision=revision)
+    tok = AutoTokenizer.from_pretrained(model_source(DEFAULT_MODEL if name == TINY_MODEL else name), revision=revision)
     tok.padding_side = "left"
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
@@ -266,6 +295,32 @@ def _tiny_model():
     return Qwen2ForCausalLM(cfg)
 
 
+def too_big_for_one_gpu(src: str, dtype: torch.dtype) -> bool:
+    """True if the weights at local path `src`, loaded in `dtype`, would take more than 60% of one GPU."""
+    if not torch.cuda.is_available() or not Path(src).is_dir():
+        return False
+    stored = sum(f.stat().st_size for f in Path(src).glob("*.safetensors"))   # bf16/fp16 on disk
+    need = stored * torch.finfo(dtype).bits / 16
+    return need > 0.6 * torch.cuda.get_device_properties(0).total_memory
+
+
+def _needs_split(src: str, dtype: torch.dtype) -> bool:
+    return torch.cuda.device_count() >= 2 and too_big_for_one_gpu(src, dtype)
+
+
+def patch_peft() -> None:
+    """Kaggle's image ships torchao 0.10; peft >= 0.21 raises ImportError when it finds a torchao older than
+    0.16, even for plain LoRA. We never use torchao, so tell peft it is absent. Call before creating or
+    loading adapters."""
+    import peft.import_utils as iu
+
+    iu.is_torchao_available = lambda: False
+    with contextlib.suppress(Exception):
+        import peft.tuners.lora.torchao as lt
+
+        lt.is_torchao_available = lambda: False
+
+
 def load_model(
     name: str = DEFAULT_MODEL,
     dtype: torch.dtype | None = None,
@@ -278,13 +333,20 @@ def load_model(
     dtype = dtype or pick_dtype("infer")
     tok = load_tokenizer(name, revision)
     if name == TINY_MODEL:
-        model = _tiny_model().to(dtype)
+        model = _tiny_model().to(dtype).to(device())
     else:
-        model = AutoModelForCausalLM.from_pretrained(name, dtype=dtype, revision=revision)
-    model.to(device())
+        src = model_source(name)
+        kw = {}
+        if _needs_split(src, dtype):
+            # e.g. Tiny Aya (3.35B) in fp32 is ~13.4 GB: split over T4 x2, leaving room on GPU 0 for a judge.
+            kw = {"device_map": "auto", "max_memory": {0: "7GiB", 1: "13GiB", "cpu": "30GiB"}}
+        model = AutoModelForCausalLM.from_pretrained(src, dtype=dtype, revision=revision, **kw)
+        if not kw:
+            model.to(device())
     if adapter is not None:
         from peft import PeftModel
 
+        patch_peft()
         model = PeftModel.from_pretrained(model, str(adapter)).merge_and_unload()
     model.eval().requires_grad_(False)
     return model, tok
@@ -412,7 +474,7 @@ def last_logits(model, tok, prompts: Sequence[str], batch_size: int = 8, system:
     out = []
     for batch in batched(texts, batch_size):
         enc = encode(tok, batch, model.device)
-        out.append(model(**enc).logits[:, -1].float().cpu())
+        out.append(model(**enc, logits_to_keep=1).logits[:, -1].float().cpu())
     return torch.cat(out)
 
 
@@ -456,8 +518,8 @@ def resid_last(model, tok, prompts: Sequence[str], batch_size: int = 8, system: 
     chunks = []
     try:
         for batch in batched(texts, batch_size):
-            model(**encode(tok, batch, model.device))
-            chunks.append(torch.stack(store, dim=1).float().cpu())
+            model(**encode(tok, batch, model.device), logits_to_keep=1)
+            chunks.append(torch.stack([x.float().cpu() for x in store], dim=1))
     finally:
         remove_hooks(handles)
     return torch.cat(chunks)
@@ -482,6 +544,17 @@ def random_unit_like(v: torch.Tensor, generator: torch.Generator | None = None) 
 # ---------------------------------------------------------------------------------------------
 
 
+def _per_device(t: torch.Tensor, dtype: torch.dtype):
+    """Cached copies of `t` per device, for models split across GPUs (device_map="auto")."""
+    cache: dict = {}
+
+    def get(dev):
+        if dev not in cache:
+            cache[dev] = t.to(dev, dtype)
+        return cache[dev]
+    return get
+
+
 def remove_hooks(handles) -> None:
     for h in handles:
         h.remove()
@@ -498,10 +571,11 @@ def hooked(handles):
 def ablate_direction(model, direction: torch.Tensor) -> list:
     """Project `direction` out of everything written to the residual stream (embeddings, every
     attention and MLP output), as in Arditi et al. (2024) directional ablation."""
-    r = unit(direction.float()).to(model.device, next(model.parameters()).dtype)
+    r = _per_device(unit(direction.float()), next(model.parameters()).dtype)
 
     def proj_out(h):
-        return h - (h @ r).unsqueeze(-1) * r
+        rd = r(h.device)
+        return h - (h @ rd).unsqueeze(-1) * rd
 
     handles = [model.get_input_embeddings().register_forward_hook(lambda m, i, o: proj_out(o))]
     for layer in decoder_layers(model):
@@ -514,9 +588,9 @@ def add_direction(model, resid_index: int, vector: torch.Tensor, alpha: float = 
     """Add alpha * vector to the residual stream at `resid_index` (>=1), all positions."""
     if resid_index < 1:
         raise ValueError("resid_index must be >= 1 (output of a decoder layer)")
-    v = (alpha * vector.float()).to(model.device, next(model.parameters()).dtype)
+    v = _per_device(alpha * vector.float(), next(model.parameters()).dtype)
     layer = decoder_layers(model)[resid_index - 1]
-    return [layer.register_forward_hook(lambda m, i, o: _replace(o, _hidden(o) + v))]
+    return [layer.register_forward_hook(lambda m, i, o: _replace(o, _hidden(o) + v(_hidden(o).device)))]
 
 
 # Components are identified as "attn_head:<layer>:<head>" or "mlp:<layer>".
@@ -539,8 +613,37 @@ def all_components(model) -> list[str]:
     return comps
 
 
-def ablate_components(model, components: Iterable[str]) -> list:
-    """Zero-ablate attention heads (their slice of the o_proj input) and whole MLP outputs."""
+@torch.no_grad()
+def component_means(model, tok, prompts: Sequence[str], batch_size: int = 8, system: str | None = None) -> dict:
+    """Mean o_proj input (all heads) and MLP output per layer over every real token of `prompts`:
+    {"attn": Float[Tensor, "layer d"], "mlp": Float[Tensor, "layer d"]}, used for mean-ablation."""
+    layers = decoder_layers(model)
+    sums = {"attn": [0.0] * len(layers), "mlp": [0.0] * len(layers)}
+    mask: list = [None]
+    n = 0
+
+    def add(kind, k, x):
+        sums[kind][k] = sums[kind][k] + (x.float() * mask[0].to(x.device)[..., None]).sum((0, 1)).cpu()
+
+    handles = []
+    for k, layer in enumerate(layers):
+        handles.append(layer.self_attn.o_proj.register_forward_pre_hook(lambda m, a, k=k: add("attn", k, a[0])))
+        handles.append(layer.mlp.register_forward_hook(lambda m, i, o, k=k: add("mlp", k, o)))
+    try:
+        for batch in batched(format_chat(tok, prompts, system), batch_size):
+            enc = encode(tok, batch, model.device)
+            mask[0] = enc["attention_mask"].float()
+            n += int(mask[0].sum())
+            model(**enc, logits_to_keep=1)
+    finally:
+        remove_hooks(handles)
+    return {kind: torch.stack(v) / n for kind, v in sums.items()}
+
+
+def ablate_components(model, components: Iterable[str], means: dict | None = None) -> list:
+    """Ablate attention heads (their slice of the o_proj input) and whole MLP outputs: replaced by
+    `means` from component_means (mean-ablation) or, without it, by zero. Zero-ablating many MLPs
+    knocks the model off-distribution, so random-component baselines should use means."""
     _, head_dim = head_geometry(model)
     layers = decoder_layers(model)
     heads: dict[int, list[int]] = {}
@@ -553,17 +656,36 @@ def ablate_components(model, components: Iterable[str]) -> list:
             mlps.add(layer)
     handles = []
     for layer, hs in heads.items():
-        idx = torch.cat([torch.arange(h * head_dim, (h + 1) * head_dim) for h in hs]).to(model.device)
+        dev = layers[layer].self_attn.o_proj.weight.device
+        idx = torch.cat([torch.arange(h * head_dim, (h + 1) * head_dim) for h in hs]).to(dev)
+        fill = 0 if means is None else means["attn"][layer].to(dev)[idx]
 
-        def pre(m, args, idx=idx):
+        def pre(m, args, idx=idx, fill=fill):
             x = args[0].clone()
-            x[..., idx] = 0
+            x[..., idx] = fill if isinstance(fill, int) else fill.to(x.dtype)
             return (x,) + tuple(args[1:])
 
         handles.append(layers[layer].self_attn.o_proj.register_forward_pre_hook(pre))
     for layer in mlps:
-        handles.append(layers[layer].mlp.register_forward_hook(lambda m, i, o: torch.zeros_like(o)))
+        if means is None:
+            handles.append(layers[layer].mlp.register_forward_hook(lambda m, i, o: torch.zeros_like(o)))
+        else:
+            mu = means["mlp"][layer]
+            handles.append(layers[layer].mlp.register_forward_hook(
+                lambda m, i, o, mu=mu: mu.to(o.device, o.dtype).expand_as(o).clone()))
     return handles
+
+
+def is_degenerate(text: str) -> bool:
+    """Crude incoherence check for ablation runs: very short, or dominated by repeated words."""
+    words = text.split()
+    if len(words) < 5:
+        return True
+    return len(set(words)) / len(words) < 0.3
+
+
+def degenerate_rate(responses: Sequence[str]) -> float:
+    return float(np.mean([is_degenerate(r) for r in responses])) if responses else float("nan")
 
 
 # ---------------------------------------------------------------------------------------------
@@ -609,14 +731,14 @@ def attribution_scores(model, tok, clean_prompts: Sequence[str], corrupt_prompts
             return hs
 
         with torch.no_grad(), hooked(hooks_for(False)):
-            model(**encode(tok, cb, model.device))
+            model(**encode(tok, cb, model.device), logits_to_keep=1)
         clean = {k: v[:, -1].detach().float() for k, v in store.items()}
         store.clear()
 
         enc = encode(tok, xb, model.device)
         embeds = model.get_input_embeddings()(enc["input_ids"]).detach().requires_grad_(True)
         with hooked(hooks_for(True)):
-            logits = model(inputs_embeds=embeds, attention_mask=enc["attention_mask"]).logits[:, -1]
+            logits = model(inputs_embeds=embeds, attention_mask=enc["attention_mask"], logits_to_keep=1).logits[:, -1]
             metric = logit_diff_from_logits(logits, token_sets).sum()
             metric.backward()
         for k in range(L):
@@ -656,9 +778,9 @@ def activation_patching_scores(model, tok, clean_prompts: Sequence[str], corrupt
             hs.append(layer.self_attn.o_proj.register_forward_pre_hook(lambda m, a, k=k: store.__setitem__(("head", k), a[0][:, -1].clone())))
             hs.append(layer.mlp.register_forward_hook(lambda m, i, o, k=k: store.__setitem__(("mlp", k), o[:, -1].clone())))
         with hooked(hs):
-            model(**encode(tok, cb, model.device))
+            model(**encode(tok, cb, model.device), logits_to_keep=1)
         enc = encode(tok, xb, model.device)
-        base = logit_diff_from_logits(model(**enc).logits[:, -1], token_sets)
+        base = logit_diff_from_logits(model(**enc, logits_to_keep=1).logits[:, -1], token_sets)
         for cid in components:
             kind, k, h = parse_component(cid)
             if kind == "attn_head":
@@ -678,7 +800,7 @@ def activation_patching_scores(model, tok, clean_prompts: Sequence[str], corrupt
 
                 handle = layers[k].mlp.register_forward_hook(post)
             with hooked([handle]):
-                patched = logit_diff_from_logits(model(**enc).logits[:, -1], token_sets)
+                patched = logit_diff_from_logits(model(**enc, logits_to_keep=1).logits[:, -1], token_sets)
             totals[cid] += float((patched - base).sum())
     return {c: v / len(clean_prompts) for c, v in totals.items()}
 
@@ -871,11 +993,11 @@ class Judge:
         if kind == "llamaguard":
             from transformers import AutoModelForCausalLM, AutoTokenizer
 
-            self.tok = AutoTokenizer.from_pretrained(model_id)
+            self.tok = AutoTokenizer.from_pretrained(model_source(model_id))
             self.tok.padding_side = "left"
             if self.tok.pad_token is None:
                 self.tok.pad_token = self.tok.eos_token
-            self.model = AutoModelForCausalLM.from_pretrained(model_id, dtype=pick_dtype("infer")).to(device()).eval()
+            self.model = AutoModelForCausalLM.from_pretrained(model_source(model_id), dtype=pick_dtype("infer")).to(device()).eval()
 
     @property
     def name(self) -> str:
@@ -1028,6 +1150,7 @@ def apply_adapter(model, adapter_dir: Path):
     """Merge a LoRA checkpoint into `model` in place (restore with restore_weights)."""
     from peft import PeftModel
 
+    patch_peft()
     model = PeftModel.from_pretrained(model, str(adapter_dir)).merge_and_unload()
     model.eval().requires_grad_(False)
     return model
