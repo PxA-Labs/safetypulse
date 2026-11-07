@@ -1,0 +1,21 @@
+[{"stream_name":"stdout","time":9.688217498,"data":"[cell 0] start: # 10 · Final audit and report tables\n"}
+,{"stream_name":"stdout","time":9.688306876,"data":"[cell 1] start: Run only **after** the evaluation protocol is frozen (docs/09 Day 9). Test-split\n"}
+,{"stream_name":"stdout","time":9.688313388,"data":"[cell 2] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":51.783234963,"data":"[cell 3] start: import json, random\n"}
+,{"stream_name":"stdout","time":58.407248584,"data":"[cell 4] start: try:\n"}
+,{"stream_name":"stdout","time":143.013667117,"data":"[cell 5] start: # --- R3: SafeTune (Lexsi Labs) ------------------------------------------------\n"}
+,{"stream_name":"stdout","time":147.462602298,"data":"[cell 6] start: ## Table C — repair (mean ± std over test runs; R5 pooled over draws)\n"}
+,{"stream_name":"stdout","time":147.462668431,"data":"[cell 7] start: aud = pd.DataFrame(sp.load_jsonl(audit_path))\n"}
+,{"stream_name":"stdout","time":147.654556248,"data":"[cell 8] start: # Paired bootstrap over prompts (negative ASR difference = first method safer): \n"}
+,{"stream_name":"stdout","time":148.275423934,"data":"[cell 9] start: ## Tables A, B, D and figures\n"}
+,{"stream_name":"stdout","time":148.275525515,"data":"[cell 10] start: table_a = pd.DataFrame(bundle[\"table_a\"])\n"}
+,{"stream_name":"stdout","time":151.121079594,"data":"[cell 11] start: ## Judge validation (docs/05 §3)\n"}
+,{"stream_name":"stdout","time":151.121203168,"data":"[cell 12] start: rng = random.Random(0)\n"}
+,{"stream_name":"stdout","time":154.54521179,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":157.701379174,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":157.701431389,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":157.967512205,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":157.967565061,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":158.999154548,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":159.760234109,"data":"[NbConvertApp] Writing 308905 bytes to __results__.html\n"}
+]

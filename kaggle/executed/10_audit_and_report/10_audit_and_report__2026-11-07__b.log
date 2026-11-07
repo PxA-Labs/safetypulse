@@ -1,0 +1,61 @@
+[{"stream_name":"stdout","time":7.8521761439999995,"data":"[cell 0] start: # 10 · Final audit and report tables\n"}
+,{"stream_name":"stdout","time":7.852249551,"data":"[cell 1] start: Run only **after** the evaluation protocol is frozen (docs/09 Day 9). Test-split\n"}
+,{"stream_name":"stdout","time":7.852256609,"data":"[cell 2] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":50.212503648,"data":"[cell 3] start: import json, random\n"}
+,{"stream_name":"stdout","time":76.719167611,"data":"[cell 4] start: try:\n"}
+,{"stream_name":"stdout","time":153.111450324,"data":"[cell 5] start: # --- R3: SafeTune (Lexsi Labs) ------------------------------------------------\n"}
+,{"stream_name":"stdout","time":19919.491498279,"data":"[cell 6] start: ## Table C — repair (mean ± std over test runs; R5 pooled over draws)\n"}
+,{"stream_name":"stdout","time":19919.491614139,"data":"[cell 7] start: aud = pd.DataFrame(sp.load_jsonl(audit_path))\n"}
+,{"stream_name":"stdout","time":19919.578253171,"data":"[cell 8] start: # Paired bootstrap over prompts (negative ASR difference = first method safer): \n"}
+,{"stream_name":"stdout","time":19923.005092096,"data":"An error occurred while executing the following cell:\n"}
+,{"stream_name":"stdout","time":19923.005151804,"data":"------------------\n"}
+,{"stream_name":"stdout","time":19923.005159713,"data":"# Paired bootstrap over prompts (negative ASR difference = first method safer): the pre-registered main\n"}
+,{"stream_name":"stdout","time":19923.005164867,"data":"# method R1 against each alternative, and every method against the unrepaired drifted model.\n"}
+,{"stream_name":"stdout","time":19923.005170509,"data":"def paired(name_a, name_b):\n"}
+,{"stream_name":"stdout","time":19923.005175107,"data":"    A, B = aud[aud.model == name_a], aud[aud.model == name_b]\n"}
+,{"stream_name":"stdout","time":19923.005179714,"data":"    out = []\n"}
+,{"stream_name":"stdout","time":19923.005183925,"data":"    for metric in metrics:\n"}
+,{"stream_name":"stdout","time":19923.005188477,"data":"        a, b = [], []\n"}
+,{"stream_name":"stdout","time":19923.005192795,"data":"        for run in A.run:\n"}
+,{"stream_name":"stdout","time":19923.005198987,"data":"            if run in set(B.run):\n"}
+,{"stream_name":"stdout","time":19923.005206279,"data":"                a += A[A.run == run].flags.iloc[0][metric]\n"}
+,{"stream_name":"stdout","time":19923.005209303,"data":"                b += B[B.run == run].flags.iloc[0][metric]\n"}
+,{"stream_name":"stdout","time":19923.005212309,"data":"        if a:\n"}
+,{"stream_name":"stdout","time":19923.005215322,"data":"            mean, lo, hi = sp.paired_bootstrap_diff(a, b)\n"}
+,{"stream_name":"stdout","time":19923.005218775,"data":"            out.append({\"a\": name_a, \"b\": name_b, \"metric\": metric, \"a_minus_b\": mean, \"ci95\": [lo, hi]})\n"}
+,{"stream_name":"stdout","time":19923.005237381,"data":"    return out\n"}
+,{"stream_name":"stdout","time":19923.005242627,"data":"\n"}
+,{"stream_name":"stdout","time":19923.005248115,"data":"repaired = [m for m in order[2:] if m != \"R5 random components\"] + sorted(aud[aud.method == \"R5 random components\"].model.unique())\n"}
+,{"stream_name":"stdout","time":19923.005254379,"data":"comparisons = [x for m in repaired if m != \"R1 circuit restore\" for x in paired(\"R1 circuit restore\", m)]\n"}
+,{"stream_name":"stdout","time":19923.005259475,"data":"comparisons += [x for m in repaired for x in paired(m, \"Drifted (R0)\")]\n"}
+,{"stream_name":"stdout","time":19923.005264292,"data":"comp = pd.DataFrame(comparisons)\n"}
+,{"stream_name":"stdout","time":19923.005268661,"data":"comp.to_csv(OUT / \"paired_comparisons.csv\", index=False)\n"}
+,{"stream_name":"stdout","time":19923.005284503,"data":"comp[comp.metric == \"asr\"]\n"}
+,{"stream_name":"stdout","time":19923.005289089,"data":"------------------\n"}
+,{"stream_name":"stdout","time":19923.005292524,"data":"\n"}
+,{"stream_name":"stdout","time":19923.005296044,"data":"\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n"}
+,{"stream_name":"stdout","time":19923.005299734,"data":"\u001b[0;31mAttributeError\u001b[0m                            Traceback (most recent call last)\n"}
+,{"stream_name":"stdout","time":19923.005303323,"data":"\u001b[0;32m/tmp/ipykernel_18/4109991286.py\u001b[0m in \u001b[0;36m\u003ccell line: 0\u003e\u001b[0;34m()\u001b[0m\n"}
+,{"stream_name":"stdout","time":19923.005307049,"data":"\u001b[1;32m     16\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":19923.005313459,"data":"\u001b[1;32m     17\u001b[0m \u001b[0mrepaired\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;34m[\u001b[0m\u001b[0mm\u001b[0m \u001b[0;32mfor\u001b[0m \u001b[0mm\u001b[0m \u001b[0;32min\u001b[0m \u001b[0morder\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;36m2\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m]\u001b[0m \u001b[0;32mif\u001b[0m \u001b[0mm\u001b[0m \u001b[0;34m!=\u001b[0m \u001b[0;34m\"R5 random components\"\u001b[0m\u001b[0;34m]\u001b[0m \u001b[0;34m+\u001b[0m \u001b[0msorted\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0maud\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0maud\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mmethod\u001b[0m \u001b[0;34m==\u001b[0m \u001b[0;34m\"R5 random components\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mmodel\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0munique\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":19923.00532438,"data":"\u001b[0;32m---\u003e 18\u001b[0;31m \u001b[0mcomparisons\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;34m[\u001b[0m\u001b[0mx\u001b[0m \u001b[0;32mfor\u001b[0m \u001b[0mm\u001b[0m \u001b[0;32min\u001b[0m \u001b[0mrepaired\u001b[0m \u001b[0;32mif\u001b[0m \u001b[0mm\u001b[0m \u001b[0;34m!=\u001b[0m \u001b[0;34m\"R1 circuit restore\"\u001b[0m \u001b[0;32mfor\u001b[0m \u001b[0mx\u001b[0m \u001b[0;32min\u001b[0m \u001b[0mpaired\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m\"R1 circuit restore\"\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mm\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":19923.005331294,"data":"\u001b[0m\u001b[1;32m     19\u001b[0m \u001b[0mcomparisons\u001b[0m \u001b[0;34m+=\u001b[0m \u001b[0;34m[\u001b[0m\u001b[0mx\u001b[0m \u001b[0;32mfor\u001b[0m \u001b[0mm\u001b[0m \u001b[0;32min\u001b[0m \u001b[0mrepaired\u001b[0m \u001b[0;32mfor\u001b[0m \u001b[0mx\u001b[0m \u001b[0;32min\u001b[0m \u001b[0mpaired\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mm\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m\"Drifted (R0)\"\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":19923.005337904,"data":"\u001b[1;32m     20\u001b[0m \u001b[0mcomp\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mpd\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mDataFrame\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mcomparisons\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":19923.005342953,"data":"\n"}
+,{"stream_name":"stdout","time":19923.005346539,"data":"\u001b[0;32m/tmp/ipykernel_18/4109991286.py\u001b[0m in \u001b[0;36mpaired\u001b[0;34m(name_a, name_b)\u001b[0m\n"}
+,{"stream_name":"stdout","time":19923.005350846,"data":"\u001b[1;32m      8\u001b[0m         \u001b[0;32mfor\u001b[0m \u001b[0mrun\u001b[0m \u001b[0;32min\u001b[0m \u001b[0mA\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mrun\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":19923.005360458,"data":"\u001b[1;32m      9\u001b[0m             \u001b[0;32mif\u001b[0m \u001b[0mrun\u001b[0m \u001b[0;32min\u001b[0m \u001b[0mset\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mB\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mrun\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":19923.005366311,"data":"\u001b[0;32m---\u003e 10\u001b[0;31m                 \u001b[0ma\u001b[0m \u001b[0;34m+=\u001b[0m \u001b[0mA\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0mA\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mrun\u001b[0m \u001b[0;34m==\u001b[0m \u001b[0mrun\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mflags\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0miloc\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;36m0\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0mmetric\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":19923.005372768,"data":"\u001b[0m\u001b[1;32m     11\u001b[0m                 \u001b[0mb\u001b[0m \u001b[0;34m+=\u001b[0m \u001b[0mB\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0mB\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mrun\u001b[0m \u001b[0;34m==\u001b[0m \u001b[0mrun\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mflags\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0miloc\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;36m0\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0mmetric\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":19923.005379037,"data":"\u001b[1;32m     12\u001b[0m         \u001b[0;32mif\u001b[0m \u001b[0ma\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":19923.005383452,"data":"\n"}
+,{"stream_name":"stdout","time":19923.005386941,"data":"\u001b[0;31mAttributeError\u001b[0m: 'Flags' object has no attribute 'iloc'\n"}
+,{"stream_name":"stdout","time":19923.005391307,"data":"AttributeError: 'Flags' object has no attribute 'iloc'\n"}
+,{"stream_name":"stdout","time":19923.005395089,"data":"\n"}
+,{"stream_name":"stderr","time":19925.455214549,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":19925.455268489,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":19925.652630676,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":19925.652665234,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":19926.513278943,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":19927.054390213,"data":"[NbConvertApp] Writing 307424 bytes to __results__.html\n"}
+]

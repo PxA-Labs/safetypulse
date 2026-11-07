@@ -1,0 +1,87 @@
+{
+  "target_dev": {
+    "run": "alpaca-s0",
+    "step": 150
+  },
+  "objective": {
+    "lambda": 1.0,
+    "mu": 1.0
+  },
+  "components": [
+    "mlp:22",
+    "mlp:23",
+    "mlp:24",
+    "mlp:26",
+    "mlp:19",
+    "mlp:29",
+    "mlp:25",
+    "mlp:27",
+    "mlp:21",
+    "mlp:18",
+    "mlp:34",
+    "attn_head:16:2",
+    "attn_head:32:14",
+    "mlp:33",
+    "attn_head:29:7",
+    "attn_head:20:5",
+    "mlp:31",
+    "attn_head:20:6",
+    "attn_head:21:14",
+    "attn_head:20:7"
+  ],
+  "layer": 27,
+  "judge": "meta-llama/Llama-Guard-3-1B",
+  "methods": {
+    "R0": {},
+    "R1": {
+      "alpha": 0.5
+    },
+    "R2": {
+      "beta": 0.5
+    },
+    "R4": {
+      "alpha": 0.5
+    },
+    "R5": {
+      "alpha": 0.5,
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "R6": {
+      "alpha": 0.5
+    },
+    "R3a": {
+      "alpha": 0.25,
+      "safetune": "apply_wise_ft (circuit tensors) 0.1.12"
+    },
+    "R3b": {
+      "alpha": 1.0,
+      "rank": 8,
+      "safetune": "apply_safety_vector_restore 0.1.12"
+    }
+  },
+  "provenance": {
+    "git_sha": null,
+    "seed": 0,
+    "created_at": "2026-11-07T12:26:57",
+    "torch": "2.11.0+cu130",
+    "transformers": "5.20.2",
+    "cuda_available": true,
+    "on_kaggle": true,
+    "smoke": false,
+    "peft": "0.21.2",
+    "gpus": [
+      "Tesla T4"
+    ],
+    "capability": [
+      7,
+      5
+    ],
+    "vram_gb": 15.6
+  }
+}

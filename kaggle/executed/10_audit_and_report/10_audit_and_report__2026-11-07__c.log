@@ -1,0 +1,14 @@
+[{"stream_name":"stdout","time":7.46365785,"data":"[cell 0] start: # 10 · Final audit and report tables\n"}
+,{"stream_name":"stdout","time":7.463726851,"data":"[cell 1] start: Run only **after** the evaluation protocol is frozen (docs/09 Day 9). Test-split\n"}
+,{"stream_name":"stdout","time":7.4637322919999995,"data":"[cell 2] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":50.438824113,"data":"[cell 3] start: import json, random\n"}
+,{"stream_name":"stdout","time":85.66305108,"data":"[cell 4] start: try:\n"}
+,{"stream_name":"stdout","time":163.219793418,"data":"[cell 5] start: # --- R3: SafeTune (Lexsi Labs) ------------------------------------------------\n"}
+,{"stream_name":"stdout","time":4229.337333863,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":4231.562290556,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":4231.562335288,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":4231.751903838,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":4231.751930267,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":4232.575759627,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":4233.110760587,"data":"[NbConvertApp] Writing 297826 bytes to __results__.html\n"}
+]
