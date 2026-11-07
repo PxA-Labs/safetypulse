@@ -108,7 +108,9 @@ def main() -> None:
     ap.add_argument("--slug", required=True, help="Kaggle kernel slug, e.g. 04-baseline-refusal")
     ap.add_argument("--gpu", action="store_true", help="T4 x2")
     ap.add_argument("--kernel", action="append", default=[], help="attach another kernel's output (slug)")
-    ap.add_argument("--dataset", action="append", default=[], help="attach a dataset (slug); lib is always attached")
+    ap.add_argument("--dataset", action="append", default=[],
+                    help="attach a dataset: slug (own account) or owner/slug (shared with this account)")
+    ap.add_argument("--lib", default=None, help="library dataset, default <account>/safetypulse-lib")
     ap.add_argument("--replace", action="append", default=[], help="OLD=>NEW text substitution in the notebook")
     ap.add_argument("--env", action="append", default=[], help="KEY=VALUE set before the notebook runs")
     ap.add_argument("--files", default=None, help="regex of output files to download besides the notebook")
@@ -134,7 +136,7 @@ def main() -> None:
             "id": f"{user}/{a.slug}", "title": a.slug, "code_file": "run.py", "language": "python",
             "kernel_type": "script", "is_private": True, "enable_gpu": a.gpu, "enable_tpu": False,
             "enable_internet": True,
-            "dataset_sources": [f"{user}/safetypulse-lib"] + [f"{user}/{d}" for d in a.dataset],
+            "dataset_sources": [a.lib or f"{user}/safetypulse-lib"] + [d if "/" in d else f"{user}/{d}" for d in a.dataset],
             "kernel_sources": [f"{user}/{k}" for k in a.kernel], "competition_sources": [], "model_sources": [],
         }
         if a.gpu:
@@ -165,7 +167,15 @@ def main() -> None:
     (dest / "files").mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp:
         pattern = r"(^|/)executed/.*\.ipynb$|\.log$" + (f"|{a.files}" if a.files else "")
-        kaggle("kernels", "output", ref, "-p", tmp, "--file-pattern", pattern, "-o", "-q")
+        for attempt in range(5):           # Kaggle sometimes resets or drops long downloads
+            try:
+                kaggle("kernels", "output", ref, "-p", tmp, "--file-pattern", pattern, "-o", "-q")
+                break
+            except RuntimeError as e:
+                if attempt == 4:
+                    raise
+                print("download failed, retrying:", str(e)[-120:], flush=True)
+                time.sleep(60)
         tag = f"__{a.tag}" if a.tag else ""
         stamp = dt.date.today().isoformat()
         for f in Path(tmp).rglob("*"):
