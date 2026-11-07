@@ -113,6 +113,8 @@ def main() -> None:
     ap.add_argument("--lib", default=None, help="library dataset, default <account>/safetypulse-lib")
     ap.add_argument("--replace", action="append", default=[], help="OLD=>NEW text substitution in the notebook")
     ap.add_argument("--env", action="append", default=[], help="KEY=VALUE set before the notebook runs")
+    ap.add_argument("--until-heading", default=None,
+                    help="drop every cell from the first markdown cell starting with this text, e.g. '## Analysis'")
     ap.add_argument("--files", default=None, help="regex of output files to download besides the notebook")
     ap.add_argument("--tag", default="", help="suffix for the executed copy, e.g. gsm8k-s0")
     ap.add_argument("--timeout-h", type=float, default=12)
@@ -126,6 +128,14 @@ def main() -> None:
         if old not in text:
             sys.exit(f"--replace target not found in {a.notebook}: {old!r}")
         text = text.replace(old, new)
+    if a.until_heading:   # e.g. score checkpoints in several sessions and analyse once at the end
+        nb = json.loads(text)
+        cut = next((i for i, c in enumerate(nb["cells"]) if c["cell_type"] == "markdown"
+                    and "".join(c["source"]).lstrip().startswith(a.until_heading)), None)
+        if cut is None:
+            sys.exit(f"--until-heading not found in {a.notebook}: {a.until_heading!r}")
+        nb["cells"] = nb["cells"][:cut]
+        text = json.dumps(nb)
     env = dict(e.split("=", 1) for e in a.env)
 
     with tempfile.TemporaryDirectory() as tmp:
