@@ -56,6 +56,26 @@ Ablating r on harmless prompts leaves their refusal rate at 0%.
 Run 2 took 58 min: model copy 0.5 min, activations 4.5 min, per-layer ablation sweep 32 min (28 layers × 100
 prompts, fp32 split), Table A generation 19 min.
 
+## Matched-pair re-run (2026-11-07, `sp-05-direction-matched`)
+Same method on the 288 reviewed matched pairs (188 calib / 50 val; twins drafted and reviewed by Claude, see 02).
+Files: `…__matched.ipynb` / `.log`, `files/matched__refusal_direction.json`, `files/matched__layer_selection.png`.
+
+| | Unpaired (run 2) | **Matched** |
+|---|---|---|
+| Baseline logit diff, harmful / harmless | +5.82 / −5.62 | **+5.90 / −3.70** |
+| Chosen layer ℓ* | resid 25 | **resid 27** |
+| Harmful, r ablated (logit diff) | −3.13 | **+0.53** |
+| Harmless, r added (logit diff) | +4.35 | **+5.20** |
+| Refusal rate: none / r ablated / random (n=10) | 100% / 0% / 100% | **98% / 6% / 98%** |
+
+**Gate G2 passes again on matched pairs.** The harmless twins sit closer to refusal (−3.70 vs −5.62) because they
+share the harmful prompt's topic and wording; that is the point of matching: the direction now has to separate
+*harmful intent* from a *same-topic harmless request*, not "harmful topic" from unrelated Alpaca instructions.
+It still removes nearly all refusals (98% → 6%) and induces refusal on harmless twins, while random directions do
+nothing. Ablation pushes the harmful logit difference to about zero rather than strongly negative, i.e. the matched
+direction is a slightly less complete lever than the unpaired one, consistent with part of the unpaired direction
+having encoded topic. This supports claim C2 (refusal is separable from topic) on AI-reviewed pairs.
+
 ## Next
 06 · circuit discovery on the same pairs (attribution patching → exact patching → probe bundle), then the
 CircuitKIT cross-check. After pair review: re-run 03 → 05 → 06 on matched pairs.
