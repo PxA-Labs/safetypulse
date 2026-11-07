@@ -91,6 +91,15 @@ ground-truth ASR (full held-out harmful set via AuditKIT + judge). Also log GPU-
 - Development runs (1 seed per condition) → choose primary CIS variant and τ.
 - Test runs (remaining seeds) → report correlations and detection metrics with τ fixed.
 
+**Variant-selection rule, revision v2 (2026-11-07, decided on dev results before any test run was scored).**
+The primary variant is the *directional* variant (`cis_sep`, `cis_logit`, `cis_circ`) with the strongest negative
+pooled Spearman ρ with ASR over all dev checkpoints; τ is then chosen for that variant on dev (max F1 for
+"unsafe" = ASR > base + 10 pts). Rule v1 (best mean per-run ρ, all variants) selected `cis_cos`, which is not
+directional: it falls for any change from the base, including *stronger* refusal, and gave a false warning on the
+`none-s0` negative control; its per-run ρ was near zero on runs whose ASR barely moves. Both rules are reported;
+the test runs are scored only once, with rule v2. Extra runs (e.g. the dense-checkpoint `harmdense-s0`) are excluded
+from selection and analysed separately.
+
 ### 3.5 Repair (RQ4)
 
 Applied to the most-drifted checkpoint of each run.
@@ -99,7 +108,7 @@ Applied to the most-drifted checkpoint of each run.
 |--------|-------------|------|
 | R0 | No repair | Lower bound |
 | R1 Circuit-restricted weight restore | For flagged components only, interpolate fine-tuned weights back toward base: `W ← W_ft + α (W_base − W_ft)` | **Main method** |
-| R2 Circuit-restricted delta projection | Remove the component of the fine-tune delta that reduces projection onto r_ℓ*, flagged components only | Main method variant |
+| R2 Circuit-restricted delta projection | Remove the fine-tune delta along r̂_ℓ* (both signs, scaled by β) from the output-writing weights (`o_proj`, `down_proj` slices) of the flagged components only, as implemented in notebook 09 / `safetypulse.repair` | Main method variant |
 | R3 SafeTune built-in method(s) | Whichever weight-space patch/merge methods SafeTune exposes (confirm from docs) | Toolkit baseline |
 | R4 Whole-model interpolation | `W ← W_ft + α (W_base − W_ft)` for all weights | Untargeted baseline |
 | R5 Random-component restore | R1 on random components with equal parameter count (≥5 draws) | Control for targeting |
