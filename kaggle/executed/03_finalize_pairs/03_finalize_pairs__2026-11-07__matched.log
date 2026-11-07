@@ -1,0 +1,14 @@
+[{"stream_name":"stdout","time":6.910479204,"data":"[cell 0] start: # 03 · Validate and split the contrast pairs\n"}
+,{"stream_name":"stdout","time":6.910606387,"data":"[cell 1] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":36.450713807,"data":"[cell 2] start: import random\n"}
+,{"stream_name":"stdout","time":36.793838558,"data":"[cell 3] start: log = Counter()\n"}
+,{"stream_name":"stdout","time":36.850774331,"data":"[cell 4] start: # Second-annotator agreement (Cohen's kappa) if that column was filled\n"}
+,{"stream_name":"stdout","time":36.864240836,"data":"[cell 5] start: leak_h = sp.near_duplicate_pairs([p[\"harmful\"] for p in pairs], [x[\"prompt\"] for\n"}
+,{"stream_name":"stdout","time":39.010651103,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":41.580393131,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":41.580437246,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":41.766851626,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":41.766882039,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":42.697145812,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":43.289651478,"data":"[NbConvertApp] Writing 293890 bytes to __results__.html\n"}
+]
