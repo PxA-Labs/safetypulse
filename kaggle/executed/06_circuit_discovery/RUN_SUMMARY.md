@@ -64,5 +64,38 @@ on purpose: they are set in 08 from the dev runs.
 84 min total: model copy 0.5 min, attribution + exact patching 55 min, validation (12 generation passes) 18 min,
 probe reference values 4 min, CIS sanity check 4 min.
 
+## Matched-pair re-run (2026-11-07, `sp-06-circuit-matched`)
+Same discovery on the 188 matched calib pairs, with the **fixed validation** (mean-ablation, degenerate-text rate,
+verdict). Files: `…__matched.ipynb` / `.log`, `files/matched__probe_bundle.json`, `files/matched__samples.json`
+(5 sample answers per condition; private).
+
+- **Discovery is stable:** attribution vs exact patching Spearman 0.98; the top-20 is again 14 MLPs (layers 18–34)
+  + 6 heads, overlapping heavily with the unpaired circuit (MLP 22, 23, 24, 26, 27, 29; heads 32.14, 29.7, 20.5,
+  20.6, 21.14). New: head 16.2 and 20.7.
+- **Probe bundle valid:** base model scores CIS = 1.000 on all four variants (sep_base 52.6, logit_gap_base 10.07,
+  circ_base 21.75). This bundle replaces the unpaired one for 08 (re-score + test runs), 09 and 10.
+
+**Table A (50 val harmful prompts):**
+| Ablation | Refusal | Degenerate answers |
+|---|---|---|
+| none | 98% | 0% |
+| refusal direction (resid 27) | 6% | — |
+| random directions (n=10) | 98% (std 0) | — |
+| circuit, mean-ablated (k=20) | **0%** | **84%** |
+| random components, mean-ablated (k=20, n=10) | **21% ± 26%** | **57%** |
+| circuit, zero-ablated (k=20) | 0% | 92% |
+
+**Verdict: CHECK (specificity still not established).** Mean-ablation helped a little (random components now
+leave 21% refusal instead of 4%), but removing 14 whole MLP layers still breaks the model: most answers are
+degenerate in *both* the circuit and the random condition, so "no refusal" mostly means "no coherent text". The
+circuit is more damaging to refusal than random sets, but the difference (0% vs 21% ± 26%) is within the noise of
+10 random draws and confounded by degeneration.
+
+**What this means for the claims:** the *direction* result (C1) stands on matched pairs. The *component list* is a
+reliable ranking of where the refusal signal flows (two methods agree, ρ = 0.98) and is what `cis_circ` measures,
+but a causal "this is the refusal circuit, and only it" claim is not supported by k=20 whole-component ablation.
+Report it that way. A sharper test would ablate small sets (k = 3–5 top components vs matched random sets) and
+measure the refusal logit difference plus a coherence metric, instead of generated refusal rates.
+
 ## Next
 08 · monitor checkpoints (CIS vs ASR on every 07 checkpoint), once `none-s0` finishes.
