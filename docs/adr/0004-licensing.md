@@ -1,6 +1,6 @@
 # ADR-0004: Repository licence
 
-- Status: Proposed
+- Status: Accepted (2026-11-08)
 - Date: 2026-11-05
 - Deciders: team
 
@@ -20,8 +20,13 @@ requirements.
 
 ## Decision
 
-_TBD after confirming toolkit licences and hackathon rules._
+**Apache-2.0 for the SafetyPulse code** (`LICENSE`). Released adapters and data are **CC-BY-NC-4.0**, inherited from
+Tiny Aya Global and Alpaca; benchmark data keeps its source licence (HarmBench, AdvBench, GSM8K, MMLU: MIT;
+XSTest: CC-BY-4.0). The hackathon rules set no licence requirement; they require public, un-gated Hugging Face
+artifacts and a public repository.
 
 ## Consequences
 
-_TBD_
+- The Lexsi toolkits (LSAL) are optional dependencies (`.[toolkits]`), imported only inside `safetypulse.adapters`,
+  and keep their own licence; installing them is subject to LSAL terms.
+- Model cards and dataset cards state the CC-BY-NC-4.0 terms and the base model's attribution.
