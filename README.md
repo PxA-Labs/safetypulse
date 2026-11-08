@@ -1,17 +1,40 @@
-# SafetyPulse
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.png">
+    <img src="docs/assets/logo-light.png" alt="SafetyPulse" width="420">
+  </picture>
+</p>
 
-**A cheap early-warning signal for safety drift during LLM fine-tuning, read from the model's own refusal
-mechanism, plus the repair and audit to act on it.**
+<p align="center">
+  <b>A cheap early-warning signal for safety drift during LLM fine-tuning, read from the model's own refusal
+  mechanism, plus the repair and audit to act on it.</b>
+</p>
 
-Lexsi Labs AI Safety & Alignment Hackathon · Track 2b (AI Safety and Correction) · Model: Cohere Labs
-[Tiny Aya Global](https://huggingface.co/CohereLabs/tiny-aya-global) (3.35B) · Toolkits: CuratorKIT, CircuitKIT,
-SafeTune, AuditKIT
+<p align="center">
+  <a href="https://github.com/PxA-Labs/safetypulse/actions/workflows/ci.yml"><img src="https://github.com/PxA-Labs/safetypulse/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License: Apache-2.0"></a>
+  <img src="https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white" alt="Python 3.10+">
+  <img src="https://img.shields.io/badge/tests-167%20passing-2ea44f" alt="167 tests">
+  <br>
+  <a href="https://huggingface.co/blog/purvansh01/safetypulse-safety-drift-monitor"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Article-Read%20the%20write--up-ff9d00" alt="Hugging Face article"></a>
+  <a href="https://huggingface.co/collections/purvansh01/safetypulse-models-6af00b8f56c773a80af9f7e0"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Models-collection-ffcc4d" alt="Model collection"></a>
+  <a href="https://huggingface.co/collections/purvansh01/safetypulse-data-6af00b9124ee9d5022a36482"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Datasets-collection-ffcc4d" alt="Dataset collection"></a>
+  <a href="https://huggingface.co/purvansh01/tiny-aya-global-safetypulse-repaired"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Repaired%20model-Tiny%20Aya%20Global-ffcc4d" alt="Repaired model"></a>
+  <br>
+  <a href="https://hackathon.lexsi.ai"><img src="https://img.shields.io/badge/Lexsi%20Labs%20Hackathon-Track%202b-ff4b0a" alt="Lexsi Labs AI Safety & Alignment Hackathon, Track 2b"></a>
+  <a href="https://huggingface.co/CohereLabs/tiny-aya-global"><img src="https://img.shields.io/badge/model-Cohere%20Labs%20Tiny%20Aya%20Global-39594d" alt="Base model: Tiny Aya Global"></a>
+  <img src="https://img.shields.io/badge/toolkits-CuratorKIT%20%C2%B7%20CircuitKIT%20%C2%B7%20SafeTune%20%C2%B7%20AuditKIT-0b0b0c" alt="Toolkits">
+</p>
 
 https://github.com/user-attachments/assets/2f55f4b7-e20f-4043-a141-77cbba8fa475
 
-**Write-up:**
-[Hugging Face article](https://huggingface.co/blog/purvansh01/safetypulse-safety-drift-monitor) ·
-[full report](docs/report/REPORT.md)
+<p align="center">
+  <a href="https://huggingface.co/blog/purvansh01/safetypulse-safety-drift-monitor"><b>Article</b></a> ·
+  <a href="docs/report/REPORT.md"><b>Report</b></a> ·
+  <a href="#install-and-use"><b>Quick start</b></a> ·
+  <a href="#reproducibility"><b>Reproduce</b></a> ·
+  <a href="docs/11_WITHHELD_ARTIFACTS.md"><b>Responsible release</b></a>
+</p>
 
 ## The problem
 
