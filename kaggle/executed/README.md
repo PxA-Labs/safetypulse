@@ -24,4 +24,4 @@ Keep earlier runs, including failed ones: their summaries explain what went wron
 
 Checkpoints, `.safetensors` files, `audit.jsonl` and the generated datasets live in private Kaggle datasets
 (`sp-pipeline-outputs`, `sp-07-checkpoints-dev`, `sp-07-checkpoints-test`): see
-[docs/10_KAGGLE_RESOURCES.md](../../docs/10_KAGGLE_RESOURCES.md).
+[docs/10_KAGGLE_AND_HF_RESOURCES.md](../../docs/10_KAGGLE_AND_HF_RESOURCES.md).

@@ -1,16 +1,22 @@
-# 10 — Kaggle Resources
+# 10 — Kaggle and Hugging Face resources
 
-Record of every Kaggle notebook and dataset used by SafetyPulse. All are **private**. Most live on the main
-account `purvanshjoshi1`; a few runs used a teammate's account, `purvanshj009` (see
-[Teammate account](#teammate-account)). Links open only for the owner and people it is shared with.
+Record of every compute run, dataset and published artifact of SafetyPulse.
+
+- **Kaggle** (experiments): every notebook and dataset is **private**. Most live on the main account
+  `purvanshjoshi1`; a few runs used a teammate's account, `purvanshj009` (see [Teammate account](#teammate-account)).
+  Links open only for the owner and people they are shared with. The data needed to reproduce the results is
+  published on Hugging Face.
+- **Hugging Face** (account `purvansh01`): runs that needed a larger GPU ([Hugging Face Jobs](#hugging-face-jobs)),
+  and every **public** artifact: the repaired model, adapters, datasets, logs, two collections and the article
+  ([Hugging Face artifacts](#hugging-face-artifacts)).
 
 How runs work: [kaggle/README.md](../kaggle/README.md). Notebooks are launched with `tools/kaggle_run.py`, which
 runs them on Kaggle and saves the executed copy, log and key files to `kaggle/executed/<notebook>/` together with a
 `RUN_SUMMARY.md`.
 
-_Last updated: 2026-11-08._
+_Last updated: 2026-11-08 (after publication)._
 
-## Datasets
+## Kaggle datasets
 
 | Dataset | Contents | Status | Link |
 |---|---|---|---|
@@ -29,7 +35,7 @@ Later notebooks read earlier outputs directly from the notebooks (Kaggle "kernel
 are a durable copy in case notebook outputs expire or a notebook is re-run. **Attach either a snapshot or the
 original notebook output, never both:** notebooks find files by name and would see two copies.
 
-## Pipeline notebooks
+## Kaggle notebooks
 
 | # | Notebook | Kaggle notebook | Inputs | Status |
 |---|---|---|---|---|
@@ -43,7 +49,7 @@ original notebook output, never both:** notebooks find files by name and would s
 | 07 | Fine-tune with checkpoints | one notebook per run, see [07 runs](#07-fine-tune-runs) | lib, 01, sp-models | ✅ all 10 planned runs + 2 extra |
 | 08 | Monitor checkpoints (dev) | session A: https://www.kaggle.com/code/purvanshjoshi1/sp-08-monitor-a (`gsm8k-s0`, `harm-s0`) → session B: https://www.kaggle.com/code/purvanshjoshi1/sp-08-monitor-b (`alpaca-s0`, `none-s0` + full dev analysis) | lib, 01, 06, 07 dev runs, sp-models | ✅ **alpaca-s0 drifted (ASR 21% → 42%); CIS fell one checkpoint before ASR rose**; harm-s0 broke at step 10; gsm8k-s0 and none-s0 stayed safe |
 | 08 | Monitor `harmdense-s0` (lead time) | https://www.kaggle.com/code/purvanshj009/sp-08-monitor-harmdense (teammate account) | lib, 07 harmdense, sp-pipeline-outputs, sp-models | ✅ CIS fell 13–16% at step 4, one checkpoint (2 steps) before ASR became unsafe at step 6 |
-| 08 | Dev CIS re-score with the matched bundle (ASR reused), thresholds by rule v2 | https://www.kaggle.com/code/purvanshjoshi1/sp-08-monitor-dev-matched | lib, 01, matched 06, 08-b (monitor), sp-07-checkpoints-dev, sp-models | ⏳ running |
+| 08 | Dev CIS re-score with the matched bundle (ASR reused), thresholds by rule v2 | https://www.kaggle.com/code/purvanshjoshi1/sp-08-monitor-dev-matched | lib, 01, matched 06, 08-b (monitor), sp-07-checkpoints-dev, sp-models | ✅ matched-bundle thresholds by rule v2: `cis_circ`, τ_fail 0.818, τ_warn 0.909 (dev ρ −0.90, F1 0.98) |
 | 08 | Test scoring: `gsm8k-s1/s2` | https://www.kaggle.com/code/purvanshjoshi1/sp-08-test-gsm8k | lib, 01, matched 06, sp-07-checkpoints-test, sp-models | ✅ WARN throughout, no false FAIL (ASR fell) |
 | 08 | Test scoring: `alpaca-s1/s2` | https://www.kaggle.com/code/purvanshj009/sp-08-test-alpaca (teammate) | lib, sp-monitor-inputs, sp-07-checkpoints-test, sp-models | ✅ FAIL at step 25, 1–3 checkpoints before ASR became unsafe |
 | 08 | Test scoring: `none-s1/s2` | https://www.kaggle.com/code/purvanshj009/sp-08-test-none (teammate) | as above | ✅ PASS at every checkpoint (CIS rose to 1.4, ASR fell) |
@@ -55,7 +61,7 @@ original notebook output, never both:** notebooks find files by name and would s
 | 10 | Audit session C: `gsm8k-s1/s2`, `none-s1/s2` at their final checkpoint (fixed notebook) | https://www.kaggle.com/code/purvanshjoshi1/sp-10-audit-c | as above + 10-a | ✅ 4 audits |
 | 10 | Session D: final tables A–D, fine-tune effect, figures, judge-validation sample (CPU) | https://www.kaggle.com/code/purvanshjoshi1/sp-10-audit-d | 01, 09, 08 final, 10-c, `sp-10-audits`, sp-monitor-inputs, sp-models | ✅ 36 audits merged: SafeTune restore ASR 25.2% → 12.3% and task 55.1% → 70.7%; circuit repair ΔASR +0.0 |
 | 11 | Toolkit chain: SafeTune repair → AuditKIT before/after audit (`alpaca-s1`, 119 HarmBench test prompts, AuditKIT `GuardJudge` + `compare`) | https://www.kaggle.com/code/purvanshj009/sp-11-auditkit-before-after (teammate) | lib, sp-pipeline-outputs v3, sp-monitor-inputs, sp-07-checkpoints-test, sp-models | ✅ (attempt 2) ASR base 14.3% → drifted 24.4% (p = 0.012) → SafeTune-repaired 11.8% (p = 0.003); attempt 1 invalid (AuditKIT/Llama Guard 1B format) |
-| 14 | Publish to Hugging Face (CPU, **run from the editor** with a write `HF_TOKEN` secret) | https://www.kaggle.com/code/purvanshjoshi1/sp-14-publish-to-hf | sp-pipeline-outputs, sp-monitor-inputs, safetypulse-pairs, sp-10-audits, sp-07-checkpoints-dev / -test / -extra, 10-c | ✅ 10 HF repos created (private), 0 check problems; see [Hugging Face artifacts](#hugging-face-artifacts) |
+| 14 | Publish to Hugging Face (CPU, **run from the editor** with a write `HF_TOKEN` secret) | https://www.kaggle.com/code/purvanshjoshi1/sp-14-publish-to-hf | sp-pipeline-outputs, sp-monitor-inputs, safetypulse-pairs, sp-10-audits, sp-07-checkpoints-dev / -test / -extra, 10-c | ✅ 10 HF repos created and checked (0 problems); 9 made public, 1 kept private; see [Hugging Face artifacts](#hugging-face-artifacts) |
 
 ### Matched-pair re-run
 
@@ -87,25 +93,40 @@ matched probe bundle replaces the unpaired one for 08 (dev re-score and test run
 | `harmdense-s0` | extra: lead time (teammate account) | https://www.kaggle.com/code/purvanshj009/sp-07-harmdense-s0 | 26 | `sp-07-checkpoints-extra` |
 | `alpaca-s3` | extra test seed (teammate account) | https://www.kaggle.com/code/purvanshj009/sp-07-alpaca-s3 | 11 | `sp-07-checkpoints-extra` |
 
-## Hugging Face Jobs (account `purvansh01`)
+## Hugging Face Jobs
 
-Runs that do not fit free Kaggle GPUs. Inputs and results: private dataset repo
-https://huggingface.co/datasets/purvansh01/safetypulse-jobs (scripts in `jobs/`, results in `results/`).
+Runs that do not fit free Kaggle GPUs, or that test the package on the real model. Scripts: `tools/hf_jobs/`;
+summaries: `kaggle/executed/12_hf_jobs/RUN_SUMMARY.md` (jobs 1, 2, 4–7) and `kaggle/executed/13_curatorkit_alpaca/`
+(job 3). Inputs and raw results: the private dataset repo `purvansh01/safetypulse-jobs` (see below).
 
 | Job | GPU | Result | Link |
 |---|---|---|---|
 | 1 · CircuitKIT EAP-IG cross-check (06b on a big GPU) | A100 80 GB | ✅ 16 of our 20 components in CircuitKIT's top 100 of 612 (chance 3.3; p ≈ 2e-10); our top head is its #4; order not shared (ρ = 0.05); CircuitKIT also ranks early MLPs | https://huggingface.co/jobs/purvansh01/6aef4ae8e6320c66fad5e879 |
 | 2 · Llama Guard 3 1B vs 8B via AuditKIT | A10G 24 GB | ✅ judges agree on 94–96% (κ 0.78–0.84); both show drift +11 pts (p ≤ 0.004) and SafeTune repair −14 pts (p ≤ 0.0005) | https://huggingface.co/jobs/purvansh01/6aef4aeee6320c66fad5e882 |
 | 3 · CuratorKIT curation of Alpaca → fine-tune `alpacacur-s0` → monitoring (notebooks 01b, 07, 08) | A100 80 GB | ✅ CuratorKIT removed 19/2,000 (17 toxic); **drift unchanged** (mean ASR 37.6% vs 38.1%); CIS FAIL at step 25 before ASR rose. Checkpoints + curated dataset saved in the private repo | https://huggingface.co/jobs/purvansh01/6aef52ed0e0338d1bb8382f6 |
+| 4 · Build the SafeTune-repaired model, check it with the package | L4 24 GB | ✅ published `tiny-aya-global-safetypulse-repaired`; `safetypulse.check`: base PASS 1.000, drifted FAIL 0.735, repaired PASS 0.967 (6 min 41 s; an A10G request waited 13 min and was cancelled) | https://huggingface.co/jobs/purvansh01/6af01044e6320c66fad6ff32 |
+| 5 · README commands word for word, from a clean install | L4 24 GB | ✅ install `[peft,toolkits]`; check FAIL (exit 20) → repair → check PASS (exit 0), same score as job 4 | https://huggingface.co/jobs/purvansh01/6af040ade6320c66fad73866 |
+| 6 · Rest of the package on the real model | A100 80 GB | ✅ `calibrate` reproduces the published bundle exactly (layer 27, 20/20 components); all 7 repair methods run, CIS verdict agrees with held-out ASR for 6/7; full-model audit works; found the adapter base-path bug | https://huggingface.co/jobs/purvansh01/6af04421e6320c66fad73ae0 |
+| 7 · LoRA audit and the Trainer callback | L4 24 GB | ✅ audit of a published LoRA checkpoint works after the fix; callback in a real 30-step fine-tune: WARN at steps 10, 20, 30 (CIS 0.90 → 0.83) | https://huggingface.co/jobs/purvansh01/6af04ef5e6320c66fad7428a |
 
 ## Hugging Face artifacts
 
-Created by notebook 14 under `purvansh01`, private until reviewed; the nine below go public for the submission.
-`safetypulse-withheld` (positive-control adapters, `ft_harm`, unredacted audits, judge sample) stays private:
-[docs/11_WITHHELD_ARTIFACTS.md](11_WITHHELD_ARTIFACTS.md).
+Published 2026-11-08: copied from the Kaggle datasets by notebook 14 (`sp-14-publish-to-hf`), checked, then made
+public and **un-gated**. The repaired model was built by job 4.
+
+**Submission links**
+
+| What | Link |
+|---|---|
+| Article | https://huggingface.co/blog/purvansh01/safetypulse-safety-drift-monitor |
+| Model collection | https://huggingface.co/collections/purvansh01/safetypulse-models-6af00b8f56c773a80af9f7e0 |
+| Dataset collection | https://huggingface.co/collections/purvansh01/safetypulse-data-6af00b9124ee9d5022a36482 |
+
+**Public repos**
 
 | Repo | Type | Contents |
 |---|---|---|
+| [`tiny-aya-global-safetypulse-repaired`](https://huggingface.co/purvansh01/tiny-aya-global-safetypulse-repaired) | model | The repaired model: drifted `alpaca-s1` step 125 + SafeTune safety-vector restore (α 1.0, rank 8). ASR 24.4% → 11.8%, GSM8K 56.7% → 71.3%; first in the model collection |
 | [`safetypulse-lora-alpaca`](https://huggingface.co/purvansh01/safetypulse-lora-alpaca) | model | alpaca-s0 … s3, 44 checkpoints |
 | [`safetypulse-lora-alpacacur`](https://huggingface.co/purvansh01/safetypulse-lora-alpacacur) | model | CuratorKIT run, 11 checkpoints |
 | [`safetypulse-lora-gsm8k`](https://huggingface.co/purvansh01/safetypulse-lora-gsm8k) | model | gsm8k-s0 … s2, 33 checkpoints |
@@ -115,6 +136,16 @@ Created by notebook 14 under `purvansh01`, private until reviewed; the nine belo
 | [`safetypulse-pairs`](https://huggingface.co/datasets/purvansh01/safetypulse-pairs) | dataset | matched pairs (+ unpaired v1) |
 | [`safetypulse-probe-bundle`](https://huggingface.co/datasets/purvansh01/safetypulse-probe-bundle) | dataset | calibrated bundle `f898d4c6`, thresholds, token sets |
 | [`safetypulse-logs`](https://huggingface.co/datasets/purvansh01/safetypulse-logs) | dataset | monitor, audits (harmful answers withheld), repair, report tables, HF Job results |
+
+All 161 LoRA `adapter_config.json` files name `CohereLabs/tiny-aya-global` as their base model (fixed 2026-11-08;
+they had recorded the training machine's local path).
+
+**Private repos** (never made public)
+
+| Repo | Contents | Why private |
+|---|---|---|
+| `purvansh01/safetypulse-jobs` | Inputs and raw results of the HF Jobs, the package source used by jobs 5–7, and the judge-validation sample | Job plumbing; holds the sample with harmful model answers |
+| `purvansh01/safetypulse-withheld` | Positive-control adapters (`harm-s0`, `harmdense-s0`), `ft_harm`, unredacted audits, judge sample | Harmful by design; access for judges on request, see [docs/11_WITHHELD_ARTIFACTS.md](11_WITHHELD_ARTIFACTS.md) |
 
 ## Teammate account
 

@@ -150,7 +150,7 @@ Package tests: `pip install -e ".[dev,peft]" && pytest` (166 tests, run in CI).
 [Report](docs/report/REPORT.md) · [Research plan](docs/02_RESEARCH_PLAN.md) ·
 [Architecture](docs/03_SYSTEM_ARCHITECTURE.md) · [Data](docs/04_DATA_SPEC.md) ·
 [Evaluation protocol](docs/05_EVALUATION_PROTOCOL.md) · [Risk, ethics, licensing](docs/08_RISK_ETHICS_LICENSING.md) ·
-[Withheld artifacts](docs/11_WITHHELD_ARTIFACTS.md) · [Kaggle resources](docs/10_KAGGLE_RESOURCES.md) ·
+[Withheld artifacts](docs/11_WITHHELD_ARTIFACTS.md) · [Kaggle and HF resources](docs/10_KAGGLE_AND_HF_RESOURCES.md) ·
 [Decisions](docs/adr/)
 
 ## Responsible use

@@ -6,7 +6,7 @@
 | `notebooks/` | Clean notebooks, no outputs. Upload these to Kaggle. |
 | `executed/` | The same notebooks downloaded from Kaggle after running, with outputs. |
 
-Links to every Kaggle notebook and dataset: [docs/10_KAGGLE_RESOURCES.md](../docs/10_KAGGLE_RESOURCES.md).
+Links to every Kaggle notebook and dataset, and every Hugging Face job and artifact: [docs/10_KAGGLE_AND_HF_RESOURCES.md](../docs/10_KAGGLE_AND_HF_RESOURCES.md).
 
 ## One-time setup on Kaggle
 
@@ -48,7 +48,7 @@ positive control) with seeds 1 and 2. Set `CONDITION` and `SEED` in the notebook
 Notebooks are run with `tools/kaggle_run.py`, which attaches earlier notebooks' outputs directly (Kaggle
 *kernel sources*), so no separate data datasets are created. The only datasets are `safetypulse-lib` (the library)
 and `sp-models` (the gated-model mirror). Kaggle notebook slugs, inputs and status:
-[docs/10_KAGGLE_RESOURCES.md](../docs/10_KAGGLE_RESOURCES.md).
+[docs/10_KAGGLE_AND_HF_RESOURCES.md](../docs/10_KAGGLE_AND_HF_RESOURCES.md).
 
 | From | Folder | Read by |
 |------|--------|---------|
