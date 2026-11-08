@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Read the write-up
+    url: https://huggingface.co/blog/purvansh01/safetypulse-safety-drift-monitor
+    about: Method, results and limitations in the Hugging Face article.
+  - name: Report a security problem or harmful content
+    url: https://github.com/PxA-Labs/safetypulse/security/advisories/new
+    about: Private report, visible only to the maintainers.
