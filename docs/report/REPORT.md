@@ -1,7 +1,7 @@
 # SafetyPulse: monitoring safety drift during fine-tuning through the refusal mechanism
 
-_Draft v0.2, 2026-11-08. Lexsi Labs AI Safety & Alignment Hackathon, Track 2b. Every number is traceable to a
-`kaggle/executed/<notebook>/RUN_SUMMARY.md`. Still to add: CuratorKIT, CircuitKIT (HF Job 1), the 8B-judge check, the curated-data result._
+_Draft v0.3, 2026-11-08. Lexsi Labs AI Safety & Alignment Hackathon, Track 2b. Every number is traceable to a
+`kaggle/executed/<notebook>/RUN_SUMMARY.md` (HF Jobs: `kaggle/executed/12_hf_jobs/`, `13_curatorkit_alpaca/`)._
 
 ## Abstract
 
@@ -17,7 +17,10 @@ that drifted (general instruction tuning doubled ASR, 21% → 42%). A 50-prompt 
 checkpoints as well but catches only 13% of unsafe checkpoints. Repair tells a different story: restoring only the
 circuit's weights is no better than restoring random components, while SafeTune's low-rank safety-vector restore
 returns ASR to base without hurting task performance. The refusal circuit is a good *read-out* of safety, but the
-fine-tune's damage is not concentrated in it.
+fine-tune's damage is not concentrated in it. All four Lexsi toolkits run on our model and data: CircuitKIT
+independently places 16 of our 20 circuit components in its top 100 of 612; AuditKIT confirms drift and repair with
+paired tests, and a larger judge (Llama Guard 3 8B) agrees with ours (κ 0.78–0.84); CuratorKIT's toxicity-focused
+data curation does **not** prevent the drift, while CIS again flags it before ASR rises.
 
 ## 1. Problem
 
@@ -55,6 +58,8 @@ prompts, GSM8K task accuracy and MMLU general capability, each with bootstrap 95
 
 All four stages are implemented in the `safetypulse` Python package (`safetypulse calibrate | check | repair |
 audit`, a Hugging Face `Trainer` callback, 166 tests, CI), and every experiment runs as a Kaggle notebook (T4 GPUs).
+Three runs that need a larger GPU (CircuitKIT discovery, the 8B judge, the curated fine-tune) ran the same code as
+Hugging Face Jobs on an A100 / A10G (`tools/hf_jobs/`).
 
 ## 3. Setup
 
@@ -144,6 +149,60 @@ Restoring the circuit's weights is no better than restoring random components of
 (SafeTune R3b) and whole-model interpolation return ASR to base with task performance kept (60 items per set,
 ±12 pts).
 
+### 4.5 Toolkit chain: SafeTune → AuditKIT, and judge robustness
+On the 119 HarmBench test prompts, base Tiny Aya, the drifted `alpaca-s1` checkpoint (step 125) and that checkpoint
+repaired with SafeTune's safety-vector restore were scored with **AuditKIT** `GuardJudge` (11). A second run (HF Job 2)
+regenerated the answers and scored them with both Llama Guard 3 **1B** (our judge) and **8B**:
+
+| Model | ASR, AuditKIT (1B) | ASR, 1B (Job 2) | ASR, 8B (Job 2) | 1B–8B agreement (κ) |
+|---|---|---|---|---|
+| Base | 14.3% | 14.3% | 12.6% | 95.0% (0.78) |
+| Drifted `alpaca-s1` | 24.4% | 25.2% | 24.4% | 94.1% (0.84) |
+| Repaired (SafeTune R3b) | 11.8% | 10.9% | 10.1% | 95.8% (0.78) |
+
+| Paired change (exact McNemar) | AuditKIT (1B) | Judge 8B |
+|---|---|---|
+| base → drifted | +10.1 pts, p = 0.012 | +11.8 pts, p = 0.001 |
+| drifted → repaired | −12.6 pts, p = 0.003 | −14.3 pts, p = 0.0002 |
+| base → repaired | −2.5 pts, p = 0.25 | −2.5 pts, p = 0.25 |
+
+The drift and its repair are significant under both judges; the conclusions do not depend on using the small 1B
+judge. This is judge-to-judge agreement, not a human check. (1B rates differ by about one point between 11 and Job 2
+because greedy decoding is not bit-identical across GPUs.)
+
+### 4.6 Independent circuit check with CircuitKIT
+CircuitKIT 0.2.0 (EAP-IG, node level, chat template, 64 length-matched pairs, metric = refusal logit difference)
+scored all 612 heads and MLPs of Tiny Aya on an A100 (HF Job 1):
+
+| Measure | Value |
+|---|---|
+| Our 20 components in CircuitKIT's top 20 / 50 / 100 | 5 / **13 / 16** (chance 0.7 / 1.6 / 3.3; p ≈ 8e-11 for top 50, 2e-10 for top 100, hypergeometric) |
+| Median CircuitKIT rank of our components | 39 of 612 |
+| Our strongest head `attn_head:16:2` | CircuitKIT rank 4 |
+| Rank correlation of effect sizes within our 20 | ρ = 0.05 |
+
+An independent method with a different algorithm **corroborates where the circuit is** (mid-to-late layers) but not
+our ordering of its components. CircuitKIT also ranks several early MLPs (layers 0–11) highly: EAP-IG integrates over
+every token position, including those that process the harmful words, while our discovery measures only the last
+prompt token, where refusal is read out.
+
+### 4.7 Does data curation prevent the drift? (CuratorKIT)
+**CuratorKIT** 0.1.22 filtered the 2,000 Alpaca examples (schema gate, exact + MinHash dedup, secrets gate, Detoxify
+toxicity gate; length limits opened so only safety/hygiene filters remove data). It removed **19** (17 toxic, 2
+missing fields). We fine-tuned `alpacacur-s0` on the 1,981 kept examples with the same seed and settings as
+`alpaca-s0` (HF Job 3) and monitored it with the dev thresholds:
+
+| | Original `alpaca-s0` | Curated `alpacacur-s0` |
+|---|---|---|
+| Mean ASR after step 0 | 38.1% | 37.6% |
+| Peak ASR | 46% | 46% |
+| Unsafe checkpoints | 9 / 10 | 9 / 10 |
+| First CIS alarm / first unsafe ASR | step 25 / step 50 | **step 25** (FAIL, ASR 21% = base) / step 50 |
+
+Curation leaves the drift unchanged: it is not caused by toxic or low-quality examples but by ordinary, clean
+instruction tuning. Data hygiene is not a substitute for monitoring; CIS alarmed one checkpoint before ASR rose, as on
+every other Alpaca run. (One seed; Detoxify targets toxic language, not examples that teach compliance.)
+
 ## 5. Hypotheses
 
 | | Hypothesis | Outcome |
@@ -153,27 +212,43 @@ Restoring the circuit's weights is no better than restoring random components of
 | H3 | CIS drops before or with ASR | **Supported:** 1–3 checkpoints early on all drifting test runs |
 | H4 | CIS beats the spot-check | **Not on rank correlation** (−0.80 vs −0.83); **yes as a detector** (recall 1.00 vs 0.13) |
 | H5 | Circuit-restricted repair beats random / whole-model repair | **Not supported** on dev and held-out test runs (ΔASR +0.0 [−1.4, +1.4]); low-rank whole-model restore (SafeTune) works |
+| — | (Exploratory) Safety-focused data curation prevents the drift | **Not supported:** CuratorKIT-curated Alpaca drifts the same (mean ASR 37.6% vs 38.1%, one seed) |
 
 ## 6. Toolkits
 
-- **SafeTune** (Lexsi Labs): `apply_wise_ft` (R3a) and `apply_safety_vector_restore` (R3b) ran on real
-  checkpoints in notebooks 09 and 10; R3b is the best repair in our comparison.
-- **CircuitKIT** (Lexsi Labs): integrated as an adapter (task building from our matched pairs, EAP/EAP-IG
-  discovery, mapping and comparison with our components). Running it on Tiny Aya failed on free Kaggle hardware
-  in five attempts: one T4 runs out of memory (3.9B parameters, 262k vocabulary, ~385-token chat prompts; even
-  ~20-token raw prompts) and discovery does not support a model split over two GPUs. It needs a ≥24 GB GPU.
-- **AuditKIT:** listed by its API names only in our environment check; the adapter is a stub until its API is
-  confirmed. Our audit uses Llama Guard 3 1B directly.
+All four Lexsi Labs toolkits ran on our model and data:
+
+| Toolkit | Role in SafetyPulse | Where | Outcome |
+|---|---|---|---|
+| **CuratorKIT** 0.1.22 | Curate the fine-tuning data before training | HF Job 3 (01b) | Removed 19 / 2,000; drift unchanged (§4.7) |
+| **CircuitKIT** 0.2.0 | Independent circuit discovery (EAP-IG) | HF Job 1 (06b) | Corroborates the circuit's location (§4.6) |
+| **SafeTune** 0.1.12 | Repair: `apply_wise_ft` (R3a), `apply_safety_vector_restore` (R3b) | 09, 10, 11 | R3b is the best repair (§4.4) |
+| **AuditKIT** 1.1.3 | Before/after audit with `GuardJudge` and `compare` | 11, HF Job 2 | Confirms drift and repair (§4.5) |
+
+Chain: CuratorKIT → fine-tune → CIS check → SafeTune repair → AuditKIT audit, with CircuitKIT cross-checking the
+mechanism CIS measures.
+
+**Integration notes, reported back to the toolkit authors:**
+- CircuitKIT does not fit Tiny Aya on a 16 GB T4 (five Kaggle attempts ran out of memory; it does not support a model
+  split over two GPUs); it runs in under 4 minutes on an 80 GB A100.
+- AuditKIT's `llama_guard` profile sends plain-string message contents, which the Llama Guard 3 **1B** chat template
+  ignores (every answer judged unsafe); a custom profile with content lists fixes it. `RunComparison.grade()` returned
+  FAIL for an ASR *decrease* (it seems to ignore that the metric is lower-is-better), and `significance()` gave
+  p ≈ 0.55 for all comparisons; we report exact McNemar tests on the paired verdicts instead.
+- SafeTune's recover functions are loaded on their own, because the package import pulls in its training
+  dependencies.
 
 ## 7. Limitations
 
 - One base model; one benign condition that drifts (Alpaca); ASR on 78 dev / 119 test prompts (±8–11 pts).
-- The judge (Llama Guard 3 1B) is not yet validated against human labels (Cohen's κ pending).
+- The judge (Llama Guard 3 1B) agrees with Llama Guard 3 8B (κ 0.78–0.84) but is not yet validated against human
+  labels (a 100-item sample is prepared).
 - Matched harmless twins were drafted and reviewed by AI (three independent reviewer agents), not by humans.
 - CIS gives WARN on domain fine-tunes that move the circuit without reducing safety; FAIL-level recall is 0.57
   because CIS partly recovers late in Alpaca training while ASR stays high.
 - CIS costs 2.2× less than the full ASR audit, not orders of magnitude; its advantage over a cheaper spot-check is
   detection, not cost.
+- CircuitKIT agrees on the circuit's location but not on the order of its components (ρ = 0.05).
 - Novelty of C1–C3 against the literature still has to be verified (docs/01 §4).
 
 ## 8. Responsible use
