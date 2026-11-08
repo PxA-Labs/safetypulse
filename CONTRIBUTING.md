@@ -1,32 +1,54 @@
-# Contributing
+# Contributing to SafetyPulse
 
-## Setup (once code exists)
+Thanks for your interest. Bug reports, reproductions on other models, and improvements to the package are all welcome.
+By taking part you agree to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Set up
 
 ```bash
-uv sync
-pre-commit install
-cp .env.example .env   # add HF_TOKEN etc. — never commit .env
-uv run pytest
+git clone https://github.com/PxA-Labs/safetypulse
+cd safetypulse
+pip install -e ".[dev,peft]"        # Python >= 3.10; add ",toolkits" for CircuitKIT / SafeTune / AuditKIT (Python 3.12)
+pytest -q                           # tiny local models, no GPU or Hub access needed
+ruff check safetypulse tests
 ```
 
-## Workflow
+CI runs exactly these two checks on every push and pull request (`.github/workflows/ci.yml`).
 
-1. Pick a task from the [Project Plan](docs/09_PROJECT_PLAN.md); create a branch `feat/…`, `fix/…` or `exp/…`.
-2. Keep PRs small (one concern each).
-3. Open a PR; one teammate reviews.
-4. Significant decisions → add an ADR in `docs/adr/`.
-5. Any change to metrics, thresholds or datasets after the protocol freeze → entry in the
-   [deviation log](docs/02_RESEARCH_PLAN.md#8-deviation-log).
+## Where things live
 
-## PR checklist
+| Path | What |
+|---|---|
+| `safetypulse/` | The package: `calibrate`, `check`, `repair`, `audit`, the CLI and the Trainer callback |
+| `safetypulse/adapters/` | The only place the Lexsi toolkits are imported |
+| `tests/` | Unit and parity tests on tiny Llama / Qwen2 models |
+| `tools/build_notebooks.py` | Generates every notebook in `kaggle/notebooks/`; **edit notebooks here, not in the .ipynb files** |
+| `kaggle/executed/` | Executed runs, each with a `RUN_SUMMARY.md` |
+| `tools/hf_jobs/` | Scripts for runs on Hugging Face Jobs |
+| `docs/` | Research plan, protocol, data spec, decisions (`docs/adr/`), report and article |
 
-- [ ] Tests added/updated and passing (`uv run pytest`)
-- [ ] `ruff` and `mypy` clean
-- [ ] No harmful completions, secrets or large files committed
-- [ ] Config changes documented
-- [ ] Docs updated if behaviour or interfaces changed
-- [ ] Experiment PRs: config file + run id + where outputs live
+## Making a change
 
-## Commit messages
+1. Open an issue first for anything larger than a small fix, so we can agree on the approach.
+2. Create a branch (`feat/…`, `fix/…`, `docs/…`), keep the pull request to one concern, and add or update tests.
+3. Use conventional commit messages: `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:`.
+4. Fill in the pull request template; CI must pass before merging.
 
-Conventional commits: `feat:`, `fix:`, `exp:`, `docs:`, `test:`, `refactor:`, `chore:`.
+**Research changes** (metrics, thresholds, datasets, evaluation protocol) need a short rationale in the pull request
+and, after the protocol freeze, an entry in the deviation log of [docs/02_RESEARCH_PLAN.md](docs/02_RESEARCH_PLAN.md).
+Thresholds and repair strengths are chosen on development runs only; never tune them on test runs.
+
+## Harmful content
+
+This project handles harmful prompts and studies models whose safety is degraded. In pull requests, issues and
+commits:
+
+- never include model answers to harmful prompts, harmful training data, or adapters trained on harmful data;
+- refer to harmful prompts by benchmark id where possible;
+- report any such content you find in public as described in [SECURITY.md](SECURITY.md).
+
+The release policy is in [docs/11_WITHHELD_ARTIFACTS.md](docs/11_WITHHELD_ARTIFACTS.md).
+
+## Licence
+
+Contributions are accepted under the [Apache-2.0](LICENSE) licence of this repository.

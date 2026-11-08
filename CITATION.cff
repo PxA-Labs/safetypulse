@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use SafetyPulse, please cite it as below."
+title: "SafetyPulse: Catching Safety Drift During Fine-Tuning by Reading the Model's Refusal Circuit"
+abstract: >-
+  An early-warning signal for safety drift during LLM fine-tuning. A Circuit Integrity Score, read from the model's
+  refusal circuit on 50 prompt pairs, flags every unsafe held-out checkpoint before harm becomes measurable; a
+  SafeTune low-rank restore repairs the drift. Built on Cohere Labs' Tiny Aya Global for the Lexsi Labs AI Safety &
+  Alignment Hackathon (Track 2b).
+type: software
+authors:
+  - given-names: Purvansh
+    family-names: Joshi
+version: 0.1.0
+date-released: "2026-11-08"
+license: Apache-2.0
+repository-code: "https://github.com/PxA-Labs/safetypulse"
+url: "https://huggingface.co/blog/purvansh01/safetypulse-safety-drift-monitor"
+keywords:
+  - ai-safety
+  - llm-safety
+  - fine-tuning
+  - mechanistic-interpretability
+  - safety-monitoring
+  - model-repair

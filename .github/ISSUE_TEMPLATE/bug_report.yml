@@ -1,0 +1,35 @@
+name: Bug report
+description: Something in the package, CLI or notebooks does not work as documented.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please do not paste model answers to harmful prompts or anything sensitive. Security problems go through
+        SECURITY.md, not public issues.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What did you run, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      description: The exact command or code, and the checkpoint / bundle you used (Hub ids are best).
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Output or traceback
+      render: text
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      description: "safetypulse version, Python, torch, transformers, GPU"
+      placeholder: "safetypulse 0.1.0 · Python 3.12 · torch 2.x · transformers 5.x · L4 24 GB"
