@@ -1,67 +1,127 @@
 # SafetyPulse
 
-**Circuit-level early warning and targeted repair for safety drift during LLM fine-tuning.**
+**A cheap early-warning signal for safety drift during LLM fine-tuning, read from the model's own refusal
+mechanism, plus the repair and audit to act on it.**
 
-> Status: **Design phase** — no code yet. This repository currently contains the design and
-> production documentation that the implementation must follow.
->
-> Event: Lexsi Labs AI Safety & Alignment Hackathon — Track 2b (AI Safety and Correction)
-> Window: 1–21 November 2026
-
----
+Lexsi Labs AI Safety & Alignment Hackathon · Track 2b (AI Safety and Correction) · Model: Cohere Labs
+[Tiny Aya Global](https://huggingface.co/CohereLabs/tiny-aya-global) (3.35B) · Toolkits: CuratorKIT, CircuitKIT,
+SafeTune, AuditKIT
 
 ## The problem
 
-Fine-tuning an aligned open model on *benign* domain data (customer support, legal, medical, etc.)
-can silently degrade its safety behaviour (Qi et al., 2023). Teams rarely notice, because running a
-full red-team evaluation on every training checkpoint is slow and expensive — so it is skipped.
+Fine-tuning an aligned model on ordinary, harmless data can quietly weaken its refusals (Qi et al., 2023). Catching
+this today means a full red-team audit of every checkpoint (hundreds of harmful prompts, generation, a safety
+judge), so teams skip it. SafetyPulse measures instead whether the **internal refusal mechanism** is still intact:
+a Circuit Integrity Score (CIS) computed from 50 prompt pairs, cheap enough to run at every checkpoint.
 
-## What SafetyPulse does
+## Results (held-out test runs; full report: [docs/report/REPORT.md](docs/report/REPORT.md))
 
-1. **Calibrate** — locate the refusal circuit / direction in the *base* model (CircuitKIT), using
-   matched harmful/harmless contrast pairs.
-2. **Check** — at each fine-tuning checkpoint, compute a cheap **Circuit Integrity Score (CIS)**
-   (~100 forward passes) that measures whether the safety mechanism is still intact.
-3. **Validate** — show CIS predicts real attack success rate (ASR) measured with AuditKIT.
-4. **Repair** — when CIS crosses a threshold, apply a targeted weight-space fix restricted to the
-   identified components (SafeTune), preserving task performance.
-5. **Audit** — report ASR, over-refusal and task/general capability before vs. after.
+| Finding | Number |
+|---|---|
+| Benign Alpaca instruction tuning raises attack success rate (ASR) | 14.3% → 25.2% on 119 HarmBench test prompts (peak ~40% during training) |
+| CIS tracks ASR across test checkpoints | Spearman ρ = −0.80 [−0.85, −0.71] |
+| CIS flags every unsafe test checkpoint (WARN or FAIL) | recall 1.00; a 50-prompt refusal spot-check: 0.13 |
+| Early warning | CIS alarms at step 25 on all three unseen Alpaca seeds, 1–3 checkpoints before ASR rises |
+| **Repair: SafeTune safety-vector restore** | **ASR 25.2% → 12.3%** (base 14.3%) and **GSM8K 55.1% → 70.7%** (base 71.3%), MMLU unchanged |
+| Circuit-only weight restore | no effect (ΔASR +0.0 [−1.4, +1.4]): the circuit *reads out* the drift but does not store it |
+| AuditKIT before/after (paired McNemar) | base → drifted +10.1 pts (p = 0.012); drifted → repaired −12.6 pts (p = 0.003) |
+| Judge robustness | Llama Guard 3 1B vs 8B agree on 94–96% of answers (κ 0.78–0.84) |
+| CircuitKIT cross-check | 16 of our 20 circuit components are in its top 100 of 612 (p ≈ 2e-10) |
+| CuratorKIT curation | removed 19 / 2,000 examples, drift unchanged (mean ASR 37.6% vs 38.1%); CIS still warns early |
+
+## How the four toolkits are chained
 
 ```
-CuratorKIT ──► fine-tune ──► [checkpoint] ──► SafetyPulse.check (CIS) ──► pass ──► continue
- (data)                            │                       │
-                                   │                       └─ fail ──► SafetyPulse.repair (SafeTune)
-                                   │                                          │
-                                   └──────────── AuditKIT (ground truth ASR / over-refusal) ◄─┘
+CuratorKIT ─► LoRA fine-tune ─► each checkpoint ─► safetypulse check (CIS) ─► PASS: continue
+ (clean data)                                              │
+                                                           └─ WARN/FAIL ─► SafeTune repair ─► AuditKIT before/after
+CircuitKIT: independent check of the refusal circuit that CIS measures
 ```
+
+## Hugging Face artifacts
+
+All under [huggingface.co/purvansh01](https://huggingface.co/purvansh01):
+
+| Repo | Contents |
+|---|---|
+| `safetypulse-lora-alpaca` | LoRA adapters of the drifting Alpaca runs (seeds 0–3, 11 checkpoints each), with a warning card |
+| `safetypulse-lora-alpacacur` | Alpaca after CuratorKIT curation |
+| `safetypulse-lora-gsm8k`, `safetypulse-lora-none` | Domain fine-tune and negative control |
+| `safetypulse-probe-bundle` | Refusal direction, circuit, probe pairs and thresholds: what `safetypulse check` needs |
+| `safetypulse-eval`, `safetypulse-finetune-data`, `safetypulse-pairs` | Evaluation splits, fine-tuning data (incl. curated), 288 matched contrast pairs |
+| `safetypulse-logs` | CIS / spot-check / ASR for all 150 checkpoints, audits, repair results, final tables, HF Job results |
+
+Withheld on purpose: the positive-control adapters trained on harmful data and the text of harmful model answers.
+Why, and how judges can get access: [docs/11_WITHHELD_ARTIFACTS.md](docs/11_WITHHELD_ARTIFACTS.md).
+
+## Install and use
+
+```bash
+pip install -e ".[peft]"          # Python >= 3.10; add ".[toolkits]" for CircuitKIT / SafeTune / AuditKIT (SafeTune needs 3.12)
+hf download purvansh01/safetypulse-probe-bundle --repo-type dataset --local-dir bundle
+
+# Score a fine-tuned checkpoint: exit code 0 PASS, 10 WARN, 20 FAIL
+safetypulse check --checkpoint path/to/checkpoint-125 --bundle bundle --out check.json
+
+# Repair a drifted checkpoint with SafeTune's safety-vector restore (settings chosen on dev)
+safetypulse repair --checkpoint path/to/checkpoint-125 --bundle bundle --method safetune-svr --alpha 1.0 \
+  --svr-rank 8 --out repaired/
+
+# Audit: ASR, over-refusal, GSM8K, MMLU with bootstrap CIs
+hf download purvansh01/safetypulse-eval --repo-type dataset --local-dir eval
+safetypulse audit --model repaired/ --data-dir eval --split test --judge llamaguard \
+  --judge-model meta-llama/Llama-Guard-3-1B --out audit.json
+```
+
+Inside a Hugging Face `Trainer`:
+
+```python
+from safetypulse.integrations.hf_callback import SafetyPulseCallback
+trainer.add_callback(SafetyPulseCallback("bundle", on_fail="stop"))   # checks every saved checkpoint
+```
+
+`safetypulse calibrate` builds a bundle for a new base model from contrast pairs (`--pairs`), and
+`--circuitkit-crosscheck` adds the CircuitKIT comparison.
+
+## Reproducibility
+
+Every experiment is a notebook in [`kaggle/notebooks/`](kaggle/notebooks/), generated from
+[`tools/build_notebooks.py`](tools/build_notebooks.py) and run on Kaggle (T4 GPUs) with
+[`tools/kaggle_run.py`](tools/kaggle_run.py). Each run's executed notebook, log, key output files and a
+`RUN_SUMMARY.md` (what ran, numbers, interpretation) are in [`kaggle/executed/`](kaggle/executed/).
+
+| Step | Notebook | Output |
+|---|---|---|
+| Data: eval splits, fine-tune sets, leakage filter | 01 | `safetypulse-eval`, `safetypulse-finetune-data` |
+| Matched pairs (drafted, reviewed, split) | 02, 03 | `safetypulse-pairs` |
+| Model choice, refusal direction, circuit, probe bundle | 04, 05, 06 (+ 06b CircuitKIT, 06c specificity) | `safetypulse-probe-bundle` |
+| Curated data (CuratorKIT) | 01b | `ft_alpacacur.jsonl` |
+| Fine-tunes, 11 checkpoints each | 07 | `safetypulse-lora-*` |
+| Monitoring: CIS, spot-check, ASR; thresholds on dev | 08 | `safetypulse-logs/monitor` |
+| Repair strengths on dev; final test audit | 09, 10 | `safetypulse-logs/repair`, `report`, `audits` |
+| SafeTune → AuditKIT before/after | 11 | `kaggle/executed/11_*` |
+| Larger-GPU runs (CircuitKIT, 8B judge, CuratorKIT fine-tune) | [`tools/hf_jobs/`](tools/hf_jobs/) | `safetypulse-logs/hf_jobs` |
+
+Fixed choices: seed 0 for data splits; fine-tune seeds 0 (dev) and 1–3 (test); dev and test runs never overlap;
+thresholds and repair strengths are chosen on dev only, then applied unchanged to test. Model and judge revisions
+and dataset hashes are recorded in `kaggle/executed/*/RUN_SUMMARY.md` and `safetypulse-eval/manifest.json`.
+Package tests: `pip install -e ".[dev,peft]" && pytest` (166 tests, run in CI).
 
 ## Documentation
 
-| # | Document | Purpose |
-|---|----------|---------|
-| 00 | [Hackathon Brief](docs/00_HACKATHON_BRIEF.md) | Track 2 toolkits and problem statements (verbatim), mapping to this project |
-| 01 | [Project Overview](docs/01_PROJECT_OVERVIEW.md) | Problem, users, novelty claim, scope, non-goals |
-| 02 | [Research Plan](docs/02_RESEARCH_PLAN.md) | Hypotheses, experiments, baselines, controls, literature check |
-| 03 | [System Architecture](docs/03_SYSTEM_ARCHITECTURE.md) | Components, data flow, interfaces, module layout |
-| 04 | [Data Specification](docs/04_DATA_SPEC.md) | Datasets, splits, labels, leakage controls, handling of harmful content |
-| 05 | [Evaluation Protocol](docs/05_EVALUATION_PROTOCOL.md) | Metrics, judges, statistics, reporting format |
-| 06 | [Engineering Standards](docs/06_ENGINEERING_STANDARDS.md) | Repo layout, tooling, config, testing, reproducibility |
-| 07 | [Production & Operations](docs/07_PRODUCTION_AND_OPERATIONS.md) | CLI/CI integration, deployment, runbook, compute |
-| 08 | [Risk, Ethics & Licensing](docs/08_RISK_ETHICS_LICENSING.md) | Safety of artifacts, disclosure, licences |
-| 09 | [Project Plan](docs/09_PROJECT_PLAN.md) | 16-day timeline, roles, milestones, definition of done |
-| — | [Architecture Decision Records](docs/adr/) | Key decisions and their rationale |
-| — | [Contributing](CONTRIBUTING.md) | Workflow for the team |
+[Report](docs/report/REPORT.md) · [Research plan](docs/02_RESEARCH_PLAN.md) ·
+[Architecture](docs/03_SYSTEM_ARCHITECTURE.md) · [Data](docs/04_DATA_SPEC.md) ·
+[Evaluation protocol](docs/05_EVALUATION_PROTOCOL.md) · [Risk, ethics, licensing](docs/08_RISK_ETHICS_LICENSING.md) ·
+[Withheld artifacts](docs/11_WITHHELD_ARTIFACTS.md) · [Kaggle resources](docs/10_KAGGLE_RESOURCES.md) ·
+[Decisions](docs/adr/)
 
-## Open items before implementation
+## Responsible use
 
-- [ ] Literature check for prior work on circuit/direction-based drift monitoring (see [Research Plan §6](docs/02_RESEARCH_PLAN.md#6-literature-check-must-complete-before-day-3))
-- [ ] Confirm official hackathon rules and judging criteria (toolkit-chaining requirement was seen only on secondary sources)
-- [ ] Read CuratorKIT / SafeTune / CircuitKIT / AuditKIT docs and record actual APIs in [Architecture §5](docs/03_SYSTEM_ARCHITECTURE.md#5-external-toolkit-integration)
-- [ ] Confirm available compute and fill in [Production §6](docs/07_PRODUCTION_AND_OPERATIONS.md#6-compute-budget)
-- [ ] Choose licence for this repository (see [ADR-0004](docs/adr/0004-licensing.md))
+CIS is a screening signal: PASS does not certify a model as safe, and release decisions need a full audit.
+Evaluation data contains harmful prompts from public red-teaming benchmarks, for safety research only.
 
-## Team
+## Licence
 
-| Name | Role | Contact |
-|------|------|---------|
-| _TBD_ | _TBD_ | _TBD_ |
+Code: [Apache-2.0](LICENSE) ([ADR-0004](docs/adr/0004-licensing.md)). Released adapters and data: CC-BY-NC-4.0,
+inherited from Tiny Aya and Alpaca; benchmark data keeps its source licence. The Lexsi toolkits keep their own
+licences and are used only through `safetypulse.adapters`.
