@@ -7,7 +7,11 @@ Lexsi Labs AI Safety & Alignment Hackathon · Track 2b (AI Safety and Correction
 [Tiny Aya Global](https://huggingface.co/CohereLabs/tiny-aya-global) (3.35B) · Toolkits: CuratorKIT, CircuitKIT,
 SafeTune, AuditKIT
 
-**Write-up:** [Hugging Face article](https://huggingface.co/blog/purvansh01/safetypulse-safety-drift-monitor) · [full report](docs/report/REPORT.md)
+[![SafetyPulse launch video: the alarm fires at step 25, harm is measurable only at step 100](docs/assets/safetypulse-launch.jpg)](docs/assets/safetypulse-launch.mp4)
+
+▶ **[Watch the 42-second launch video](docs/assets/safetypulse-launch.mp4)** · **Write-up:**
+[Hugging Face article](https://huggingface.co/blog/purvansh01/safetypulse-safety-drift-monitor) ·
+[full report](docs/report/REPORT.md)
 
 ## The problem
 

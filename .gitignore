@@ -33,3 +33,6 @@ graphify-out/
 checkpoint-*/
 /data/
 /runs/
+
+# launch-video build files (final video is in docs/assets/)
+brag-output/
