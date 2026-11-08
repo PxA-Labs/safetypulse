@@ -56,22 +56,31 @@ Why, and how judges can get access: [docs/11_WITHHELD_ARTIFACTS.md](docs/11_WITH
 
 ## Install and use
 
+Python 3.12 (SafeTune needs it; `check` alone runs on 3.10+), a GPU with 16 GB or more, and access to the gated
+[Tiny Aya Global](https://huggingface.co/CohereLabs/tiny-aya-global) (accept its terms, then `hf auth login`).
+
 ```bash
-pip install -e ".[peft]"          # Python >= 3.10; add ".[toolkits]" for CircuitKIT / SafeTune / AuditKIT (SafeTune needs 3.12)
-hf download purvansh01/safetypulse-probe-bundle --repo-type dataset --local-dir bundle
+pip install -e ".[peft,toolkits]"     # toolkits = CircuitKIT, SafeTune, AuditKIT; ".[peft]" is enough for check
 
-# Score a fine-tuned checkpoint: exit code 0 PASS, 10 WARN, 20 FAIL
-safetypulse check --checkpoint path/to/checkpoint-125 --bundle bundle --out check.json
+# Probe bundle and one drifted checkpoint (alpaca-s1, step 125)
+hf download purvansh01/safetypulse-probe-bundle --repo-type dataset --local-dir bundle --exclude "unpaired_v1/*"
+hf download purvansh01/safetypulse-lora-alpaca --include "alpaca-s1/checkpoint-125/*" --local-dir lora
 
-# Repair a drifted checkpoint with SafeTune's safety-vector restore (settings chosen on dev)
-safetypulse repair --checkpoint path/to/checkpoint-125 --bundle bundle --method safetune-svr --alpha 1.0 \
-  --svr-rank 8 --out repaired/
+# Score it: exit code 0 PASS, 10 WARN, 20 FAIL (this one FAILs, cis_circ ≈ 0.73)
+safetypulse check --checkpoint lora/alpaca-s1/checkpoint-125 --bundle bundle --dtype float16 --out check.json
 
-# Audit: ASR, over-refusal, GSM8K, MMLU with bootstrap CIs
+# Repair it with SafeTune's safety-vector restore (settings chosen on dev), then check again (PASS, ≈ 0.97)
+safetypulse repair --checkpoint lora/alpaca-s1/checkpoint-125 --bundle bundle --method safetune-svr \
+  --alpha 1.0 --svr-rank 8 --dtype float16 --out repaired
+safetypulse check --checkpoint repaired --bundle bundle --dtype float16
+
+# Audit: ASR, over-refusal, GSM8K, MMLU with bootstrap CIs (Llama Guard 3 1B is gated too)
 hf download purvansh01/safetypulse-eval --repo-type dataset --local-dir eval
-safetypulse audit --model repaired/ --data-dir eval --split test --judge llamaguard \
+safetypulse audit --model repaired --data-dir eval --split test --judge llamaguard \
   --judge-model meta-llama/Llama-Guard-3-1B --out audit.json
 ```
+
+The thresholds were calibrated with the model in fp16, so score in `float16` for numbers comparable to ours.
 
 Inside a Hugging Face `Trainer`:
 

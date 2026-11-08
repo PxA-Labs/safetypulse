@@ -90,11 +90,20 @@ def load_model(
 
 
 def adapter_base_model(adapter_dir: str | Path) -> str:
-    """`base_model_name_or_path` recorded by PEFT in the adapter config."""
+    """`base_model_name_or_path` recorded by PEFT in the adapter config.
+
+    PEFT records whatever path the base model was loaded from, so an adapter trained against a local copy names a
+    directory that does not exist on other machines; that is an error here, not a confusing Hub lookup later.
+    """
     cfg = json.loads((Path(adapter_dir) / "adapter_config.json").read_text(encoding="utf-8"))
     base = cfg.get("base_model_name_or_path")
     if not base:
         raise ValueError(f"{adapter_dir}/adapter_config.json names no base model; pass it explicitly")
+    local = Path(base).expanduser()
+    if (local.is_absolute() or base.startswith((".", "~"))) and not local.exists():
+        raise ValueError(f"{adapter_dir}/adapter_config.json records the base model as the local path {base!r}, which "
+                         "does not exist here (the adapter was trained against a local copy); pass the base model "
+                         "explicitly, e.g. --base-model CohereLabs/tiny-aya-global")
     return base
 
 
