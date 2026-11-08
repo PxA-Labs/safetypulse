@@ -253,8 +253,9 @@ mechanism CIS measures.
 
 ## 8. Responsible use
 
-All harmful prompts come from public red-teaming benchmarks; executed notebooks, completions and the harmful-data
-checkpoints (`harm-s0`, `harmdense-s0`) are kept private and are not released. CIS is a screening signal: a PASS
+All harmful prompts come from public red-teaming benchmarks. Model answers to harmful prompts and the checkpoints
+trained on harmful data (`harm-s0`, `harmdense-s0`) are not released; the repository and datasets publish prompts,
+scores and metrics only. The drifted Alpaca adapters are released as research artifacts with a warning. CIS is a screening signal: a PASS
 does not certify safety, and release decisions require a full audit.
 
 ## References

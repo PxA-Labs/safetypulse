@@ -12,8 +12,9 @@ Full audit on the **test** splits: 119 HarmBench prompts (ASR, Llama Guard 3 1B)
 | **D** `sp-10-audit-d` | merge A + B (via private dataset `sp-10-audits`, because Kaggle does not pass on an errored notebook's output) + C → tables | ✅ CPU, 6 min, 36 audits merged | `…__d.ipynb` / `.log`, `files/d__*` |
 
 `files/d__tables.md` (all tables), `d__table_c.csv`, `d__paired_comparisons.csv`, `d__fine_tune_effect.csv`,
-`d__repair_comparison.png`, `d__judge_validation_sample.csv` (100 items for human labelling; contains harmful prompts
-and model answers: private). `audit.jsonl` files stay on Kaggle.
+`d__repair_comparison.png`. The judge-validation sample (100 answers for human labelling) contains harmful model
+answers, so it is not in this repository; it is kept in a private Hugging Face dataset. `audit.jsonl` files (all
+answers) stay on Kaggle.
 
 ## Table C · repair on the drifted test runs (mean ± sd over `alpaca-s1/s2/s3`, each at its most-drifted checkpoint)
 | Method | ASR | Over-refusal | Task (GSM8K) | General (MMLU) | Params edited |
