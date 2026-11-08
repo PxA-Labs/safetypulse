@@ -3,7 +3,7 @@
 Record of every compute run, dataset and published artifact of SafetyPulse.
 
 - **Kaggle** (experiments): every notebook and dataset is **private**. Most live on the main account
-  `purvanshjoshi1`; a few runs used a teammate's account, `purvanshj009` (see [Teammate account](#teammate-account)).
+  `purvanshjoshi1`; a few runs used a teammate's account (see [Teammate account](#teammate-account)).
   Links open only for the owner and people they are shared with. The data needed to reproduce the results is
   published on Hugging Face.
 - **Hugging Face** (account `purvansh01`): runs that needed a larger GPU ([Hugging Face Jobs](#hugging-face-jobs)),
@@ -48,11 +48,11 @@ original notebook output, never both:** notebooks find files by name and would s
 | 06 | Circuit discovery, probe bundle (unpaired) | https://www.kaggle.com/code/purvanshjoshi1/sp-06-circuit-discovery | lib, 03, 04, 05, sp-models | ✅ bundle valid (base CIS = 1.0); circuit-vs-random control inconclusive under zero-ablation |
 | 07 | Fine-tune with checkpoints | one notebook per run, see [07 runs](#07-fine-tune-runs) | lib, 01, sp-models | ✅ all 10 planned runs + 2 extra |
 | 08 | Monitor checkpoints (dev) | session A: https://www.kaggle.com/code/purvanshjoshi1/sp-08-monitor-a (`gsm8k-s0`, `harm-s0`) → session B: https://www.kaggle.com/code/purvanshjoshi1/sp-08-monitor-b (`alpaca-s0`, `none-s0` + full dev analysis) | lib, 01, 06, 07 dev runs, sp-models | ✅ **alpaca-s0 drifted (ASR 21% → 42%); CIS fell one checkpoint before ASR rose**; harm-s0 broke at step 10; gsm8k-s0 and none-s0 stayed safe |
-| 08 | Monitor `harmdense-s0` (lead time) | https://www.kaggle.com/code/purvanshj009/sp-08-monitor-harmdense (teammate account) | lib, 07 harmdense, sp-pipeline-outputs, sp-models | ✅ CIS fell 13–16% at step 4, one checkpoint (2 steps) before ASR became unsafe at step 6 |
+| 08 | Monitor `harmdense-s0` (lead time) | `sp-08-monitor-harmdense` (teammate account, private) | lib, 07 harmdense, sp-pipeline-outputs, sp-models | ✅ CIS fell 13–16% at step 4, one checkpoint (2 steps) before ASR became unsafe at step 6 |
 | 08 | Dev CIS re-score with the matched bundle (ASR reused), thresholds by rule v2 | https://www.kaggle.com/code/purvanshjoshi1/sp-08-monitor-dev-matched | lib, 01, matched 06, 08-b (monitor), sp-07-checkpoints-dev, sp-models | ✅ matched-bundle thresholds by rule v2: `cis_circ`, τ_fail 0.818, τ_warn 0.909 (dev ρ −0.90, F1 0.98) |
 | 08 | Test scoring: `gsm8k-s1/s2` | https://www.kaggle.com/code/purvanshjoshi1/sp-08-test-gsm8k | lib, 01, matched 06, sp-07-checkpoints-test, sp-models | ✅ WARN throughout, no false FAIL (ASR fell) |
-| 08 | Test scoring: `alpaca-s1/s2` | https://www.kaggle.com/code/purvanshj009/sp-08-test-alpaca (teammate) | lib, sp-monitor-inputs, sp-07-checkpoints-test, sp-models | ✅ FAIL at step 25, 1–3 checkpoints before ASR became unsafe |
-| 08 | Test scoring: `none-s1/s2` | https://www.kaggle.com/code/purvanshj009/sp-08-test-none (teammate) | as above | ✅ PASS at every checkpoint (CIS rose to 1.4, ASR fell) |
+| 08 | Test scoring: `alpaca-s1/s2` | `sp-08-test-alpaca` (teammate account, private) | lib, sp-monitor-inputs, sp-07-checkpoints-test, sp-models | ✅ FAIL at step 25, 1–3 checkpoints before ASR became unsafe |
+| 08 | Test scoring: `none-s1/s2` | `sp-08-test-none` (teammate account, private) | as above | ✅ PASS at every checkpoint (CIS rose to 1.4, ASR fell) |
 | 08 | Test scoring: `alpaca-s3` + `harmdense` CIS re-score | https://www.kaggle.com/code/purvanshjoshi1/sp-08-test-extra | lib, sp-monitor-inputs v2, sp-07-checkpoints-extra, sp-models | ✅ alpaca-s3 WARN at step 25, FAIL at onset; harmdense WARN 2 steps early |
 | 08 | Final test analysis (Table B) | https://www.kaggle.com/code/purvanshjoshi1/sp-08-final-analysis | sp-monitor-inputs v4 (150 scores), sp-07-checkpoints-dev, sp-models | ✅ test ρ(CIS, ASR) = −0.80; every unsafe test checkpoint flagged (WARN or FAIL); Alpaca drift flagged 1–3 checkpoints early; spot-check recall 0.13 |
 | 09 | Repair (R1–R6 + SafeTune R3a/R3b) | https://www.kaggle.com/code/purvanshjoshi1/sp-09-repair | lib, 01, sp-monitor-inputs v2, sp-07-checkpoints-dev, sp-models | ✅ targeted circuit repair ≈ random (G4 fail); SafeTune safety-vector restore best: ASR 47% → 18%, task kept |
@@ -60,7 +60,7 @@ original notebook output, never both:** notebooks find files by name and would s
 | 10 | Audit session B: `alpaca-s2`, `alpaca-s3` (all repairs) | https://www.kaggle.com/code/purvanshjoshi1/sp-10-audit-b | as above | ⚠️ 18 audits done, then the same analysis-cell crash |
 | 10 | Audit session C: `gsm8k-s1/s2`, `none-s1/s2` at their final checkpoint (fixed notebook) | https://www.kaggle.com/code/purvanshjoshi1/sp-10-audit-c | as above + 10-a | ✅ 4 audits |
 | 10 | Session D: final tables A–D, fine-tune effect, figures, judge-validation sample (CPU) | https://www.kaggle.com/code/purvanshjoshi1/sp-10-audit-d | 01, 09, 08 final, 10-c, `sp-10-audits`, sp-monitor-inputs, sp-models | ✅ 36 audits merged: SafeTune restore ASR 25.2% → 12.3% and task 55.1% → 70.7%; circuit repair ΔASR +0.0 |
-| 11 | Toolkit chain: SafeTune repair → AuditKIT before/after audit (`alpaca-s1`, 119 HarmBench test prompts, AuditKIT `GuardJudge` + `compare`) | https://www.kaggle.com/code/purvanshj009/sp-11-auditkit-before-after (teammate) | lib, sp-pipeline-outputs v3, sp-monitor-inputs, sp-07-checkpoints-test, sp-models | ✅ (attempt 2) ASR base 14.3% → drifted 24.4% (p = 0.012) → SafeTune-repaired 11.8% (p = 0.003); attempt 1 invalid (AuditKIT/Llama Guard 1B format) |
+| 11 | Toolkit chain: SafeTune repair → AuditKIT before/after audit (`alpaca-s1`, 119 HarmBench test prompts, AuditKIT `GuardJudge` + `compare`) | `sp-11-auditkit-before-after` (teammate account, private) | lib, sp-pipeline-outputs v3, sp-monitor-inputs, sp-07-checkpoints-test, sp-models | ✅ (attempt 2) ASR base 14.3% → drifted 24.4% (p = 0.012) → SafeTune-repaired 11.8% (p = 0.003); attempt 1 invalid (AuditKIT/Llama Guard 1B format) |
 | 14 | Publish to Hugging Face (CPU, **run from the editor** with a write `HF_TOKEN` secret) | https://www.kaggle.com/code/purvanshjoshi1/sp-14-publish-to-hf | sp-pipeline-outputs, sp-monitor-inputs, safetypulse-pairs, sp-10-audits, sp-07-checkpoints-dev / -test / -extra, 10-c | ✅ 10 HF repos created and checked (0 problems); 9 made public, 1 kept private; see [Hugging Face artifacts](#hugging-face-artifacts) |
 
 ### Matched-pair re-run
@@ -74,7 +74,7 @@ matched probe bundle replaces the unpaired one for 08 (dev re-score and test run
 | 05 | https://www.kaggle.com/code/purvanshjoshi1/sp-05-direction-matched | lib, 03 matched, 04, sp-models | ✅ **G2 pass**: refusal 98% → 6% with r ablated (resid 27), random directions 98% |
 | 06 | https://www.kaggle.com/code/purvanshjoshi1/sp-06-circuit-matched | lib, 03 matched, 04, 05 matched, sp-models | ✅ bundle valid (base CIS = 1.0), discovery stable (ρ = 0.98); circuit specificity still **CHECK**: whole-component ablation degrades text for circuit and random sets alike |
 | 06b | https://www.kaggle.com/code/purvanshjoshi1/sp-06b-circuitkit-crosscheck | lib, safetypulse-pkg, 03 matched, 04, 06 matched, sp-models | ❌ on Kaggle (5 attempts, all GPU out-of-memory on a T4) → ✅ **ran on an A100 as HF Job 1** (see Hugging Face Jobs below) |
-| 06c | https://www.kaggle.com/code/purvanshj009/sp-06c-circuit-specificity (teammate) | lib, sp-monitor-inputs v5, sp-models | ✅ circuit selective for harm (twins unmoved); at equal text damage top-3/top-5 beat every random set (13/13, 15/15); unconditionally 10–30% of random sets as strong (exploratory) |
+| 06c | `sp-06c-circuit-specificity` (teammate account, private) | lib, sp-monitor-inputs v5, sp-models | ✅ circuit selective for harm (twins unmoved); at equal text damage top-3/top-5 beat every random set (13/13, 15/15); unconditionally 10–30% of random sets as strong (exploratory) |
 
 ### 07 fine-tune runs
 
@@ -87,11 +87,11 @@ matched probe bundle replaces the unpaired one for 08 (dev re-score and test run
 | `gsm8k-s1` | test | https://www.kaggle.com/code/purvanshjoshi1/sp-07-gsm8k-s1 | 11 | `sp-07-checkpoints-test` |
 | `gsm8k-s2` | test | https://www.kaggle.com/code/purvanshjoshi1/sp-07-gsm8k-s2 | 11 | `sp-07-checkpoints-test` |
 | `alpaca-s1` | test | https://www.kaggle.com/code/purvanshjoshi1/sp-07-alpaca-s1 | 11 | `sp-07-checkpoints-test` |
-| `alpaca-s2` | test (teammate account) | https://www.kaggle.com/code/purvanshj009/sp-07-alpaca-s2 | 11 | `sp-07-checkpoints-test` |
+| `alpaca-s2` | test (teammate account) | `sp-07-alpaca-s2` (teammate account, private) | 11 | `sp-07-checkpoints-test` |
 | `none-s1` | test | https://www.kaggle.com/code/purvanshjoshi1/sp-07-none-s1 | 11 | `sp-07-checkpoints-test` |
-| `none-s2` | test (teammate account) | https://www.kaggle.com/code/purvanshj009/sp-07-none-s2 | 11 | `sp-07-checkpoints-test` |
-| `harmdense-s0` | extra: lead time (teammate account) | https://www.kaggle.com/code/purvanshj009/sp-07-harmdense-s0 | 26 | `sp-07-checkpoints-extra` |
-| `alpaca-s3` | extra test seed (teammate account) | https://www.kaggle.com/code/purvanshj009/sp-07-alpaca-s3 | 11 | `sp-07-checkpoints-extra` |
+| `none-s2` | test (teammate account) | `sp-07-none-s2` (teammate account, private) | 11 | `sp-07-checkpoints-test` |
+| `harmdense-s0` | extra: lead time (teammate account) | `sp-07-harmdense-s0` (teammate account, private) | 26 | `sp-07-checkpoints-extra` |
+| `alpaca-s3` | extra test seed (teammate account) | `sp-07-alpaca-s3` (teammate account, private) | 11 | `sp-07-checkpoints-extra` |
 
 ## Hugging Face Jobs
 
@@ -149,7 +149,7 @@ they had recorded the training machine's local path).
 
 ## Teammate account
 
-Runs on the teammate's account `purvanshj009` use its own two GPU sessions, so they run in parallel with the main
+Runs on the teammate's account use its own two GPU sessions, so they run in parallel with the main
 account. They read the private datasets `safetypulse-lib`, `sp-pipeline-outputs` and `sp-models`, which are shared
 with that account, and cannot read the main account's notebook outputs. Their checkpoints are copied into the main
 account's datasets (`sp-07-checkpoints-test`, `sp-07-checkpoints-extra`), so every later notebook reads them from the
