@@ -7,9 +7,9 @@ Lexsi Labs AI Safety & Alignment Hackathon · Track 2b (AI Safety and Correction
 [Tiny Aya Global](https://huggingface.co/CohereLabs/tiny-aya-global) (3.35B) · Toolkits: CuratorKIT, CircuitKIT,
 SafeTune, AuditKIT
 
-<!-- LAUNCH VIDEO: drag docs/assets/safetypulse-launch.mp4 into the GitHub editor on the empty line below this comment -->
+https://github.com/user-attachments/assets/2f55f4b7-e20f-4043-a141-77cbba8fa475
 
-▶ **[Watch the 42-second launch video](docs/assets/safetypulse-launch.mp4)** · **Write-up:**
+**Write-up:**
 [Hugging Face article](https://huggingface.co/blog/purvansh01/safetypulse-safety-drift-monitor) ·
 [full report](docs/report/REPORT.md)
 
