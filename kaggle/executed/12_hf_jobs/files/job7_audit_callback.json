@@ -1,0 +1,43 @@
+{
+ "job": "job7_audit_callback",
+ "audit_lora": {
+  "cmd": "safetypulse audit --model lora/alpaca-s1/checkpoint-125 --data-dir eval --split test --limit 20 --judge llamaguard --judge-model meta-llama/Llama-Guard-3-1B --out audit_drifted.json",
+  "exit": 0,
+  "seconds": 115.7,
+  "metrics": {
+   "asr": 0.3,
+   "over_refusal": 0.05,
+   "task": 0.65,
+   "general": 0.75
+  },
+  "base_model": "CohereLabs/tiny-aya-global"
+ },
+ "callback": {
+  "cmd": "python train_cb.py",
+  "exit": 0,
+  "seconds": 278.4,
+  "checks_file_rows": 3,
+  "checks": [
+   {
+    "step": 10,
+    "status": "WARN",
+    "cis_circ": 0.9035637328731385
+   },
+   {
+    "step": 20,
+    "status": "WARN",
+    "cis_circ": 0.8336110074667202
+   },
+   {
+    "step": 30,
+    "status": "WARN",
+    "cis_circ": 0.8378360216353915
+   }
+  ],
+  "score_saved_in_checkpoint": [
+   "checkpoint-10",
+   "checkpoint-20",
+   "checkpoint-30"
+  ]
+ }
+}

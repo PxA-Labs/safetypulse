@@ -268,3 +268,16 @@ def test_auditkit_adapter_stub(monkeypatch):
                         (adapter.judge, "GuardJudge")):
         with pytest.raises(ak.AuditKitAPIUnconfirmed, match=api):
             method()
+
+
+def test_adapter_base_model_rejects_missing_local_path(tmp_path):
+    from safetypulse.models import adapter_base_model
+
+    def adapter(base):
+        (tmp_path / "adapter_config.json").write_text(json.dumps({"base_model_name_or_path": base}))
+        return tmp_path
+
+    assert adapter_base_model(adapter("CohereLabs/tiny-aya-global")) == "CohereLabs/tiny-aya-global"   # Hub id
+    assert adapter_base_model(adapter(str(tmp_path))) == str(tmp_path)                                # existing dir
+    with pytest.raises(ValueError, match="--base-model"):
+        adapter_base_model(adapter("/tmp/sp_models/CohereLabs__tiny-aya-global"))   # a training machine's copy
