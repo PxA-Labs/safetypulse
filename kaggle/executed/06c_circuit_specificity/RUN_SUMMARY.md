@@ -1,7 +1,7 @@
 # 06c · Circuit specificity (small-set ablation): run summary
 
 **Status:** ✅ completed, no errors (60 min) · **Date:** 2026-11-07
-**Kaggle:** `purvanshj009/sp-06c-circuit-specificity` (teammate account, one T4, Tiny Aya fp16)
+**Kaggle:** `sp-06c-circuit-specificity` (teammate account, one T4, Tiny Aya fp16)
 **Inputs:** `sp-monitor-inputs` v5 (matched pairs, token sets, matched bundle), `sp-models`
 
 ## Files here

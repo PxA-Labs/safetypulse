@@ -14,8 +14,8 @@ Checkpoints (LoRA adapters) stay on Kaggle and are read by notebooks 08–10 fro
 | `alpaca-s1` | ✅ complete (loss 1.94 → 1.19, 52.5 min; downloaded by hand) | `…__alpaca-s1.ipynb` / `.log`, `files/alpaca-s1__train_log.json` |
 | `none-s1` | ✅ complete (loss 2.05 → 1.07, 52.4 min) | `…__none-s1.ipynb` / `.log`, `files/none-s1__train_log.json` |
 | `gsm8k-s2` | ✅ complete (loss 1.06 → 0.51, 56.7 min) | `…__gsm8k-s2.ipynb` / `.log`, `files/gsm8k-s2__train_log.json` |
-| `alpaca-s2` | ✅ complete on the teammate account `purvanshj009` (loss 2.11 → 1.21, 55.9 min) | `…__alpaca-s2.ipynb` / `.log`, `files/alpaca-s2__train_log.json` |
-| `none-s2` | ✅ complete on the teammate account `purvanshj009` (loss 2.02 → 1.12, 56.0 min) | `…__none-s2.ipynb` / `.log`, `files/none-s2__train_log.json` |
+| `alpaca-s2` | ✅ complete on the teammate account (loss 2.11 → 1.21, 55.9 min) | `…__alpaca-s2.ipynb` / `.log`, `files/alpaca-s2__train_log.json` |
+| `none-s2` | ✅ complete on the teammate account (loss 2.02 → 1.12, 56.0 min) | `…__none-s2.ipynb` / `.log`, `files/none-s2__train_log.json` |
 
 | `harmdense-s0` | ✅ extra run on the teammate account: same training as `harm-s0` (loss 1.872 → 0.225, 7.6 min) with checkpoints every 2 steps to step 30, then every 10 (26 checkpoints), to measure CIS lead time | `…__harmdense-s0.ipynb` / `.log`, `files/harmdense-s0__train_log.json` |
 | `alpaca-s3` | ✅ extra test seed on the teammate account (loss 2.06 → 1.16, 60.6 min): a third seed of the one condition that drifted | `…__alpaca-s3.ipynb` / `.log`, `files/alpaca-s3__train_log.json` |

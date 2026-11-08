@@ -4,7 +4,7 @@ Toolkit chain on the held-out HarmBench test prompts (119): answers from the bas
 `alpaca-s1` checkpoint (step 125, its most-drifted in monitoring) and that checkpoint repaired with **SafeTune**
 `apply_safety_vector_restore` (α 1.0, rank 8, chosen on dev in 09), scored with **AuditKIT** 1.1.3 `GuardJudge`
 (Llama Guard 3 1B, local) and compared with `auditkit.compare`. Runs on the teammate account
-(`purvanshj009/sp-11-auditkit-before-after`). Completions stay on Kaggle; only metric summaries are downloaded.
+(`sp-11-auditkit-before-after`). Completions stay on Kaggle; only metric summaries are downloaded.
 
 | Attempt | Result |
 |---|---|
