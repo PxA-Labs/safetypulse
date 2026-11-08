@@ -7,6 +7,8 @@ Lexsi Labs AI Safety & Alignment Hackathon · Track 2b (AI Safety and Correction
 [Tiny Aya Global](https://huggingface.co/CohereLabs/tiny-aya-global) (3.35B) · Toolkits: CuratorKIT, CircuitKIT,
 SafeTune, AuditKIT
 
+**Write-up:** [Hugging Face article](https://huggingface.co/blog/purvansh01/safetypulse-safety-drift-monitor) · [full report](docs/report/REPORT.md)
+
 ## The problem
 
 Fine-tuning an aligned model on ordinary, harmless data can quietly weaken its refusals (Qi et al., 2023). Catching
