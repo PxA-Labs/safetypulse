@@ -1975,4 +1975,379 @@ write("11_auditkit_before_after.ipynb", [
     '''),
 ])
 
+# =============================================================================================
+# 14 publish to Hugging Face
+# =============================================================================================
+write("14_publish_to_hf.ipynb", [
+    md('''
+    # 14 · Publish the artifacts to Hugging Face
+
+    The hackathon requires every model, adapter, dataset and log on Hugging Face, in public, un-gated collections.
+    This notebook copies them from the Kaggle datasets (and from the private HF Jobs repo) straight to the Hub, so
+    nothing passes through a laptop. Every repo is created **private**; they are made public only after the final
+    cell's checks have been reviewed.
+
+    | | |
+    |---|---|
+    | **Kaggle settings** | Accelerator: **None** (CPU) · Internet: **On** · Secrets: `HF_TOKEN` with **write** access |
+    | **Attach as inputs** | `sp-pipeline-outputs`, `sp-monitor-inputs`, `safetypulse-pairs`, `sp-10-audits`, `sp-07-checkpoints-dev`, `sp-07-checkpoints-test`, `sp-07-checkpoints-extra`, notebook output `sp-10-audit-c` |
+    | **Writes** | HF repos under `OWNER` (below); `/kaggle/working/publish_report.json` |
+
+    **Withheld** (docs/11_WITHHELD_ARTIFACTS.md): the `harm-s0` / `harmdense-s0` adapters, `ft_harm` and the text of
+    answers judged harmful go only to the private repo `safetypulse-withheld`. In the public audit logs each answer the
+    judge flagged is replaced by `[withheld: judged harmful]`; prompts, verdicts and metrics stay.
+
+    Run it from the Kaggle editor (CLI-pushed runs get no secrets): *Add-ons → Secrets → HF_TOKEN*, then
+    *Save Version → Save & Run All*. Safe to re-run: repos are reused and unchanged files are not uploaded again.
+    '''),
+    code('''
+        import glob, json, os
+        from pathlib import Path
+        from huggingface_hub import HfApi, snapshot_download
+
+        OWNER = "purvansh01"
+        JOBS_REPO = f"{OWNER}/safetypulse-jobs"            # private repo of the HF Jobs (CuratorKIT run, job results)
+        WITHHELD = "[withheld: judged harmful]"
+        STAGE = Path("/kaggle/working/stage")
+        STAGE.mkdir(parents=True, exist_ok=True)
+
+        token = os.environ.get("HF_TOKEN")
+        if not token:
+            try:
+                from kaggle_secrets import UserSecretsClient
+                token = UserSecretsClient().get_secret("HF_TOKEN")
+            except Exception:
+                token = None
+        assert token, "No HF_TOKEN: run from the Kaggle editor with the HF_TOKEN secret attached (Add-ons -> Secrets)."
+        api = HfApi(token=token)
+        me = api.whoami()
+        role = me.get("auth", {}).get("accessToken", {}).get("role")
+        print("Hugging Face user:", me["name"], "| token role:", role)    # never print the token itself
+        assert me["name"] == OWNER, f"token belongs to {me['name']}, expected {OWNER}"
+        assert role in ("write", "fineGrained"), "the token is read-only: create a write token and update the secret"
+
+
+        def root(slug):
+            """Mount point of an attached dataset or notebook output (layout differs between Kaggle images)."""
+            hits = [Path(p) for p in glob.glob(f"/kaggle/input/**/{slug}", recursive=True) if Path(p).is_dir()]
+            assert hits, f"input {slug} not attached (Add Input)"
+            return hits[0]
+
+
+        PIPE, MON, PAIRS = root("sp-pipeline-outputs"), root("sp-monitor-inputs"), root("safetypulse-pairs")
+        AUD, AUD_C = root("sp-10-audits"), root("sp-10-audit-c")
+        CKPT = {"dev": root("sp-07-checkpoints-dev"), "test": root("sp-07-checkpoints-test"),
+                "extra": root("sp-07-checkpoints-extra")}
+        jobs = Path(snapshot_download(JOBS_REPO, repo_type="dataset", token=token, local_dir=STAGE / "jobs",
+                                      allow_patterns=["results/**", "private/**"]))
+        print("inputs found:", {k: str(v) for k, v in {"pipe": PIPE, "monitor": MON, "pairs": PAIRS, "audits": AUD,
+                                                     "audit_c": AUD_C, **CKPT}.items()})
+    '''),
+    md('''
+    ## Repositories and cards
+    '''),
+    code('''
+        LORA_YAML = """---
+        license: cc-by-nc-4.0
+        base_model: CohereLabs/tiny-aya-global
+        library_name: peft
+        tags: [lora, safety, fine-tuning, safetypulse, lexsi-hackathon]
+        ---
+        """
+        TRAINING = ("LoRA r = 16 on all attention and MLP projections, lr 2e-4, 2 epochs, effective batch 16, about 250 "
+                    "steps, a checkpoint every 25 steps (11 per run, `checkpoint-0` is the untouched base). Each folder "
+                    "`<run>/checkpoint-<step>/` holds `adapter_config.json` and `adapter_model.safetensors`.")
+        USAGE = """```python
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+        from peft import PeftModel
+        base = AutoModelForCausalLM.from_pretrained("CohereLabs/tiny-aya-global", torch_dtype="auto")
+        model = PeftModel.from_pretrained(base, "{repo}", subfolder="{example}")
+        ```"""
+        FOOT = ("Part of **SafetyPulse** (Lexsi Labs AI Safety & Alignment Hackathon, Track 2b): monitoring safety drift "
+                "during fine-tuning through the model's refusal mechanism. Licence CC-BY-NC-4.0, inherited from Tiny Aya "
+                "and Alpaca. Base model: CohereLabs/tiny-aya-global.")
+        DS_YAML = """---
+        license: {lic}
+        tags: [safety, red-teaming, safetypulse, lexsi-hackathon]
+        ---
+        """
+
+        REPOS = {
+            "safetypulse-lora-alpaca": ("model", LORA_YAML + f"""# SafetyPulse LoRA adapters: Alpaca (safety drift)
+
+        > **Warning.** These adapters come from ordinary instruction tuning on Alpaca, and that tuning **weakens the
+        > model's refusals**: attack success rate (ASR) on held-out HarmBench prompts rises from 14.3% (base) to about
+        > 25% at the most-drifted checkpoints. They are released as research artifacts for studying and detecting
+        > safety drift, not for deployment.
+
+        Runs `alpaca-s0` (development) and `alpaca-s1`, `alpaca-s2`, `alpaca-s3` (held-out test seeds), 2,000 Alpaca
+        examples each. {TRAINING}
+
+        SafetyPulse's Circuit Integrity Score flagged every seed at step 25, 1–3 checkpoints before ASR rose. SafeTune's
+        safety-vector restore repairs the drift (ASR 25.2% → 12.3%, GSM8K 55.1% → 70.7%).
+
+        {USAGE.format(repo=f"{OWNER}/safetypulse-lora-alpaca", example="alpaca-s1/checkpoint-125")}
+
+        {FOOT}
+        """),
+            "safetypulse-lora-alpacacur": ("model", LORA_YAML + f"""# SafetyPulse LoRA adapters: CuratorKIT-curated Alpaca
+
+        Run `alpacacur-s0`: the same settings and seed as `alpaca-s0`, trained on Alpaca after **CuratorKIT**
+        curation (schema, dedup, secrets and Detoxify toxicity gates removed 19 of 2,000 examples). 248 steps, a
+        checkpoint every 25. Trained on an A100 with fp16 forced, like `alpaca-s0` on a T4.
+
+        > **Warning.** Curation did **not** prevent the drift: mean ASR after step 0 was 37.6% (original 38.1%). These
+        > adapters are research artifacts, not for deployment.
+
+        {USAGE.format(repo=f"{OWNER}/safetypulse-lora-alpacacur", example="alpacacur-s0/checkpoint-125")}
+
+        {FOOT}
+        """),
+            "safetypulse-lora-gsm8k": ("model", LORA_YAML + f"""# SafetyPulse LoRA adapters: GSM8K (domain fine-tune)
+
+        Runs `gsm8k-s0` (development), `gsm8k-s1`, `gsm8k-s2` (test), 2,000 GSM8K training examples each.
+        {TRAINING}
+
+        These fine-tunes did not reduce safety (test ASR 6.7% / 10.9%, base 14.3%); the monitor gave WARN, never FAIL.
+        Known issue: they lower GSM8K test accuracy (71.3% → about 57%), cause not yet verified.
+
+        {USAGE.format(repo=f"{OWNER}/safetypulse-lora-gsm8k", example="gsm8k-s1/checkpoint-250")}
+
+        {FOOT}
+        """),
+            "safetypulse-lora-none": ("model", LORA_YAML + f"""# SafetyPulse LoRA adapters: negative control
+
+        Runs `none-s0` (development), `none-s1`, `none-s2` (test): 1,800 Alpaca examples plus 200 refusals to
+        harmful requests (safety-preserving data). {TRAINING}
+
+        Negative control: ASR fell (test 6.7%) and the monitor stayed PASS at every checkpoint.
+
+        {USAGE.format(repo=f"{OWNER}/safetypulse-lora-none", example="none-s1/checkpoint-250")}
+
+        {FOOT}
+        """),
+            "safetypulse-eval": ("dataset", DS_YAML.format(lic="other") + """# SafetyPulse evaluation sets
+
+        Fixed dev/test splits used for every audit (seed 0; hashes in `manifest.json`):
+
+        | File | Source (licence) | Dev / test |
+        |---|---|---|
+        | `eval_harm.jsonl` | HarmBench standard behaviours (MIT) | 78 / 119 |
+        | `eval_overrefusal.jsonl` | XSTest safe prompts (CC-BY-4.0) | 100 / 150 |
+        | `eval_task.jsonl` | GSM8K (MIT) | 150 / 300 |
+        | `eval_general.jsonl` | MMLU (MIT) | 200 / 500 |
+
+        **Contains harmful prompts** from a public red-teaming benchmark, for safety evaluation only. Sources:
+        `SOURCES.md`. Please cite the original datasets.
+        """),
+            "safetypulse-finetune-data": ("dataset", DS_YAML.format(lic="cc-by-nc-4.0") + """# SafetyPulse fine-tuning data
+
+        | File | What | n |
+        |---|---|---|
+        | `ft_alpaca.jsonl` | Alpaca instructions (general tuning; causes the drift) | 2,000 |
+        | `ft_alpacacur.jsonl` | The same after **CuratorKIT** curation | 1,981 |
+        | `ft_gsm8k.jsonl` | GSM8K training problems (domain tuning) | 2,000 |
+        | `ft_none.jsonl` | 1,800 Alpaca + 200 refusals from LLM-LAT/harmful-dataset (negative control) | 2,000 |
+        | `curation_report.json` | CuratorKIT per-stage counts and rejection reasons | |
+
+        Sources: tatsu-lab/alpaca (CC-BY-NC-4.0), openai/gsm8k (MIT), LLM-LAT/harmful-dataset (no licence stated by
+        its authors). The harmful positive-control set `ft_harm` is withheld (see the SafetyPulse repository,
+        docs/11_WITHHELD_ARTIFACTS.md).
+        """),
+            "safetypulse-pairs": ("dataset", DS_YAML.format(lic="mit") + """# SafetyPulse matched contrast pairs
+
+        288 harmful AdvBench prompts (MIT), each paired with a minimally edited **harmless twin** on the same topic
+        and of similar length ("…hack into secure computer systems" → "…back up home computer systems"). Matching
+        makes the contrast isolate harmful *intent*. Used to find the refusal direction and circuit.
+
+        - `pairs_reviewed.csv`: 300 drafted pairs with the review verdict (288 kept). Twins were drafted and reviewed
+          by AI models (`reviewer` column), not checked by humans.
+        - `pairs.jsonl`: the 288 kept pairs with their probe / val / calib split (50 / 50 / 188).
+        - `unpaired_v1/`: the first, unmatched pair set (superseded).
+        """),
+            "safetypulse-probe-bundle": ("dataset", DS_YAML.format(lic="cc-by-nc-4.0") + """# SafetyPulse probe bundle (Tiny Aya Global)
+
+        Everything `safetypulse check` needs to score a checkpoint of `CohereLabs/tiny-aya-global`: the refusal
+        direction (resid layer 27), the 20-component refusal circuit, the 50 probe pairs and the base model's
+        reference values (bundle `f898d4c6`), plus the PASS / WARN / FAIL thresholds chosen on the development runs
+        (`thresholds.json`: primary variant `cis_circ`, τ_fail 0.818, τ_warn 0.909) and the refusal token sets.
+        `unpaired_v1/`: the earlier bundle from unmatched pairs (superseded).
+        """),
+            "safetypulse-logs": ("dataset", DS_YAML.format(lic="cc-by-nc-4.0") + f"""# SafetyPulse logs and results
+
+        | Folder | Contents |
+        |---|---|
+        | `monitor/` | CIS (4 variants), refusal spot-check and ASR for all 150 checkpoints, matched bundle; thresholds |
+        | `monitor_unpaired_v1/` | First monitoring pass with the unmatched bundle (superseded) |
+        | `audits/audits.jsonl` | Full audits (ASR, over-refusal, GSM8K, MMLU, CIs, per-prompt verdicts) of base, fine-tuned and repaired models |
+        | `repair/` | Dev repair results R1–R6 and the chosen strengths |
+        | `report/` | Final tables (B, C, fine-tune effect), paired comparisons, figure |
+        | `specificity/`, `baseline/` | Circuit specificity (06c), base-model refusal baseline (04) |
+        | `hf_jobs/` | CircuitKIT cross-check (job 1), Llama Guard 1B vs 8B (job 2), CuratorKIT run (job 3) |
+
+        In `audits.jsonl`, every sampled answer the judge flagged as harmful is replaced by `{WITHHELD}`; prompts,
+        verdicts and metrics are complete, so every number in the report can be recomputed.
+        """),
+        }
+        PRIVATE_ONLY = {"safetypulse-withheld": ("dataset", """# SafetyPulse withheld artifacts (private)
+
+        Positive-control adapters (`harm-s0`, `harmdense-s0`), `ft_harm`, unredacted audits and the judge-validation
+        sample. Not for release; access for judges and reviewers on request (docs/11_WITHHELD_ARTIFACTS.md).
+        """)}
+
+        for name, (kind, card) in {**REPOS, **PRIVATE_ONLY}.items():
+            repo = f"{OWNER}/{name}"
+            api.create_repo(repo, repo_type=kind, private=True, exist_ok=True)
+            api.upload_file(path_or_fileobj=card.encode(), path_in_repo="README.md", repo_id=repo, repo_type=kind,
+                            commit_message="card")
+            print("ready (private):", kind, repo)
+    '''),
+    md('''
+    ## Datasets and logs
+    '''),
+    code('''
+        def up_files(name, files, kind="dataset", msg="add files"):
+            """files: {path_in_repo: local Path}. One commit."""
+            from huggingface_hub import CommitOperationAdd
+            missing = [str(p) for p in files.values() if not Path(p).exists()]
+            assert not missing, f"{name}: missing {missing}"
+            ops = [CommitOperationAdd(path_in_repo=k, path_or_fileobj=str(v)) for k, v in files.items()]
+            api.create_commit(f"{OWNER}/{name}", operations=ops, repo_type=kind, commit_message=msg)
+            print(f"{name}: {len(ops)} files")
+
+
+        J3 = jobs / "results/job3"
+        up_files("safetypulse-eval", {f: PIPE / "data" / f for f in
+                 ["eval_harm.jsonl", "eval_overrefusal.jsonl", "eval_task.jsonl", "eval_general.jsonl",
+                  "manifest.json", "SOURCES.md"]})
+        up_files("safetypulse-finetune-data", {**{f: PIPE / "data" / f for f in
+                 ["ft_alpaca.jsonl", "ft_gsm8k.jsonl", "ft_none.jsonl"]},
+                 "ft_alpacacur.jsonl": J3 / "ft_alpacacur.jsonl", "curation_report.json": J3 / "curation_report.json"})
+        up_files("safetypulse-pairs", {"pairs_reviewed.csv": PAIRS / "pairs_reviewed.csv",
+                 "pairs.jsonl": MON / "pairs/pairs.jsonl",
+                 **{f"unpaired_v1/{f}": PIPE / "data" / f for f in ["pairs_pool.jsonl", "harmless_pool.jsonl",
+                                                                   "pairs_template.csv"]},
+                 "unpaired_v1/pairs.jsonl": PIPE / "pairs/pairs.jsonl",
+                 "unpaired_v1/pairs_manifest.json": PIPE / "pairs/pairs_manifest.json"})
+        up_files("safetypulse-probe-bundle", {
+                 **{f: MON / "probe_bundle" / f for f in ["probe_bundle.json", "directions.safetensors",
+                                                          "probe_pairs.jsonl"]},
+                 "thresholds.json": MON / "monitor/thresholds.json", "token_sets.json": MON / "baseline/token_sets.json",
+                 **{f"unpaired_v1/{f}": PIPE / "probe_bundle" / f for f in ["probe_bundle.json",
+                                                                           "directions.safetensors", "probe_pairs.jsonl"]},
+                 **{f"unpaired_v1/direction/{f}": PIPE / "direction" / f for f in ["directions.safetensors",
+                                                                                  "refusal_direction.json",
+                                                                                  "layer_selection.png"]}})
+    '''),
+    code('''
+        # Audits: merge sessions a, b, c (later sessions replace earlier rows of the same run and model: session A's
+        # GSM8K / none rows used step 0 and were re-audited in C). Public copy: harmful answer text withheld.
+        rows = {}
+        for path in [AUD / "a/audit.jsonl", AUD / "b/audit.jsonl", *sorted(AUD_C.rglob("audit.jsonl"))]:
+            for line in open(path):
+                r = json.loads(line)
+                rows[(r["run"], r["model"])] = r
+        full = list(rows.values())
+        public, n_withheld = [], 0
+        for r in full:
+            r = json.loads(json.dumps(r))
+            answers = r.get("responses_sample", {}).get("asr", [])
+            verdicts = r["flags"]["asr"]
+            for i in range(len(answers)):
+                if i >= len(verdicts) or verdicts[i] is not False:      # harmful or unjudged: withhold
+                    answers[i] = WITHHELD
+                    n_withheld += 1
+            public.append(r)
+        for name, data in [("audits_full.jsonl", full), ("audits.jsonl", public)]:
+            with open(STAGE / name, "w") as f:
+                f.writelines(json.dumps(r) + "\\n" for r in data)
+        print(f"{len(full)} audits merged; {n_withheld} harmful answers withheld in the public copy")
+
+        logs = {"monitor/monitor.jsonl": MON / "monitor/monitor.jsonl", "monitor/thresholds.json": MON / "monitor/thresholds.json",
+                "audits/audits.jsonl": STAGE / "audits.jsonl",
+                "baseline/baseline_results.json": PIPE / "baseline/baseline_results.json",
+                "specificity/specificity.json": PIPE / "specificity/specificity.json",
+                "hf_jobs/job1_circuitkit_crosscheck.json": jobs / "results/job1_crosscheck.json",
+                "hf_jobs/job2_judges.json": jobs / "results/job2_judges.json",
+                "hf_jobs/job3_curatorkit/monitor.jsonl": J3 / "monitor.jsonl",
+                "hf_jobs/job3_curatorkit/curation_report.json": J3 / "curation_report.json",
+                "hf_jobs/job3_curatorkit/train_log.json": J3 / "checkpoints/alpacacur-s0/train_log.json"}
+        for sub in ["repair", "report"]:
+            logs.update({f"{sub}/{p.name}": p for p in sorted((PIPE / sub).iterdir())})
+        logs.update({f"monitor_unpaired_v1/{p.name}": p for p in sorted((PIPE / "monitor").iterdir())})
+        logs.update({f"hf_jobs/job3_curatorkit/executed/{p.name}": p for p in sorted((J3 / "executed").glob("*.ipynb"))})
+        up_files("safetypulse-logs", logs)
+    '''),
+    md('''
+    ## Adapters (about 18 GB; one commit per run, uploaded straight from the inputs)
+    '''),
+    code('''
+        PUBLIC_RUNS = {"safetypulse-lora-alpaca": ["alpaca-s0", "alpaca-s1", "alpaca-s2", "alpaca-s3"],
+                       "safetypulse-lora-gsm8k": ["gsm8k-s0", "gsm8k-s1", "gsm8k-s2"],
+                       "safetypulse-lora-none": ["none-s0", "none-s1", "none-s2"]}
+        WITHHELD_RUNS = ["harm-s0", "harmdense-s0"]
+
+
+        def run_dir(run):
+            hits = [d / run for d in CKPT.values() if (d / run).is_dir()]
+            assert len(hits) == 1, f"{run}: found {hits}"
+            return hits[0]
+
+
+        def up_run(repo, run, kind):
+            d = run_dir(run)
+            n = len(list(d.glob("checkpoint-*/adapter_model.safetensors")))
+            api.upload_folder(repo_id=f"{OWNER}/{repo}", repo_type=kind, folder_path=str(d), path_in_repo=run,
+                              allow_patterns=["checkpoint-*/adapter_config.json", "checkpoint-*/adapter_model.safetensors",
+                                              "train_log.json"], commit_message=f"{run}: {n} checkpoints")
+            print(f"{repo}: {run} ({n} checkpoints)", flush=True)
+
+
+        for repo, runs in PUBLIC_RUNS.items():
+            for run in runs:
+                up_run(repo, run, "model")
+        api.upload_folder(repo_id=f"{OWNER}/safetypulse-lora-alpacacur", repo_type="model",
+                          folder_path=str(J3 / "checkpoints/alpacacur-s0"), path_in_repo="alpacacur-s0",
+                          commit_message="alpacacur-s0: 11 checkpoints")
+        print("safetypulse-lora-alpacacur: alpacacur-s0")
+    '''),
+    code('''
+        # Withheld artifacts -> private repo only (never made public).
+        for run in WITHHELD_RUNS:
+            up_run("safetypulse-withheld", run, "dataset")
+        up_files("safetypulse-withheld", {"ft_harm.jsonl": PIPE / "data/ft_harm.jsonl",
+                                          "audits_full.jsonl": STAGE / "audits_full.jsonl",
+                                          "judge_validation_sample.csv": jobs / "private/judge_validation_sample.csv"})
+    '''),
+    md('''
+    ## Checks (review before making anything public)
+    '''),
+    code('''
+        report, problems = {}, []
+        for name, (kind, _) in {**REPOS, **PRIVATE_ONLY}.items():
+            info = (api.model_info if kind == "model" else api.dataset_info)(f"{OWNER}/{name}", files_metadata=True)
+            files = [s.rfilename for s in info.siblings]
+            report[name] = {"kind": kind, "private": info.private, "files": len(files),
+                            "GB": round(sum(s.size or 0 for s in info.siblings) / 1e9, 2),
+                            "checkpoints": sum(f.endswith("adapter_model.safetensors") for f in files)}
+            if name in REPOS and any(w in f for f in files for w in ["harm-s0", "harmdense", "ft_harm", "audits_full",
+                                                                    "judge_validation"]):
+                problems.append(f"{name}: withheld file in a public repo")
+        expected = {"safetypulse-lora-alpaca": 44, "safetypulse-lora-alpacacur": 11, "safetypulse-lora-gsm8k": 33,
+                    "safetypulse-lora-none": 33, "safetypulse-withheld": 40}
+        for name, n in expected.items():
+            if report[name]["checkpoints"] != n:
+                problems.append(f"{name}: {report[name]['checkpoints']} checkpoints, expected {n}")
+        leaked = [i for r in public for i, (a, v) in enumerate(zip(r.get("responses_sample", {}).get("asr", []),
+                                                                   r["flags"]["asr"])) if v is not False and a != WITHHELD]
+        if leaked:
+            problems.append(f"{len(leaked)} harmful answers not withheld")
+        report["problems"] = problems
+        json.dump(report, open("/kaggle/working/publish_report.json", "w"), indent=1)
+        for k, v in report.items():
+            print(k, v)
+        print("OK: all checks passed, repos are still private" if not problems else f"!! {len(problems)} problems")
+    '''),
+])
+
 print("wrote", sorted(p.name for p in OUT.glob("*.ipynb")))

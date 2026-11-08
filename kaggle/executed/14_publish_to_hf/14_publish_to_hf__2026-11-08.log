@@ -1,0 +1,68 @@
+[{"stream_name":"stderr","time":8.524476499,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":8.525031436,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":8.525048915,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":8.525053623,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stderr","time":9.273879534,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":9.273947604,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":9.273955602000001,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":9.273959944,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stdout","time":12.713758335,"data":"Hugging Face user: purvansh01 | token role: write\n"}
+,{"stream_name":"stdout","time":68.040785051,"data":"inputs found: {'pipe': '/kaggle/input/datasets/purvanshjoshi1/sp-pipeline-outputs', 'monitor': '/kaggle/input/datasets/purvanshjoshi1/sp-monitor-inputs', 'pairs': '/kaggle/input/datasets/purvanshjoshi1/safetypulse-pairs', 'audits': '/kaggle/input/datasets/purvanshjoshi1/sp-10-audits', 'audit_c': '/kaggle/input/notebooks/purvanshjoshi1/sp-10-audit-c', 'dev': '/kaggle/input/datasets/purvanshjoshi1/sp-07-checkpoints-dev', 'test': '/kaggle/input/datasets/purvanshjoshi1/sp-07-checkpoints-test', 'extra': '/kaggle/input/datasets/purvanshjoshi1/sp-07-checkpoints-extra'}\n"}
+,{"stream_name":"stdout","time":69.835704884,"data":"ready (private): model purvansh01/safetypulse-lora-alpaca\n"}
+,{"stream_name":"stdout","time":71.231318473,"data":"ready (private): model purvansh01/safetypulse-lora-alpacacur\n"}
+,{"stream_name":"stdout","time":72.512336019,"data":"ready (private): model purvansh01/safetypulse-lora-gsm8k\n"}
+,{"stream_name":"stdout","time":74.060822437,"data":"ready (private): model purvansh01/safetypulse-lora-none\n"}
+,{"stream_name":"stdout","time":75.360983655,"data":"ready (private): dataset purvansh01/safetypulse-eval\n"}
+,{"stream_name":"stdout","time":107.005785952,"data":"ready (private): dataset purvansh01/safetypulse-finetune-data\n"}
+,{"stream_name":"stdout","time":109.047334377,"data":"ready (private): dataset purvansh01/safetypulse-pairs\n"}
+,{"stream_name":"stdout","time":110.587882648,"data":"ready (private): dataset purvansh01/safetypulse-probe-bundle\n"}
+,{"stream_name":"stdout","time":112.085741489,"data":"ready (private): dataset purvansh01/safetypulse-logs\n"}
+,{"stream_name":"stderr","time":112.904841475,"data":"/usr/local/lib/python3.13/dist-packages/huggingface_hub/hf_api.py:11779: UserWarning: Warnings while validating metadata in README.md:\n"}
+,{"stream_name":"stderr","time":112.90491572,"data":"- empty or missing yaml metadata in repo card\n"}
+,{"stream_name":"stderr","time":112.904925713,"data":"  warnings.warn(f\"Warnings while validating metadata in README.md:\\n{message}\")\n"}
+,{"stream_name":"stderr","time":112.904931144,"data":"\n"}
+,{"stream_name":"stderr","time":112.904935538,"data":"/usr/local/lib/python3.13/dist-packages/huggingface_hub/hf_api.py:11779: UserWarning: Warnings while validating metadata in README.md:\n"}
+,{"stream_name":"stderr","time":112.904940431,"data":"- empty or missing yaml metadata in repo card\n"}
+,{"stream_name":"stderr","time":112.904945748,"data":"  warnings.warn(f\"Warnings while validating metadata in README.md:\\n{message}\")\n"}
+,{"stream_name":"stdout","time":113.576356455,"data":"ready (private): dataset purvansh01/safetypulse-withheld\n"}
+,{"stream_name":"stdout","time":115.600711269,"data":"safetypulse-eval: 6 files\n"}
+,{"stream_name":"stdout","time":118.843184162,"data":"safetypulse-finetune-data: 5 files\n"}
+,{"stream_name":"stdout","time":120.655136991,"data":"safetypulse-pairs: 7 files\n"}
+,{"stream_name":"stdout","time":125.461673709,"data":"safetypulse-probe-bundle: 11 files\n"}
+,{"stream_name":"stdout","time":125.908724915,"data":"36 audits merged; 416 harmful answers withheld in the public copy\n"}
+,{"stream_name":"stdout","time":160.868649036,"data":"safetypulse-logs: 26 files\n"}
+,{"stream_name":"stdout","time":182.342009932,"data":"safetypulse-lora-alpaca: alpaca-s0 (11 checkpoints)\n"}
+,{"stream_name":"stdout","time":205.52005238,"data":"safetypulse-lora-alpaca: alpaca-s1 (11 checkpoints)\n"}
+,{"stream_name":"stdout","time":225.207942103,"data":"safetypulse-lora-alpaca: alpaca-s2 (11 checkpoints)\n"}
+,{"stream_name":"stdout","time":244.582053621,"data":"safetypulse-lora-alpaca: alpaca-s3 (11 checkpoints)\n"}
+,{"stream_name":"stdout","time":262.087488898,"data":"safetypulse-lora-gsm8k: gsm8k-s0 (11 checkpoints)\n"}
+,{"stream_name":"stdout","time":280.934634351,"data":"safetypulse-lora-gsm8k: gsm8k-s1 (11 checkpoints)\n"}
+,{"stream_name":"stdout","time":300.036022992,"data":"safetypulse-lora-gsm8k: gsm8k-s2 (11 checkpoints)\n"}
+,{"stream_name":"stdout","time":324.094386276,"data":"safetypulse-lora-none: none-s0 (11 checkpoints)\n"}
+,{"stream_name":"stdout","time":343.191551665,"data":"safetypulse-lora-none: none-s1 (11 checkpoints)\n"}
+,{"stream_name":"stdout","time":361.630744524,"data":"safetypulse-lora-none: none-s2 (11 checkpoints)\n"}
+,{"stream_name":"stdout","time":369.552415868,"data":"safetypulse-lora-alpacacur: alpacacur-s0\n"}
+,{"stream_name":"stdout","time":388.710409656,"data":"safetypulse-withheld: harm-s0 (14 checkpoints)\n"}
+,{"stream_name":"stdout","time":432.658314589,"data":"safetypulse-withheld: harmdense-s0 (26 checkpoints)\n"}
+,{"stream_name":"stdout","time":434.591686876,"data":"safetypulse-withheld: 3 files\n"}
+,{"stream_name":"stdout","time":437.151948657,"data":"safetypulse-lora-alpaca {'kind': 'model', 'private': True, 'files': 90, 'GB': 5.32, 'checkpoints': 44}\n"}
+,{"stream_name":"stdout","time":437.151996297,"data":"safetypulse-lora-alpacacur {'kind': 'model', 'private': True, 'files': 25, 'GB': 1.33, 'checkpoints': 11}\n"}
+,{"stream_name":"stdout","time":437.152003274,"data":"safetypulse-lora-gsm8k {'kind': 'model', 'private': True, 'files': 68, 'GB': 3.99, 'checkpoints': 33}\n"}
+,{"stream_name":"stdout","time":437.152008442,"data":"safetypulse-lora-none {'kind': 'model', 'private': True, 'files': 68, 'GB': 3.99, 'checkpoints': 33}\n"}
+,{"stream_name":"stdout","time":437.152368887,"data":"safetypulse-eval {'kind': 'dataset', 'private': True, 'files': 8, 'GB': 0.0, 'checkpoints': 0}\n"}
+,{"stream_name":"stdout","time":437.152392413,"data":"safetypulse-finetune-data {'kind': 'dataset', 'private': True, 'files': 7, 'GB': 0.0, 'checkpoints': 0}\n"}
+,{"stream_name":"stdout","time":437.152397065,"data":"safetypulse-pairs {'kind': 'dataset', 'private': True, 'files': 9, 'GB': 0.0, 'checkpoints': 0}\n"}
+,{"stream_name":"stdout","time":437.152402288,"data":"safetypulse-probe-bundle {'kind': 'dataset', 'private': True, 'files': 13, 'GB': 0.0, 'checkpoints': 0}\n"}
+,{"stream_name":"stdout","time":437.152407312,"data":"safetypulse-logs {'kind': 'dataset', 'private': True, 'files': 28, 'GB': 0.0, 'checkpoints': 0}\n"}
+,{"stream_name":"stdout","time":437.152411873,"data":"safetypulse-withheld {'kind': 'dataset', 'private': True, 'files': 85, 'GB': 4.84, 'checkpoints': 40}\n"}
+,{"stream_name":"stdout","time":437.152441794,"data":"problems []\n"}
+,{"stream_name":"stdout","time":437.152454455,"data":"OK: all checks passed, repos are still private\n"}
+,{"stream_name":"stderr","time":441.023475719,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":441.023523571,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":441.251727807,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":441.251776779,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":442.162097841,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to notebook\n"}
+,{"stream_name":"stderr","time":442.286838031,"data":"[NbConvertApp] Writing 139860 bytes to __notebook__.ipynb\n"}
+,{"stream_name":"stderr","time":445.906480378,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to html\n"}
+,{"stream_name":"stderr","time":446.731496773,"data":"[NbConvertApp] Writing 437230 bytes to __results__.html\n"}
+]

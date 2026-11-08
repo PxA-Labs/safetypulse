@@ -8,7 +8,7 @@ How runs work: [kaggle/README.md](../kaggle/README.md). Notebooks are launched w
 runs them on Kaggle and saves the executed copy, log and key files to `kaggle/executed/<notebook>/` together with a
 `RUN_SUMMARY.md`.
 
-_Last updated: 2026-11-07, 13:15 IST._
+_Last updated: 2026-11-08._
 
 ## Datasets
 
@@ -55,6 +55,7 @@ original notebook output, never both:** notebooks find files by name and would s
 | 10 | Audit session C: `gsm8k-s1/s2`, `none-s1/s2` at their final checkpoint (fixed notebook) | https://www.kaggle.com/code/purvanshjoshi1/sp-10-audit-c | as above + 10-a | ✅ 4 audits |
 | 10 | Session D: final tables A–D, fine-tune effect, figures, judge-validation sample (CPU) | https://www.kaggle.com/code/purvanshjoshi1/sp-10-audit-d | 01, 09, 08 final, 10-c, `sp-10-audits`, sp-monitor-inputs, sp-models | ✅ 36 audits merged: SafeTune restore ASR 25.2% → 12.3% and task 55.1% → 70.7%; circuit repair ΔASR +0.0 |
 | 11 | Toolkit chain: SafeTune repair → AuditKIT before/after audit (`alpaca-s1`, 119 HarmBench test prompts, AuditKIT `GuardJudge` + `compare`) | https://www.kaggle.com/code/purvanshj009/sp-11-auditkit-before-after (teammate) | lib, sp-pipeline-outputs v3, sp-monitor-inputs, sp-07-checkpoints-test, sp-models | ✅ (attempt 2) ASR base 14.3% → drifted 24.4% (p = 0.012) → SafeTune-repaired 11.8% (p = 0.003); attempt 1 invalid (AuditKIT/Llama Guard 1B format) |
+| 14 | Publish to Hugging Face (CPU, **run from the editor** with a write `HF_TOKEN` secret) | https://www.kaggle.com/code/purvanshjoshi1/sp-14-publish-to-hf | sp-pipeline-outputs, sp-monitor-inputs, safetypulse-pairs, sp-10-audits, sp-07-checkpoints-dev / -test / -extra, 10-c | ✅ 10 HF repos created (private), 0 check problems; see [Hugging Face artifacts](#hugging-face-artifacts) |
 
 ### Matched-pair re-run
 
@@ -96,6 +97,24 @@ https://huggingface.co/datasets/purvansh01/safetypulse-jobs (scripts in `jobs/`,
 | 1 · CircuitKIT EAP-IG cross-check (06b on a big GPU) | A100 80 GB | ✅ 16 of our 20 components in CircuitKIT's top 100 of 612 (chance 3.3; p ≈ 2e-10); our top head is its #4; order not shared (ρ = 0.05); CircuitKIT also ranks early MLPs | https://huggingface.co/jobs/purvansh01/6aef4ae8e6320c66fad5e879 |
 | 2 · Llama Guard 3 1B vs 8B via AuditKIT | A10G 24 GB | ✅ judges agree on 94–96% (κ 0.78–0.84); both show drift +11 pts (p ≤ 0.004) and SafeTune repair −14 pts (p ≤ 0.0005) | https://huggingface.co/jobs/purvansh01/6aef4aeee6320c66fad5e882 |
 | 3 · CuratorKIT curation of Alpaca → fine-tune `alpacacur-s0` → monitoring (notebooks 01b, 07, 08) | A100 80 GB | ✅ CuratorKIT removed 19/2,000 (17 toxic); **drift unchanged** (mean ASR 37.6% vs 38.1%); CIS FAIL at step 25 before ASR rose. Checkpoints + curated dataset saved in the private repo | https://huggingface.co/jobs/purvansh01/6aef52ed0e0338d1bb8382f6 |
+
+## Hugging Face artifacts
+
+Created by notebook 14 under `purvansh01`, private until reviewed; the nine below go public for the submission.
+`safetypulse-withheld` (positive-control adapters, `ft_harm`, unredacted audits, judge sample) stays private:
+[docs/11_WITHHELD_ARTIFACTS.md](11_WITHHELD_ARTIFACTS.md).
+
+| Repo | Type | Contents |
+|---|---|---|
+| [`safetypulse-lora-alpaca`](https://huggingface.co/purvansh01/safetypulse-lora-alpaca) | model | alpaca-s0 … s3, 44 checkpoints |
+| [`safetypulse-lora-alpacacur`](https://huggingface.co/purvansh01/safetypulse-lora-alpacacur) | model | CuratorKIT run, 11 checkpoints |
+| [`safetypulse-lora-gsm8k`](https://huggingface.co/purvansh01/safetypulse-lora-gsm8k) | model | gsm8k-s0 … s2, 33 checkpoints |
+| [`safetypulse-lora-none`](https://huggingface.co/purvansh01/safetypulse-lora-none) | model | none-s0 … s2, 33 checkpoints |
+| [`safetypulse-eval`](https://huggingface.co/datasets/purvansh01/safetypulse-eval) | dataset | eval splits, manifest, sources |
+| [`safetypulse-finetune-data`](https://huggingface.co/datasets/purvansh01/safetypulse-finetune-data) | dataset | ft_alpaca / alpacacur / gsm8k / none, curation report |
+| [`safetypulse-pairs`](https://huggingface.co/datasets/purvansh01/safetypulse-pairs) | dataset | matched pairs (+ unpaired v1) |
+| [`safetypulse-probe-bundle`](https://huggingface.co/datasets/purvansh01/safetypulse-probe-bundle) | dataset | calibrated bundle `f898d4c6`, thresholds, token sets |
+| [`safetypulse-logs`](https://huggingface.co/datasets/purvansh01/safetypulse-logs) | dataset | monitor, audits (harmful answers withheld), repair, report tables, HF Job results |
 
 ## Teammate account
 
