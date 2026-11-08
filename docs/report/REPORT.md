@@ -255,7 +255,8 @@ mechanism CIS measures.
 
 All harmful prompts come from public red-teaming benchmarks. Model answers to harmful prompts and the checkpoints
 trained on harmful data (`harm-s0`, `harmdense-s0`) are not released; the repository and datasets publish prompts,
-scores and metrics only. The drifted Alpaca adapters are released as research artifacts with a warning. CIS is a screening signal: a PASS
+scores and metrics only. The drifted Alpaca adapters are released as research artifacts with a warning. What is
+withheld, why the positive control was needed, and how judges can request access: docs/11_WITHHELD_ARTIFACTS.md. CIS is a screening signal: a PASS
 does not certify safety, and release decisions require a full audit.
 
 ## References
