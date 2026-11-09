@@ -14,6 +14,7 @@ All notable changes to this project are recorded here. The format follows
 
 ### Changed
 - `pyproject.toml` declares the licence as an SPDX expression (`Apache-2.0`), as current setuptools requires.
+- Builds require `setuptools>=84.1`, which fixes PYSEC-2026-3447 and GHSA-xmj3-9gf7-h52w.
 
 ## [0.1.0] - 2026-11-08
 

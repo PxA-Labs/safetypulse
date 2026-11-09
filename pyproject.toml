@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=77"]
+requires = ["setuptools>=84.1"]   # >=84.1: PYSEC-2026-3447, GHSA-xmj3-9gf7-h52w
 build-backend = "setuptools.build_meta"
 
 [project]

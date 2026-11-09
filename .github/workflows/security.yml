@@ -30,6 +30,8 @@ jobs:
           # Copyleft licences are incompatible with distributing under Apache-2.0.
           deny-licenses: GPL-2.0-only, GPL-2.0-or-later, GPL-3.0-only, GPL-3.0-or-later, AGPL-3.0-only, AGPL-3.0-or-later
           comment-summary-in-pr: on-failure
+          # TruffleHog (AGPL-3.0) only runs in CI; it is not distributed with or linked into the package.
+          allow-dependencies-licenses: pkg:githubactions/trufflesecurity/trufflehog
 
   pip-audit:
     name: pip-audit
@@ -45,7 +47,7 @@ jobs:
       - name: Resolve the package's dependency tree in a clean environment
         run: |
           python -m venv /tmp/deps
-          /tmp/deps/bin/pip install --upgrade pip
+          /tmp/deps/bin/pip install --upgrade pip setuptools   # the venv's bundled setuptools is not ours
           /tmp/deps/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu
           /tmp/deps/bin/pip install ".[peft]"
           # Audit only what safetypulse installs (not the runner's own tools), and audit torch under its PyPI
