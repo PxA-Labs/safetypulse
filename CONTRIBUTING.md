@@ -45,6 +45,10 @@ A maintainer who has reviewed a release-policy false positive can apply the `rel
 2. Create a branch (`feat/…`, `fix/…`, `docs/…`), keep the pull request to one concern, and add or update tests.
 3. Use conventional commit messages: `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:`.
 4. Fill in the pull request template; CI must pass before merging.
+5. `main` is protected by a ruleset: a pull request needs one approving review from a code owner
+   ([.github/CODEOWNERS](.github/CODEOWNERS)), all review conversations resolved, and the required checks green
+   (tests on Python 3.10–3.12, build and install, secret scan, release policy). Force-pushes and deleting `main` are
+   blocked. Maintainers may bypass the review requirement for their own changes.
 
 **Research changes** (metrics, thresholds, datasets, evaluation protocol) need a short rationale in the pull request
 and, after the protocol freeze, an entry in the deviation log of [docs/02_RESEARCH_PLAN.md](docs/02_RESEARCH_PLAN.md).
