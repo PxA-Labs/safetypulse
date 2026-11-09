@@ -1,0 +1,32 @@
+# Code owners for SafetyPulse
+#
+# Owners are requested for review automatically on every pull request that touches the matching paths.
+# Later rules take precedence over earlier ones. Syntax:
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# Maintainers: @purvanshjoshi, @archittmittal, @AnubhavKiroula
+
+# Default: the whole repository
+*                       @purvanshjoshi @archittmittal @AnubhavKiroula
+
+# The safetypulse package and its tests
+/safetypulse/           @purvanshjoshi @archittmittal @AnubhavKiroula
+/tests/                 @purvanshjoshi @archittmittal @AnubhavKiroula
+/pyproject.toml         @purvanshjoshi @archittmittal @AnubhavKiroula
+
+# Experiments: notebook builder, executed runs, Hugging Face Job scripts
+/tools/                 @purvanshjoshi @archittmittal @AnubhavKiroula
+/kaggle/                @purvanshjoshi @archittmittal @AnubhavKiroula
+
+# Research documentation, report and article
+/docs/                  @purvanshjoshi @archittmittal @AnubhavKiroula
+
+# Release policy for withheld artifacts: changes here affect what may be published
+/docs/11_WITHHELD_ARTIFACTS.md  @purvanshjoshi @archittmittal @AnubhavKiroula
+
+# Repository governance, CI and security configuration
+/.github/               @purvanshjoshi @archittmittal @AnubhavKiroula
+/LICENSE                @purvanshjoshi @archittmittal @AnubhavKiroula
+/SECURITY.md            @purvanshjoshi @archittmittal @AnubhavKiroula
+/CODE_OF_CONDUCT.md     @purvanshjoshi @archittmittal @AnubhavKiroula
+/CITATION.cff           @purvanshjoshi @archittmittal @AnubhavKiroula
