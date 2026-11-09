@@ -2,7 +2,8 @@
 
 *Lexsi Labs AI Safety & Alignment Hackathon · Track 2b (AI Safety and Correction) · Model: Cohere Labs
 [Tiny Aya Global](https://huggingface.co/CohereLabs/tiny-aya-global) (3.35B) · Toolkits: CuratorKIT, CircuitKIT,
-SafeTune, AuditKIT · Code: [PxA-Labs/safetypulse](https://github.com/PxA-Labs/safetypulse) · Artifacts:
+SafeTune, AuditKIT · Code: [PxA-Labs/safetypulse](https://github.com/PxA-Labs/safetypulse) · Package:
+[`pip install safetypulse`](https://pypi.org/project/safetypulse/) · Artifacts:
 [models](https://huggingface.co/collections/purvansh01/safetypulse-models-6af00b8f56c773a80af9f7e0),
 [datasets](https://huggingface.co/collections/purvansh01/safetypulse-data-6af00b9124ee9d5022a36482)*
 
@@ -351,7 +352,7 @@ Python 3.12, a GPU with 16 GB or more, and access to the gated base model (accep
 [its page](https://huggingface.co/CohereLabs/tiny-aya-global), then `hf auth login`).
 
 ```bash
-pip install "safetypulse[peft,toolkits] @ git+https://github.com/PxA-Labs/safetypulse"
+pip install "safetypulse[peft,toolkits]"     # from PyPI; "safetypulse[peft]" is enough for check
 
 # the probe bundle and one drifted checkpoint (alpaca-s1, step 125)
 hf download purvansh01/safetypulse-probe-bundle --repo-type dataset --local-dir bundle --exclude "unpaired_v1/*"
