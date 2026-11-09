@@ -256,3 +256,13 @@ def test_provenance_records_the_model_dtype(tok, pairs, bundle):
     m = make_model(len(tok)).to(torch.bfloat16)
     r = check(m, bundle, pairs, tokenizer=tok, with_circ=False)
     assert r.provenance["dtype"] == "bfloat16"
+
+
+def test_nonpositive_reference_is_error_not_pass(model, tok, pairs, model_dir):
+    """#111: if the primary metric's reference is <= 0 the verdict is ERROR, whatever the score."""
+    b = calibrate_bundle(model, tok, pairs, base_name=str(model_dir), threshold=THRESH)
+    assert check(model, b, pairs, tokenizer=tok).status == "PASS"
+    b.reference.sep_base = -abs(b.reference.sep_base)
+    with pytest.warns(UserWarning, match="<= 0"):
+        r = check(model, b, pairs, tokenizer=tok)
+    assert r.status == "ERROR" and r.exit_code == 1

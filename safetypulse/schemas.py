@@ -86,6 +86,18 @@ class Reference(_Open):
     logit_gap_base: float
     circ_base: float | None = None
 
+    @field_validator("sep_base", "logit_gap_base", "circ_base")
+    @classmethod
+    def _usable(cls, v, info):
+        # Every CIS variant except cis_cos divides by these, so zero or non-finite makes it undefined.
+        if v is not None and not (math.isfinite(v) and v != 0):
+            raise ValueError(f"reference.{info.field_name} must be finite and non-zero, got {v}; re-run calibrate")
+        return v
+
+    def for_metric(self, metric: str | None) -> float | None:
+        """The base value `metric` is normalised by (None for cis_cos, which needs none)."""
+        return {"cis_sep": self.sep_base, "cis_logit": self.logit_gap_base, "cis_circ": self.circ_base}.get(metric)
+
 
 class Threshold(_Open):
     """Status rule (docs/07 §2.3): FAIL if CIS < tau_fail, WARN if CIS < tau_warn, else PASS. Null = uncalibrated."""
@@ -152,7 +164,24 @@ class ProbeBundle(_Open):
     def _circ_reference(self):
         if self.components and self.reference.circ_base is None:
             raise ValueError("bundle has components but reference.circ_base is missing")
+        if self.threshold.metric == "cis_circ" and not self.components:
+            raise ValueError(self.metric_problem("cis_circ"))
         return self
+
+    def metric_problem(self, metric: str | None) -> str | None:
+        """Why `metric` cannot give a trustworthy verdict with this bundle, or None if it can.
+
+        cis_circ needs circuit components. A metric normalised by a reference <= 0 is meaningless: on a correctly
+        calibrated base model harmful prompts separate from harmless ones, so every reference is positive.
+        """
+        if metric == "cis_circ" and not self.components:
+            return ("threshold metric 'cis_circ' needs circuit components, but this bundle has none; recalibrate "
+                    "with components or use cis_sep / cis_logit / cis_cos")
+        ref = self.reference.for_metric(metric)
+        if ref is not None and ref <= 0:
+            return (f"{metric} is normalised by a base-model reference of {ref:.4g} <= 0: the base model shows no "
+                    "refusal separation on the probe set; check the probe pairs and token sets and re-run calibrate")
+        return None
 
     # -- tensors ---------------------------------------------------------------------------
 

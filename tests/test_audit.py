@@ -183,6 +183,17 @@ def test_load_suite_hashes_and_filters(tmp_path):
         load_suite(d, suite="nope")
 
 
+def test_empty_split_is_an_error_not_an_empty_report(fake_generate, model, tok, tmp_path):
+    """#110: a split that matches nothing must fail loudly, not produce a report with no metrics and exit 0."""
+    d = _write_suite(tmp_path / "data", with_general=False)
+    with pytest.raises(ValueError, match=r"split 'tset' matched no items.*\['dev', 'test'\]"):
+        load_suite(d, split="tset")
+    sets, _ = load_suite(d, split="dev")                     # only harm has dev rows: empty sets are dropped
+    assert set(sets) == {"harm"}
+    with pytest.raises(ValueError, match="no metric computed"):
+        audit(model, tok, Judge("string"), {"harm": [], "task": []})
+
+
 def test_report_round_trip(fake_generate, model, tok, tmp_path):
     sets, refs = load_suite(_write_suite(tmp_path / "data"))
     r = audit(model, tok, Judge("string"), sets, datasets=refs, suite="default",

@@ -12,6 +12,14 @@ All notable changes to this project are recorded here. The format follows
 - Release-policy check (`tools/check_release_policy.py`) that blocks model weights, withheld harmful data and
   oversized files in pull requests.
 
+### Fixed
+- `audit` / `load_suite`: a split that matches no items is an error (exit 1, listing the splits present) instead of
+  an empty report with exit 0; `audit()` raises when no metric is computed (#110).
+- Probe bundles reject zero or non-finite reference values; `check` returns ERROR (never PASS) when the primary
+  metric's reference is <= 0, and `set_thresholds` refuses such a metric (#111).
+- A `cis_circ` threshold on a bundle without circuit components is rejected at load and by `set_thresholds`,
+  instead of a `KeyError` in `check` (#112).
+
 ### Changed
 - `pyproject.toml` declares the licence as an SPDX expression (`Apache-2.0`), as current setuptools requires.
 - Builds require `setuptools>=84.1`, which fixes PYSEC-2026-3447 and GHSA-xmj3-9gf7-h52w.

@@ -340,9 +340,12 @@ def calibrate(model, tok, pairs: Sequence[dict] | str | Path, token_sets: dict |
 def set_thresholds(bundle_dir: str | Path, metric: str, tau_warn: float | None, tau_fail: float | None) -> ProbeBundle:
     """Set threshold.metric/tau_warn/tau_fail (validated) on a saved bundle and rewrite it in place."""
     bundle = ProbeBundle.load(bundle_dir)
-    bundle.threshold = Threshold(metric=metric, tau_warn=tau_warn, tau_fail=tau_fail)
-    if not bundle.threshold.calibrated:
+    threshold = Threshold(metric=metric, tau_warn=tau_warn, tau_fail=tau_fail)
+    if not threshold.calibrated:
         raise ValueError("give at least one of tau_warn / tau_fail")
+    if problem := bundle.metric_problem(metric):
+        raise ValueError(problem)
+    bundle.threshold = threshold
     bundle.save(bundle.root)
     return bundle
 

@@ -210,10 +210,10 @@ def test_cli_calibrate_and_set_thresholds(tmp_path, split_pairs, model_dir, caps
     ts.write_text(json.dumps({str(model_dir): {"refuse": [6, 7], "comply": [10, 11], "refuse_tokens": ["x"]}}))
     out = tmp_path / "bundle"
     rc = _cli(["--model", str(model_dir), "--pairs", str(pairs), "--token-sets", str(ts), "--out", str(out),
-               "--n-candidates", "6", "--top-k", "2", "--set-thresholds", "cis_logit", "0.9", "none"])
+               "--n-candidates", "6", "--top-k", "2", "--set-thresholds", "cis_cos", "0.9", "none"])
     assert rc == 0
     summary = json.loads(capsys.readouterr().out.strip().splitlines()[-1])
-    assert summary["threshold"] == {"metric": "cis_logit", "tau_warn": 0.9, "tau_fail": None}
+    assert summary["threshold"] == {"metric": "cis_cos", "tau_warn": 0.9, "tau_fail": None}
     b = ProbeBundle.load(out)
     assert b.base_model.name == str(model_dir) and b.token_sets.refuse == [6, 7] and len(b.components) <= 2
     assert check(str(model_dir), out).status == "PASS"
@@ -287,3 +287,19 @@ def test_set_thresholds_rejects_nonfinite(value, tmp_path, model, tok, pairs):
     assert rc(["calibrate", "--out", str(tmp_path), "--set-thresholds", "cis_cos", "0.9", value]) == 1
     assert not ProbeBundle.load(tmp_path).threshold.calibrated
     assert _tau("none") is None and _tau("0.7") == 0.7
+
+
+def test_set_thresholds_refuses_unusable_metric(tmp_path, model, tok, pairs):
+    """#111 / #112: set_thresholds never writes a threshold its bundle cannot evaluate."""
+    from conftest import calibrate_bundle
+
+    b = calibrate_bundle(model, tok, pairs, n_components=0)
+    b.save(tmp_path / "b", probe_pairs=pairs)
+    with pytest.raises(ValueError, match="needs circuit components"):
+        set_thresholds(tmp_path / "b", "cis_circ", 0.9, 0.8)
+    b = ProbeBundle.load(tmp_path / "b")
+    b.reference.sep_base = -1.0
+    b.save(tmp_path / "b")
+    with pytest.raises(ValueError, match="<= 0"):
+        set_thresholds(tmp_path / "b", "cis_sep", 0.9, 0.8)
+    assert ProbeBundle.load(tmp_path / "b").threshold.metric is None     # nothing written
