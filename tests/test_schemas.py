@@ -171,3 +171,33 @@ def test_check_result_json_has_no_nan_literal():
     data = json.loads(text)
     assert data["scores"] == {"cis_sep": None, "cis_cos": None, "cis_logit": 0.5}
     assert CheckResult.model_validate(data).nonfinite == r.nonfinite
+
+
+@pytest.mark.parametrize("field,value", [("sep_base", 0.0), ("logit_gap_base", float("nan")), ("circ_base", 0.0)])
+def test_unusable_reference_rejected(field, value):
+    """#111: every CIS variant but cis_cos divides by its reference, so zero or non-finite cannot load."""
+    raw = _raw()
+    raw["reference"][field] = value
+    with pytest.raises(ValidationError, match=f"reference.{field}"):
+        ProbeBundle.model_validate(raw)
+
+
+def test_metric_problem_flags_nonpositive_reference():
+    """#111: a reference <= 0 (no refusal separation on the base model) makes its metric unusable for a verdict."""
+    raw = _raw()
+    raw["reference"]["logit_gap_base"] = -0.5
+    b = ProbeBundle.model_validate(raw)                       # loads: research bundles on toy models stay readable
+    assert "<= 0" in b.metric_problem("cis_logit")
+    assert b.metric_problem("cis_sep") is None and b.metric_problem("cis_cos") is None
+
+
+def test_cis_circ_threshold_needs_components():
+    """#112: a cis_circ threshold on a bundle without components is rejected at load, not a KeyError in check."""
+    raw = _raw()
+    raw["components"] = []
+    raw["reference"]["circ_base"] = None
+    raw["threshold"] = {"metric": "cis_circ", "tau_warn": 0.9, "tau_fail": 0.8}
+    with pytest.raises(ValidationError, match="needs circuit components"):
+        ProbeBundle.model_validate(raw)
+    raw["threshold"] = {"metric": "cis_sep", "tau_warn": 0.9, "tau_fail": 0.8}
+    assert ProbeBundle.model_validate(raw).metric_problem("cis_circ").startswith("threshold metric 'cis_circ'")

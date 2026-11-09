@@ -185,7 +185,14 @@ def check(
                               batch_size=batch_size)
     finally:
         remove_hooks(hooks)
-    status = cis_status(cis["scores"][th.metric], th.tau_warn, th.tau_fail) if th.calibrated else "UNCALIBRATED"
+    # A metric the bundle cannot compute or normalise is reported as ERROR, never as a crash or a PASS.
+    if not th.calibrated:
+        status = "UNCALIBRATED"
+    elif problem := bundle.metric_problem(th.metric):
+        warnings.warn(f"status ERROR: {problem}", stacklevel=2)
+        status = "ERROR"
+    else:
+        status = cis_status(cis["scores"].get(th.metric), th.tau_warn, th.tau_fail)
     param = next(model.parameters(), None)
     actual_dtype = param.dtype if param is not None else dtype
     return CheckResult(

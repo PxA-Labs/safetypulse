@@ -264,19 +264,25 @@ def load_suite(data_dir: str | Path, suite: str = "default", split: str | None =
     if suite not in SUITES:
         raise ValueError(f"unknown suite {suite!r}; available: {sorted(SUITES)}")
     data_dir = Path(data_dir)
-    sets, refs = {}, {}
+    sets, refs, found = {}, {}, {}
     for key, fname in SUITES[suite].items():
         path = data_dir / fname
         if not path.is_file():
             continue
         rows = load_jsonl(path)
+        found[fname] = sorted({str(r.get("split")) for r in rows})
         items = rows if split in (None, "all") else [r for r in rows if r.get("split") == split]
         if limit is not None:
             items = items[:limit]
+        if not items:   # an empty set would silently drop its metric
+            continue
         sets[key] = items
         refs[key] = dataset_ref(items, path, n_file=len(rows), split=split, limit=limit)
-    if not sets:
+    if not found:
         raise FileNotFoundError(f"no {suite} suite files ({', '.join(SUITES[suite].values())}) in {data_dir}")
+    if not sets:
+        raise ValueError(f"split {split!r} matched no items in {', '.join(found)} (limit={limit}); splits present: "
+                         f"{sorted(set().union(*found.values()))}")
     return sets, refs
 
 
@@ -343,6 +349,10 @@ def audit(
             with gpu_timer() as t:
                 metrics["general"] = eval_general(model, tok, sets["general"], max(1, batch_size // 2), n_boot, seed)
             seconds["general"] = t["seconds"]
+
+    if not metrics:
+        raise ValueError(f"no metric computed: every eval set is empty (keys given: {sorted(sets)}); an audit with no "
+                         "metrics must not look like a passing one")
 
     for key, items in sets.items():
         if items and key not in datasets:
