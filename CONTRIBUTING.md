@@ -13,7 +13,19 @@ pytest -q                           # tiny local models, no GPU or Hub access ne
 ruff check safetypulse tests
 ```
 
-CI runs exactly these two checks on every push and pull request (`.github/workflows/ci.yml`).
+CI runs these two checks on Python 3.10, 3.11 and 3.12, and also builds the package and installs the wheel in a
+clean environment (`.github/workflows/ci.yml`). Every pull request additionally runs:
+
+| Check | Workflow | Fails when |
+|---|---|---|
+| CodeQL | `codeql.yml` | A security or quality alert is found in Python code or workflows |
+| Dependency review | `security.yml` | A new dependency has a high-severity advisory or a copyleft licence |
+| pip-audit | `security.yml` | An installed dependency has a known vulnerability |
+| Secret scan (TruffleHog) | `security.yml` | A credential is committed |
+| Release policy | `security.yml` | Weights, withheld harmful data or files over 5 MB are added (`tools/check_release_policy.py`) |
+| Links | `links.yml` | A Markdown link is broken |
+
+A maintainer who has reviewed a release-policy false positive can apply the `release-policy-reviewed` label.
 
 ## Where things live
 

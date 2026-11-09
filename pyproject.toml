@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=84.1"]   # >=84.1: PYSEC-2026-3447, GHSA-xmj3-9gf7-h52w
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,7 +7,8 @@ name = "safetypulse"
 version = "0.1.0"
 description = "Circuit Integrity Score: a cheap check that fine-tuning has not degraded an LLM's refusal mechanism"
 readme = "README.md"
-license = {text = "Apache-2.0"}
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
 dependencies = [
     "torch>=2.2",

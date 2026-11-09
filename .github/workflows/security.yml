@@ -1,0 +1,89 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "41 5 * * 1"   # Mondays 05:41 UTC: catch advisories published since the last change
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    name: dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
+          # Copyleft licences are incompatible with distributing under Apache-2.0.
+          deny-licenses: GPL-2.0-only, GPL-2.0-or-later, GPL-3.0-only, GPL-3.0-or-later, AGPL-3.0-only, AGPL-3.0-or-later
+          comment-summary-in-pr: on-failure
+          # TruffleHog (AGPL-3.0) only runs in CI; it is not distributed with or linked into the package.
+          allow-dependencies-licenses: pkg:githubactions/trufflesecurity/trufflehog
+
+  pip-audit:
+    name: pip-audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.11"
+      - name: Resolve the package's dependency tree in a clean environment
+        run: |
+          python -m venv /tmp/deps
+          /tmp/deps/bin/pip install --upgrade pip setuptools   # the venv's bundled setuptools is not ours
+          /tmp/deps/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu
+          /tmp/deps/bin/pip install ".[peft]"
+          # Audit only what safetypulse installs (not the runner's own tools), and audit torch under its PyPI
+          # version: the CPU wheel's "+cpu" local tag is not in the advisory database.
+          /tmp/deps/bin/pip freeze --all | grep -vE '^(safetypulse|pip)[ =@]' | sed 's/+cpu//' > requirements-audit.txt
+          cat requirements-audit.txt
+      - name: Audit it
+        run: |
+          python -m pip install --upgrade pip-audit
+          pip-audit --progress-spinner off --desc on --no-deps --disable-pip -r requirements-audit.txt
+
+  secret-scan:
+    name: secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: trufflesecurity/trufflehog@ea68ca03c865c5f324e86e849ced20ed3cf9dbbb # v3.99.8
+        with:
+          extra_args: --results=verified,unknown
+
+  release-policy:
+    name: release policy (withheld artifacts)
+    if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'release-policy-reviewed')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.11"
+      - name: Block weights, withheld harmful data and oversized files
+        run: python tools/check_release_policy.py "origin/${{ github.base_ref }}"

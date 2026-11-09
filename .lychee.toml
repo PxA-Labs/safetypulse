@@ -1,0 +1,14 @@
+# Link checker configuration (.github/workflows/links.yml).
+max_retries = 3
+timeout = 30
+accept = [200, 206, 429]
+exclude_path = ["graphify-out", "brag-output", ".venv", "kaggle/executed"]
+exclude = [
+  # Private by design: owner-only Kaggle notebooks and datasets, and the withheld Hugging Face repos.
+  '^https://www\.kaggle\.com/',
+  '^https://huggingface\.co/datasets/purvansh01/safetypulse-(jobs|withheld)',
+  # Gated models redirect unauthenticated requests.
+  '^https://huggingface\.co/(CohereLabs|meta-llama)/',
+  # Local and template placeholders.
+  '^https?://localhost', '^file://',
+]

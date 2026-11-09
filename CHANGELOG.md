@@ -3,6 +3,19 @@
 All notable changes to this project are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- CODEOWNERS for the three maintainers.
+- CI on Python 3.10, 3.11 and 3.12 with a build and clean-install check; CodeQL, dependency review, pip-audit,
+  secret scanning, OpenSSF Scorecard, link checking and Dependabot.
+- Release-policy check (`tools/check_release_policy.py`) that blocks model weights, withheld harmful data and
+  oversized files in pull requests.
+
+### Changed
+- `pyproject.toml` declares the licence as an SPDX expression (`Apache-2.0`), as current setuptools requires.
+- Builds require `setuptools>=84.1`, which fixes PYSEC-2026-3447 and GHSA-xmj3-9gf7-h52w.
+
 ## [0.1.0] - 2026-11-08
 
 First public release, for the Lexsi Labs AI Safety & Alignment Hackathon (Track 2b).
