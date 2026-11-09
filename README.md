@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.png">
-    <img src="docs/assets/logo-light.png" alt="SafetyPulse" width="420">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/assets/logo-dark.png">
+    <img src="https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/assets/logo-light.png" alt="SafetyPulse" width="420">
   </picture>
 </p>
 
@@ -12,7 +12,8 @@
 
 <p align="center">
   <a href="https://github.com/PxA-Labs/safetypulse/actions/workflows/ci.yml"><img src="https://github.com/PxA-Labs/safetypulse/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License: Apache-2.0"></a>
+  <a href="https://github.com/PxA-Labs/safetypulse/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License: Apache-2.0"></a>
+  <a href="https://pypi.org/project/safetypulse/"><img src="https://img.shields.io/pypi/v/safetypulse?logo=pypi&logoColor=white&color=3776AB" alt="PyPI"></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white" alt="Python 3.10+">
   <img src="https://img.shields.io/badge/tests-186%20passing-2ea44f" alt="186 tests">
   <a href="https://github.com/PxA-Labs/safetypulse/actions/workflows/codeql.yml"><img src="https://github.com/PxA-Labs/safetypulse/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
@@ -32,10 +33,10 @@ https://github.com/user-attachments/assets/2f55f4b7-e20f-4043-a141-77cbba8fa475
 
 <p align="center">
   <a href="https://huggingface.co/blog/purvansh01/safetypulse-safety-drift-monitor"><b>Article</b></a> ·
-  <a href="docs/report/REPORT.md"><b>Report</b></a> ·
+  <a href="https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/REPORT.md"><b>Report</b></a> ·
   <a href="#install-and-use"><b>Quick start</b></a> ·
   <a href="#reproducibility"><b>Reproduce</b></a> ·
-  <a href="docs/11_WITHHELD_ARTIFACTS.md"><b>Responsible release</b></a>
+  <a href="https://github.com/PxA-Labs/safetypulse/blob/main/docs/11_WITHHELD_ARTIFACTS.md"><b>Responsible release</b></a>
 </p>
 
 ## The problem
@@ -45,7 +46,7 @@ this today means a full red-team audit of every checkpoint (hundreds of harmful 
 judge), so teams skip it. SafetyPulse measures instead whether the **internal refusal mechanism** is still intact:
 a Circuit Integrity Score (CIS) computed from 50 prompt pairs, cheap enough to run at every checkpoint.
 
-## Results (held-out test runs; full report: [docs/report/REPORT.md](docs/report/REPORT.md))
+## Results (held-out test runs; full report: [docs/report/REPORT.md](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/REPORT.md))
 
 | Finding | Number |
 |---|---|
@@ -83,7 +84,7 @@ All under [huggingface.co/purvansh01](https://huggingface.co/purvansh01):
 | `safetypulse-logs` | CIS / spot-check / ASR for all 150 checkpoints, audits, repair results, final tables, HF Job results |
 
 Withheld on purpose: the positive-control adapters trained on harmful data and the text of harmful model answers.
-Why, and how judges can get access: [docs/11_WITHHELD_ARTIFACTS.md](docs/11_WITHHELD_ARTIFACTS.md).
+Why, and how judges can get access: [docs/11_WITHHELD_ARTIFACTS.md](https://github.com/PxA-Labs/safetypulse/blob/main/docs/11_WITHHELD_ARTIFACTS.md).
 
 ## Install and use
 
@@ -91,7 +92,7 @@ Python 3.12 (SafeTune needs it; `check` alone runs on 3.10+), a GPU with 16 GB o
 [Tiny Aya Global](https://huggingface.co/CohereLabs/tiny-aya-global) (accept its terms, then `hf auth login`).
 
 ```bash
-pip install -e ".[peft,toolkits]"     # toolkits = CircuitKIT, SafeTune, AuditKIT; ".[peft]" is enough for check
+pip install "safetypulse[peft,toolkits]"   # toolkits = CircuitKIT, SafeTune, AuditKIT; "safetypulse[peft]" is enough for check
 
 # Probe bundle and one drifted checkpoint (alpaca-s1, step 125)
 hf download purvansh01/safetypulse-probe-bundle --repo-type dataset --local-dir bundle --exclude "unpaired_v1/*"
@@ -125,10 +126,10 @@ trainer.add_callback(SafetyPulseCallback("bundle", on_fail="stop"))   # checks e
 
 ## Reproducibility
 
-Every experiment is a notebook in [`kaggle/notebooks/`](kaggle/notebooks/), generated from
-[`tools/build_notebooks.py`](tools/build_notebooks.py) and run on Kaggle (T4 GPUs) with
-[`tools/kaggle_run.py`](tools/kaggle_run.py). Each run's executed notebook, log, key output files and a
-`RUN_SUMMARY.md` (what ran, numbers, interpretation) are in [`kaggle/executed/`](kaggle/executed/).
+Every experiment is a notebook in [`kaggle/notebooks/`](https://github.com/PxA-Labs/safetypulse/tree/main/kaggle/notebooks), generated from
+[`tools/build_notebooks.py`](https://github.com/PxA-Labs/safetypulse/blob/main/tools/build_notebooks.py) and run on Kaggle (T4 GPUs) with
+[`tools/kaggle_run.py`](https://github.com/PxA-Labs/safetypulse/blob/main/tools/kaggle_run.py). Each run's executed notebook, log, key output files and a
+`RUN_SUMMARY.md` (what ran, numbers, interpretation) are in [`kaggle/executed/`](https://github.com/PxA-Labs/safetypulse/tree/main/kaggle/executed).
 
 | Step | Notebook | Output |
 |---|---|---|
@@ -140,20 +141,20 @@ Every experiment is a notebook in [`kaggle/notebooks/`](kaggle/notebooks/), gene
 | Monitoring: CIS, spot-check, ASR; thresholds on dev | 08 | `safetypulse-logs/monitor` |
 | Repair strengths on dev; final test audit | 09, 10 | `safetypulse-logs/repair`, `report`, `audits` |
 | SafeTune → AuditKIT before/after | 11 | `kaggle/executed/11_*` |
-| Larger-GPU runs (CircuitKIT, 8B judge, CuratorKIT fine-tune) | [`tools/hf_jobs/`](tools/hf_jobs/) | `safetypulse-logs/hf_jobs` |
+| Larger-GPU runs (CircuitKIT, 8B judge, CuratorKIT fine-tune) | [`tools/hf_jobs/`](https://github.com/PxA-Labs/safetypulse/tree/main/tools/hf_jobs) | `safetypulse-logs/hf_jobs` |
 
 Fixed choices: seed 0 for data splits; fine-tune seeds 0 (dev) and 1–3 (test); dev and test runs never overlap;
 thresholds and repair strengths are chosen on dev only, then applied unchanged to test. Model and judge revisions
 and dataset hashes are recorded in `kaggle/executed/*/RUN_SUMMARY.md` and `safetypulse-eval/manifest.json`.
-Package tests: `pip install -e ".[dev,peft]" && pytest` (166 tests, run in CI).
+Package tests, from a clone: `pip install -e ".[dev,peft]" && pytest` (186 tests, run in CI on Python 3.10–3.12).
 
 ## Documentation
 
-[Report](docs/report/REPORT.md) · [Research plan](docs/02_RESEARCH_PLAN.md) ·
-[Architecture](docs/03_SYSTEM_ARCHITECTURE.md) · [Data](docs/04_DATA_SPEC.md) ·
-[Evaluation protocol](docs/05_EVALUATION_PROTOCOL.md) · [Risk, ethics, licensing](docs/08_RISK_ETHICS_LICENSING.md) ·
-[Withheld artifacts](docs/11_WITHHELD_ARTIFACTS.md) · [Kaggle and HF resources](docs/10_KAGGLE_AND_HF_RESOURCES.md) ·
-[Decisions](docs/adr/)
+[Report](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/REPORT.md) · [Research plan](https://github.com/PxA-Labs/safetypulse/blob/main/docs/02_RESEARCH_PLAN.md) ·
+[Architecture](https://github.com/PxA-Labs/safetypulse/blob/main/docs/03_SYSTEM_ARCHITECTURE.md) · [Data](https://github.com/PxA-Labs/safetypulse/blob/main/docs/04_DATA_SPEC.md) ·
+[Evaluation protocol](https://github.com/PxA-Labs/safetypulse/blob/main/docs/05_EVALUATION_PROTOCOL.md) · [Risk, ethics, licensing](https://github.com/PxA-Labs/safetypulse/blob/main/docs/08_RISK_ETHICS_LICENSING.md) ·
+[Withheld artifacts](https://github.com/PxA-Labs/safetypulse/blob/main/docs/11_WITHHELD_ARTIFACTS.md) · [Kaggle and HF resources](https://github.com/PxA-Labs/safetypulse/blob/main/docs/10_KAGGLE_AND_HF_RESOURCES.md) ·
+[Decisions](https://github.com/PxA-Labs/safetypulse/tree/main/docs/adr)
 
 ## Responsible use
 
@@ -162,6 +163,6 @@ Evaluation data contains harmful prompts from public red-teaming benchmarks, for
 
 ## Licence
 
-Code: [Apache-2.0](LICENSE) ([ADR-0004](docs/adr/0004-licensing.md)). Released adapters and data: CC-BY-NC-4.0,
+Code: [Apache-2.0](https://github.com/PxA-Labs/safetypulse/blob/main/LICENSE) ([ADR-0004](https://github.com/PxA-Labs/safetypulse/blob/main/docs/adr/0004-licensing.md)). Released adapters and data: CC-BY-NC-4.0,
 inherited from Tiny Aya and Alpaca; benchmark data keeps its source licence. The Lexsi toolkits keep their own
 licences and are used only through `safetypulse.adapters`.

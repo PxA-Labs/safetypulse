@@ -5,7 +5,14 @@ All notable changes to this project are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-09
+
+First release on PyPI: `pip install safetypulse`.
+
 ### Added
+- Release workflow: GitHub release → TestPyPI → install check → PyPI, via Trusted Publishing with build
+  attestations (no stored tokens).
+- PyPI metadata: project URLs, keywords, classifiers.
 - CODEOWNERS for the three maintainers.
 - CI on Python 3.10, 3.11 and 3.12 with a build and clean-install check; CodeQL, dependency review, pip-audit,
   secret scanning, OpenSSF Scorecard, link checking and Dependabot.
@@ -21,6 +28,7 @@ All notable changes to this project are recorded here. The format follows
   instead of a `KeyError` in `check` (#112).
 
 ### Changed
+- README links and images are absolute, so they work on PyPI; installation is `pip install safetypulse`.
 - `pyproject.toml` declares the licence as an SPDX expression (`Apache-2.0`), as current setuptools requires.
 - Builds require `setuptools>=84.1`, which fixes PYSEC-2026-3447 and GHSA-xmj3-9gf7-h52w.
 

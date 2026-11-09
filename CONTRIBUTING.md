@@ -54,6 +54,16 @@ A maintainer who has reviewed a release-policy false positive can apply the `rel
 and, after the protocol freeze, an entry in the deviation log of [docs/02_RESEARCH_PLAN.md](docs/02_RESEARCH_PLAN.md).
 Thresholds and repair strengths are chosen on development runs only; never tune them on test runs.
 
+## Releasing (maintainers)
+
+1. Bump `version` in `pyproject.toml`, `__version__` in `safetypulse/__init__.py` and `version` in `CITATION.cff`,
+   and move the `Unreleased` entries in `CHANGELOG.md` under the new version; merge that pull request.
+2. Publish a GitHub release whose tag is `v<version>` (e.g. `v0.1.1`).
+3. `.github/workflows/release.yml` checks that the tag and versions agree, builds once, publishes to TestPyPI,
+   installs from there, and then publishes the same files to PyPI through Trusted Publishing; no token is stored.
+
+A version on PyPI can never be re-uploaded, only yanked; fix forward with a new patch release.
+
 ## Harmful content
 
 This project handles harmful prompts and studies models whose safety is degraded. In pull requests, issues and

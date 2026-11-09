@@ -4,12 +4,30 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "safetypulse"
-version = "0.1.0"
+version = "0.1.1"
 description = "Circuit Integrity Score: a cheap check that fine-tuning has not degraded an LLM's refusal mechanism"
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 requires-python = ">=3.10"
+authors = [{ name = "Purvansh Joshi" }, { name = "PxA Labs" }]
+maintainers = [{ name = "PxA Labs" }]
+keywords = [
+    "ai-safety", "alignment", "llm", "fine-tuning", "safety-drift", "refusal", "mechanistic-interpretability",
+    "circuits", "monitoring", "red-teaming", "transformers", "peft",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "torch>=2.2",
     "transformers>=4.56",
@@ -23,6 +41,14 @@ peft = ["peft>=0.13"]
 dev = ["pytest>=8", "ruff>=0.5"]
 # Lexsi Labs toolkits (LSAL licence), used only through safetypulse.adapters; safetune needs Python >= 3.12.
 toolkits = ["circuitkit>=0.2", "safetune>=0.1.12; python_version >= '3.12'", "auditkit>=1.1"]
+
+[project.urls]
+Homepage = "https://github.com/PxA-Labs/safetypulse"
+Repository = "https://github.com/PxA-Labs/safetypulse"
+Documentation = "https://github.com/PxA-Labs/safetypulse#install-and-use"
+Article = "https://huggingface.co/blog/purvansh01/safetypulse-safety-drift-monitor"
+Issues = "https://github.com/PxA-Labs/safetypulse/issues"
+Changelog = "https://github.com/PxA-Labs/safetypulse/blob/main/CHANGELOG.md"
 
 [project.scripts]
 safetypulse = "safetypulse.cli:main"
