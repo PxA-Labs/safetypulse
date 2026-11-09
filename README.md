@@ -14,7 +14,9 @@
   <a href="https://github.com/PxA-Labs/safetypulse/actions/workflows/ci.yml"><img src="https://github.com/PxA-Labs/safetypulse/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License: Apache-2.0"></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white" alt="Python 3.10+">
-  <img src="https://img.shields.io/badge/tests-167%20passing-2ea44f" alt="167 tests">
+  <img src="https://img.shields.io/badge/tests-178%20passing-2ea44f" alt="178 tests">
+  <a href="https://github.com/PxA-Labs/safetypulse/actions/workflows/codeql.yml"><img src="https://github.com/PxA-Labs/safetypulse/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
+  <a href="https://scorecard.dev/viewer/?uri=github.com/PxA-Labs/safetypulse"><img src="https://api.scorecard.dev/projects/github.com/PxA-Labs/safetypulse/badge" alt="OpenSSF Scorecard"></a>
   <br>
   <a href="https://huggingface.co/blog/purvansh01/safetypulse-safety-drift-monitor"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Article-Read%20the%20write--up-ff9d00" alt="Hugging Face article"></a>
   <a href="https://huggingface.co/collections/purvansh01/safetypulse-models-6af00b8f56c773a80af9f7e0"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Models-collection-ffcc4d" alt="Model collection"></a>

@@ -33,6 +33,12 @@ content anywhere public in this project, please report it as above.
 |---|---|
 | 0.1.x (`main`) | yes |
 
+## Automated checks
+
+Every pull request is scanned by CodeQL, dependency review, pip-audit and a secret scanner, and a release-policy check
+blocks model weights and withheld harmful data (see [CONTRIBUTING.md](CONTRIBUTING.md#set-up)). Dependabot proposes
+dependency and GitHub Actions updates weekly, and an OpenSSF Scorecard tracks repository security practices.
+
 ## Secrets
 
 Never commit tokens or credentials. The code reads the Hugging Face token from the environment (`HF_TOKEN`) or a
