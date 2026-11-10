@@ -126,7 +126,7 @@ trainer.add_callback(SafetyPulseCallback("bundle", on_fail="stop"))   # checks e
 
 ## Reproducibility
 
-Every experiment is a notebook in [`kaggle/notebooks/`](https://github.com/PxA-Labs/safetypulse/tree/main/kaggle/notebooks), generated from
+Every experiment is a notebook within [`kaggle/notebooks/`](https://github.com/PxA-Labs/safetypulse/tree/main/kaggle/notebooks), generated from
 [`tools/build_notebooks.py`](https://github.com/PxA-Labs/safetypulse/blob/main/tools/build_notebooks.py) and run on Kaggle (T4 GPUs) with
 [`tools/kaggle_run.py`](https://github.com/PxA-Labs/safetypulse/blob/main/tools/kaggle_run.py). Each run's executed notebook, log, key output files and a
 `RUN_SUMMARY.md` (what ran, numbers, interpretation) are in [`kaggle/executed/`](https://github.com/PxA-Labs/safetypulse/tree/main/kaggle/executed).
