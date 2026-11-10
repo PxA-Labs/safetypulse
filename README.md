@@ -29,7 +29,7 @@
   <img src="https://img.shields.io/badge/toolkits-CuratorKIT%20%C2%B7%20CircuitKIT%20%C2%B7%20SafeTune%20%C2%B7%20AuditKIT-0b0b0c" alt="Toolkits">
 </p>
 
-https://github.com/user-attachments/assets/2f55f4b7-e20f-4043-a141-77cbba8fa475
+https://github.com/user-attachments/assets/2952a7ea-66dc-4139-866a-87a177c8d541
 
 <p align="center">
   <a href="https://huggingface.co/blog/purvansh01/safetypulse-safety-drift-monitor"><b>Article</b></a> ·
