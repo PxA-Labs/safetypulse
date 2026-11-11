@@ -40,7 +40,7 @@ logs are public; positive-control models trained on harmful data are withheld an
 | Track | Track 2b: AI Safety and Correction |
 | Model | CohereLabs/tiny-aya-global (Tiny Aya Global, 3.35B) |
 | Track repos used | CuratorKIT (data curation), CircuitKIT (circuit discovery cross-check), SafeTune (repair: `apply_safety_vector_restore`, `apply_wise_ft`), AuditKIT (`GuardJudge`, `compare`) |
-| Problem statement | Benign fine-tuning silently erodes an aligned model's refusals, and auditing every checkpoint is too expensive, so the erosion ships unnoticed. SafetyPulse gives a cheap, early, mechanism-based alarm at every checkpoint and a repair that restores safety without losing the fine-tune's gains. |
+| Problem statement | Benign fine-tuning silently erodes an aligned model's refusals, and auditing every checkpoint is too expensive, so the erosion ships unnoticed. SafetyPulse gives a lightweight, early, mechanism-based alarm at every checkpoint and a repair that restores safety without losing the fine-tune's gains. |
 | Model collection | https://huggingface.co/collections/purvansh01/safetypulse-models-6af00b8f56c773a80af9f7e0 |
 | Dataset collection | https://huggingface.co/collections/purvansh01/safetypulse-data-6af00b9124ee9d5022a36482 |
 | Write-up | https://huggingface.co/blog/purvansh01/safetypulse-safety-drift-monitor |
