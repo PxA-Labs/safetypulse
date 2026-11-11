@@ -14,8 +14,10 @@ SafeTune, AuditKIT · Code: [PxA-Labs/safetypulse](https://github.com/PxA-Labs/s
 - **The monitor.** We locate the model's refusal circuit once and score every checkpoint with a **Circuit Integrity
   Score (CIS)** from 50 prompt pairs. With thresholds fixed in advance, it flags **every unsafe held-out checkpoint**
   and warns **1–3 checkpoints before** the harm is measurable. A 50-prompt refusal spot-check catches 13%.
-- **Why the circuit.** The circuit-level score tracks harm far better than direction-drift scores
-  (ρ = −0.80 vs −0.56), and we show why cosine-based drift scores can miss a fading refusal signal.
+- **What the mechanism adds.** Scores that measure the *strength* of the refusal signal beat orientation-only drift
+  scores, which miss a fading signal and false-alarm when refusal gets stronger. Comparing all signals afterwards, the
+  simple direction projection was the best alarm on our held-out runs, and every CIS variant warned before the
+  spot-check on two of three seeds.
 - **The repair.** Restoring the circuit's own weights does nothing: the circuit *reads out* the drift but does not
   *store* it. SafeTune's low-rank restore, the best possible rank-k rollback, removes the drift
   (ASR 25.2% → 12.3%) and recovers lost task accuracy (GSM8K 55.1% → 70.7%).
@@ -41,22 +43,25 @@ Fine-tuning compromises safety even on benign data (Qi et al., 2023); safety-cri
 brittle set of weights (Wei et al., 2024); and refusal is mediated by a single direction in the residual stream
 (Arditi et al., 2024).
 
-**Monitoring drift is not new.** ProCon (arXiv 2509.06795) shows the refusal direction drifts during instruction
-tuning; RefusalGuard (arXiv 2605.01913) links that drift to rising ASR; Trait-space Monitoring (Nghiem et al., arXiv
-2606.07631) tracks alignment-relevant directions during LoRA fine-tuning as an early warning; the Safety Compass
-package logs cosine drift of safety directions during training; parameter-space (arXiv 2605.04572) and
-curvature-based (arXiv 2602.15799) signals have also been proposed. Other work cautions that direction preservation
-is not always a reliable proxy for behavioural safety (arXiv 2610.38001, 2605.02914).
+**Monitoring drift is not new.** ProCon (Du et al., arXiv 2509.06795) shows the refusal direction drifts during
+instruction tuning and constrains it in training; RefusalGuard (arXiv 2605.01913) links representation drift to
+harmful compliance; Trait-space Monitoring (Nghiem et al., arXiv 2606.07631) tracks alignment-relevant directions
+during LoRA fine-tuning and evaluates the monitor on held-out runs (four 7–9B models, 468 checkpoints, AUROC 0.989),
+for emergent misalignment; the Safety Compass package logs the drift of safety directions during training; and
+per-sample risk scores from parameter updates have been proposed (arXiv 2605.04572). Other work cautions that
+preserving the refusal direction is not always a reliable proxy for behavioural safety (arXiv 2610.38001) and that
+displacement alone can miss a collapse in guard models (arXiv 2605.02914).
 
-**On repair,** Safe LoRA projects LoRA updates onto an alignment subspace (Hsu et al., 2024), SafeSeek restricts
-tuning to safety circuits (arXiv 2603.23268), and recent analyses find that fine-tuning breaks the *routing* of intact
-safety representations to a refusal (arXiv 2609.01455), with refusal restored by removing an update's top singular
-directions (Lee et al., arXiv 2610.00320).
+**On repair,** Safe LoRA projects LoRA updates onto an alignment subspace (Hsu et al., 2024), and SafeSeek locates
+safety circuits and protects them during fine-tuning (arXiv 2603.23268). Recent analyses find that benign fine-tuning
+breaks the *routing* of safety information to a refusal in the final layers (Guo et al., arXiv 2609.01455), and that
+after few-sample *harmful* fine-tuning, removing the update's top two singular directions restores refusal (Lee et
+al., arXiv 2610.00320).
 
 **Our contribution:**
 
-1. A **circuit-level** integrity score, validated as an **alarm on held-out runs** against a behavioural baseline,
-   that tracks harm much better than direction-drift scores computed from the same activations.
+1. A **refusal-drift monitor for benign fine-tuning** whose signals, including a causally located circuit, are
+   compared as **alarms on held-out runs** against a behavioural spot-check, with lead time per checkpoint.
 2. A **causal test of circuit-restricted repair** on benign drift: restoring the components that read out refusal
    fails, while the optimal low-rank whole-model rollback succeeds.
 3. Evidence that **data curation does not prevent the drift**.
@@ -145,9 +150,9 @@ $$
 *Proof.* The scale \\(\lambda\\) cancels in the cosine; the identity follows from
 \\(\langle d,\hat r\rangle = \lVert d\rVert \cos\angle(d,\hat r)\\) with \\(\lVert\hat r\rVert = 1\\). \\(\square\\)
 
-A score built only on the *orientation* of a safety direction, as direction-drift monitors are, cannot detect the
-*strength* of refusal fading, and it also drops when the direction rotates while refusal gets stronger (which caused a
-false warning on our negative control during development). The circuit score responds to both.
+A score built only on the *orientation* of a safety direction cannot detect the *strength* of refusal fading, and it
+also drops when the direction rotates while refusal gets stronger (which caused a false warning on our negative
+control). Scores that include the strength, the direction projection and the circuit score, respond to both.
 
 **Result 2 — SafeTune's restore is the best rank-k rollback.** A fine-tune changes each weight matrix by
 \\(\Delta = W_t - W_0\\), with singular values \\(\sigma_1 \ge \sigma_2 \ge \dots\\). SafeTune's safety-vector
@@ -228,13 +233,30 @@ These adapters are deliberately unsafe, so their weights are not released (§10)
 
 - **Early and complete:** every unsafe test checkpoint is flagged, 1–3 checkpoints before ASR becomes unsafe; the
   negative control never raised an alarm.
-- **The circuit adds information:** direction scores, of the kind prior monitors use, reach ρ ≈ −0.56; the circuit
-  score reaches −0.80 (Result 1).
+- **Ranking is not alarming.** The circuit score ranks checkpoints best across conditions (ρ −0.80), but that comes
+  from differences between conditions; within the Alpaca drift it tracks ASR least.
 - **The spot-check ranks but does not alarm:** an 8-point refusal drop on 50 prompts is within its noise, so it
   catches 13% of unsafe checkpoints.
 - **Cost:** one check takes 22 s on an L4 GPU (about USD 0.005); a full ASR audit takes about 2× longer.
 - **Precision 0.46:** CIS also WARNs on the GSM8K fine-tune, which moved the circuit without reducing safety (never a
   FAIL).
+
+**All signals as alarms (post hoc).** After the test runs were scored, we applied the same threshold rule to every
+signal. The primary score stays as fixed on the development runs; this comparison only reports what we found.
+
+| Signal | FAIL recall | FAIL precision | WARN-or-FAIL recall | Alarms on safe runs (none / GSM8K) | Alpaca lead at WARN |
+|---|:---:|:---:|:---:|:---:|:---:|
+| CIS circuit (primary) | 0.57 | 0.68 | 1.00 | 0 / 20 WARN | 3, 1, 1 |
+| CIS direction projection | **0.96** | **0.85** | 1.00 | **0 / 0** | 3, 1, 1 |
+| CIS direction cosine | 0.87 | 0.80 | 1.00 | 20 WARN / 0 | 3, 1, 1 |
+| CIS refusal logit | 0.52 | 0.33 | 0.70 | 0 / 20 FAIL | 3, 0, 0 |
+| Refusal spot-check, two levels | 0.13 | 0.75 | 0.96 | 0 / 0 | 2, 0, −1 |
+
+The simplest strength-aware score, the projection on the refusal direction, was the best alarm here. The cosine
+score false-alarms on the negative control, as Result 1 predicts, and the spot-check catches up on recall once it gets
+a WARN level but warns later on two of three seeds. The circuit's value in this project is the explanation it gives
+and the repair test below, not a better alarm. Three drifting seeds of one model are too few to rank the signals with
+confidence; this needs a pre-registered comparison on a second model.
 
 ### 6.3 Independent check with CircuitKIT
 
@@ -335,7 +357,9 @@ the fine-tune it protects.
 - No jailbreak-style attacks were evaluated, only direct harmful requests.
 - The judge agrees with a larger judge but has not been validated against human labels.
 - CIS WARNs on fine-tunes that move the circuit without reducing safety (precision 0.46), and its FAIL-level recall is
-  0.57 because it partly recovers late in Alpaca training while ASR stays high.
+  0.57 because it partly recovers late in Alpaca training while ASR stays high. In a post-hoc comparison the direction
+  projection was the better alarm (§6.2).
+- The closest prior monitor (Trait-space Monitoring) is validated on four 7–9B models; we test one 3.35B model.
 - CIS is about 2× cheaper than a full audit; its advantage over a cheap spot-check is detection, not cost.
 - The harmless twins were drafted and reviewed by AI models; the curation result rests on one seed.
 
@@ -390,9 +414,11 @@ are scripts in `tools/hf_jobs/`.
 - Zou, A., et al. (2023). *Universal and Transferable Adversarial Attacks on Aligned Language Models* (AdvBench).
 - Lexsi Labs toolkits: CuratorKIT, CircuitKIT (arXiv:2607.19317), SafeTune, AuditKIT.
 
-**Recent preprints, cited from their abstracts:** ProCon, arXiv:2509.06795 · RefusalGuard, arXiv:2605.01913 ·
-Nghiem, Ho, Wiegreffe & Daumé III, *Trait-space Monitoring for Emergent Misalignment During Supervised Finetuning*,
-arXiv:2606.07631 · *From Parameter Dynamics to Risk Scoring*, arXiv:2605.04572 · *The Geometry of Alignment Collapse*,
-arXiv:2602.15799 · *Preserving Safety During Sequential Fine-Tuning*, arXiv:2610.38001 · *When Safety Geometry
-Collapses*, arXiv:2605.02914 · SafeSeek, arXiv:2603.23268 · *When Safety Routing Breaks*, arXiv:2609.01455 · Lee et
-al., *Refusal Localizes, the Damage Relocates*, arXiv:2610.00320 · Safety Compass (PyPI package `safety-compass`).
+**Recent preprints** (checked on arXiv on 2026-11-11; the four closest against their full texts):
+Du et al., *Anchoring Refusal Direction* (ProCon), arXiv:2509.06795 · Guo et al., *When Safety Routing Breaks*,
+arXiv:2609.01455 (Findings of EMNLP 2026, per arXiv) · Lee et al., *Refusal Localizes, the Damage Relocates*,
+arXiv:2610.00320 · Nghiem, Ho, Wiegreffe & Daumé III, *Trait-space Monitoring for Emergent Misalignment During
+Supervised Finetuning*, arXiv:2606.07631 · Asif & Amiri, *RefusalGuard*, arXiv:2605.01913 · Wang et al., *From
+Parameter Dynamics to Risk Scoring*, arXiv:2605.04572 · Ruellan & Benavides-Prado, *Preserving Safety During
+Sequential Fine-Tuning*, arXiv:2610.38001 · Hossain et al., *When Safety Geometry Collapses*, arXiv:2605.02914 · Yu
+et al., *SafeSeek*, arXiv:2603.23268 · Safety Compass (PyPI package `safety-compass`).

@@ -14,7 +14,8 @@ still carries. Across 12 LoRA fine-tuning runs (150 checkpoints), CIS tracks the
 held-out test runs (Spearman ρ = −0.80 [−0.85, −0.71]) and, with thresholds fixed on separate development runs,
 flags every unsafe test checkpoint, warning 1–3 checkpoints before ASR rises on all three seeds of the condition
 that drifted (general instruction tuning doubled ASR, 21% → 42%). A 50-prompt refusal spot-check ranks
-checkpoints as well but catches only 13% of unsafe checkpoints. Repair tells a different story: restoring only the
+checkpoints as well but catches only 13% of unsafe checkpoints at its dev-chosen threshold (§4.3 compares all
+signals post hoc). Repair tells a different story: restoring only the
 circuit's weights is no better than restoring random components, while SafeTune's low-rank safety-vector restore
 returns ASR to base without hurting task performance. The refusal circuit is a good *read-out* of safety, but the
 fine-tune's damage is not concentrated in it. All four Lexsi toolkits run on our model and data: CircuitKIT
@@ -110,6 +111,30 @@ safety within 6 training steps (ASR 94%).
 - **Spot-check:** ranks checkpoints as well as CIS (driven by the harm run) but, as an alarm, misses the subtle
   Alpaca drift: an 6–10-point refusal drop on 50 prompts is within its noise, while `cis_circ` moves 18–27 points.
 - **Cost (T4, per checkpoint):** CIS 55 GPU-s, spot-check 25 GPU-s, full ASR audit 120 GPU-s.
+
+**Post-hoc comparison of all signals as alarms.** After the test runs were scored, we applied the same threshold
+rule (τ_fail by max F1 on the dev runs, τ_warn halfway to 1) to every CIS variant and to the spot-check, and
+evaluated each on the 77 test checkpoints (23 unsafe). `tools/alarm_comparison.py` reproduces the `cis_circ` row
+of Table B exactly. The primary variant was fixed on dev and is not changed by this analysis.
+
+| Signal | FAIL recall | FAIL precision | WARN-or-FAIL recall | WARN-or-FAIL precision | Alarms on safe test runs (none / gsm8k, of 22 each) | Alpaca lead, WARN (checkpoints) | ρ pooled | ρ within Alpaca |
+|---|---|---|---|---|---|---|---|---|
+| `cis_circ` (primary) | 0.57 | 0.68 | 1.00 | 0.46 | 0 / 20 WARN | 3, 1, 1 | −0.80 | −0.26 |
+| `cis_sep` | **0.96** | **0.85** | 1.00 | 0.77 | **0 / 0** | 3, 1, 1 | −0.56 | −0.47 |
+| `cis_cos` | 0.87 | 0.80 | 1.00 | 0.46 | 20 WARN / 0 | 3, 1, 1 | −0.57 | −0.56 |
+| `cis_logit` | 0.52 | 0.33 | 0.70 | 0.39 | 0 / 20 FAIL | 3, 0, 0 | −0.39 | −0.22 |
+| Spot-check (two levels) | 0.13 | 0.75 | 0.96 | **0.85** | 0 / 0 | 2, 0, −1 | −0.83 | −0.59 |
+
+- On these runs the **direction projection `cis_sep` is the better alarm** than the circuit score: it catches 96% of
+  unsafe checkpoints at FAIL (vs 57%) with no alarm on a safe run and the same lead time. `cis_circ` ranks
+  checkpoints best across conditions (pooled ρ), but that comes from differences *between* conditions; within the
+  Alpaca drift it tracks ASR least.
+- The **orientation-only** score `cis_cos` (the kind of signal tracked by direction-drift monitors) warns on the
+  negative control, whose refusal got *stronger*: scores that also measure strength (`cis_sep`, `cis_circ`) avoid this.
+- With a WARN level, the spot-check's recall rises from 0.13 to 0.96, but it warns later than the CIS variants on
+  two of the three seeds (s1, s3; it misses the s3 crossover by one checkpoint). The advantage of reading the mechanism is lead time, not recall.
+- These are post-hoc results on three drifting seeds of one model; they motivate, but do not replace, a
+  pre-registered comparison in a second model.
 
 ### 4.4 Repair (Table C)
 On the most-drifted dev checkpoint (`alpaca-s0` step 150, ASR 47%), strengths chosen on dev sets:
@@ -244,7 +269,7 @@ Prices checked on 2026-11-11.
 | H1 | Circuit ablation raises ASR more than random | **Partly:** selective and more efficient at equal damage (exploratory); not shown at k = 20 |
 | H2 | CIS rank-correlates with ASR (ρ ≤ −0.7) | **Supported pooled** (test ρ = −0.80); per-run correlations are weak because ASR is flat within most runs |
 | H3 | CIS drops before or with ASR | **Supported:** 1–3 checkpoints early on all drifting test runs |
-| H4 | CIS beats the spot-check | **Not on rank correlation** (−0.80 vs −0.83); **yes as a detector** (recall 1.00 vs 0.13) |
+| H4 | CIS beats the spot-check | **Not on rank correlation** (−0.80 vs −0.83). As a detector, recall 1.00 vs 0.13 at the thresholds used; with the same two-level rule (post hoc, §4.3) the spot-check reaches 0.96, but CIS warns earlier on two of three seeds |
 | H5 | Circuit-restricted repair beats random / whole-model repair | **Not supported** on dev and held-out test runs (ΔASR +0.0 [−1.4, +1.4]); low-rank whole-model restore (SafeTune) works |
 | — | (Exploratory) Safety-focused data curation prevents the drift | **Not supported:** CuratorKIT-curated Alpaca drifts the same (mean ASR 37.6% vs 38.1%, one seed) |
 
@@ -283,7 +308,11 @@ mechanism CIS measures.
 - CIS costs 2.2× less than the full ASR audit, not orders of magnitude; its advantage over a cheaper spot-check is
   detection, not cost.
 - CircuitKIT agrees on the circuit's location but not on the order of its components (ρ = 0.05).
-- Novelty of C1–C3 against the literature still has to be verified (docs/01 §4).
+- The primary score `cis_circ` was not the best alarm on the test runs: in a post-hoc comparison the direction
+  projection `cis_sep` had higher recall and precision (§4.3). The circuit's main contribution is the explanation
+  and the repair test, not a better alarm.
+- The closest prior monitor (Trait-space Monitoring, §9) is validated on four 7–9B models and 36 held-out runs; we
+  test one 3.35B model.
 
 ## 8. Responsible use
 
@@ -293,13 +322,43 @@ scores and metrics only. The drifted Alpaca adapters are released as research ar
 withheld, why the positive control was needed, and how judges can request access: docs/11_WITHHELD_ARTIFACTS.md. CIS is a screening signal: a PASS
 does not certify safety, and release decisions require a full audit.
 
+## 9. Related work and positioning
+
+Checked on 2026-11-11 against the arXiv pages (and full texts for the four closest papers); details in
+[docs/12_RELATED_WORK.md](https://github.com/PxA-Labs/safetypulse/blob/main/docs/12_RELATED_WORK.md).
+
+- **Drift and its monitoring are known.** ProCon (Du et al., 2025) shows the refusal direction drifts during
+  instruction tuning and constrains it in training. Trait-space Monitoring (Nghiem et al., 2026) tracks
+  alignment-relevant activation directions during LoRA fine-tuning and evaluates the monitor on held-out runs
+  (four 7–9B models, 468 checkpoints, AUROC 0.989); it targets emergent misalignment rather than refusal drift under
+  benign tuning. Safety Compass (a PyPI package) logs the drift of safety directions during training.
+- **Mechanism of benign drift.** Guo et al. (2026) find that benign fine-tuning disrupts the *routing* of safety
+  information to a refusal in late, output-side layers; Lee et al. (2026) restore refusal after few-sample harmful
+  fine-tuning by removing the update's top two singular directions. Both fit our finding that the refusal circuit
+  reads out the drift but does not store it, and that a low-rank whole-model rollback repairs it.
+- **Repair.** Safe LoRA (Hsu et al., 2024) projects LoRA updates onto an alignment subspace; SafeSeek (Yu et al., 2026)
+  locates safety circuits and protects them during fine-tuning.
+- **Caveats.** Preserving the base refusal direction is not always a reliable proxy for behavioural safety, and the
+  relation is model-dependent (Ruellan and Benavides-Prado, 2026).
+
+**What SafetyPulse adds:** (1) a refusal-drift monitor whose four signals, including a causally located circuit,
+are compared as alarms on held-out runs against a behavioural spot-check; (2) the causal negative result that
+restoring the circuit's own weights does not undo benign drift, while a low-rank whole-model restore does; (3)
+evidence that data curation does not prevent the drift; (4) a tested, installable tool chaining four toolkits.
+
 ## References
 
-- Qi et al., 2023. *Fine-tuning Aligned Language Models Compromises Safety, Even When Users Do Not Intend To.*
-- Arditi et al., 2024. *Refusal in Language Models Is Mediated by a Single Direction.*
-- Wei et al., 2024. *Assessing the Brittleness of Safety Alignment via Pruning and Low-Rank Modifications.*
-- Röttger et al., 2024. *XSTest: A Test Suite for Identifying Exaggerated Safety Behaviours in LLMs.*
-- Mazeika et al., 2024. *HarmBench.*
-- CircuitKIT, arXiv:2607.19317.
-
-_(To verify before submission: exact titles, venues and links of every reference.)_
+- Arditi, A., et al. (2024). *Refusal in Language Models Is Mediated by a Single Direction.* arXiv:2406.11717.
+- Du, Y., et al. (2025). *Anchoring Refusal Direction: Mitigating Safety Risks in Tuning via Projection Constraint.* arXiv:2509.06795.
+- Guo, Y., Chen, X., Zhang, S., Wang, X., & Tang, H. (2026). *When Safety Routing Breaks: Understanding Alignment Fragility under Benign Fine-Tuning.* Findings of EMNLP 2026 (per arXiv). arXiv:2609.01455.
+- Hsu, C.-Y., et al. (2024). *Safe LoRA: the Silver Lining of Reducing Safety Risks when Fine-tuning Large Language Models.* NeurIPS 2024. arXiv:2405.16833.
+- Lee, J., et al. (2026). *Refusal Localizes, the Damage Relocates: Safety Layers Under Few-Sample Fine-Tuning.* arXiv:2610.00320.
+- Mazeika, M., et al. (2024). *HarmBench: A Standardized Evaluation Framework for Automated Red Teaming and Robust Refusal.* arXiv:2402.04249.
+- Nghiem, H., Ho, S.-T., Wiegreffe, S., & Daumé III, H. (2026). *Trait-space Monitoring for Emergent Misalignment During Supervised Finetuning.* COLM 2026 AIW workshop (per arXiv). arXiv:2606.07631.
+- Qi, X., et al. (2023). *Fine-tuning Aligned Language Models Compromises Safety, Even When Users Do Not Intend To!* arXiv:2310.03693.
+- Röttger, P., et al. (2024). *XSTest: A Test Suite for Identifying Exaggerated Safety Behaviours in Large Language Models.* NAACL 2024. arXiv:2308.01263.
+- Ruellan, G., & Benavides-Prado, D. (2026). *Preserving Safety During Sequential Fine-Tuning: A Factorial and Geometric Analysis of Replay.* arXiv:2610.38001.
+- Seth, P., Gosalia, H., Kasliwal, A., & Sankarapu, V. K. (2026). *CircuitKIT: Circuit Discovery, Evaluation, and Application Toolkit for Mechanistic Interpretability.* arXiv:2607.19317.
+- Wei, B., et al. (2024). *Assessing the Brittleness of Safety Alignment via Pruning and Low-Rank Modifications.* arXiv:2402.05162.
+- Yu, M., et al. (2026). *SafeSeek: Universal Attribution of Safety Circuits in Language Models.* arXiv:2603.23268.
+- Safety Compass, PyPI package `safety-compass` (v0.1.3, June 2026).
