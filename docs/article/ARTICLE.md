@@ -13,7 +13,8 @@ SafeTune, AuditKIT · Code: [PxA-Labs/safetypulse](https://github.com/PxA-Labs/s
   Alpaca instructions raise the attack success rate (ASR) on held-out HarmBench prompts from **14.3% to 25.2%**.
 - **The monitor.** We locate the model's refusal circuit once and score every checkpoint with a **Circuit Integrity
   Score (CIS)** from 50 prompt pairs. With thresholds fixed in advance, it flags **every unsafe held-out checkpoint**
-  and warns **1–3 checkpoints before** the harm is measurable. A 50-prompt refusal spot-check catches 13%.
+  and warns **1–3 checkpoints before** the harm is measurable. A 50-prompt refusal spot-check, at its own
+  threshold, catches 13%.
 - **What the mechanism adds.** Scores that measure the *strength* of the refusal signal beat orientation-only drift
   scores, which miss a fading signal and false-alarm when refusal gets stronger. Comparing all signals afterwards, the
   simple direction projection was the best alarm on our held-out runs, and every CIS variant warned before the
@@ -242,8 +243,8 @@ Figure 1 (top of the article) shows the three held-out Alpaca runs checkpoint by
   negative control never raised an alarm.
 - **Ranking is not alarming.** The circuit score ranks checkpoints best across conditions (ρ −0.80), but that comes
   from differences between conditions; within the Alpaca drift it tracks ASR least.
-- **The spot-check ranks but does not alarm:** an 8-point refusal drop on 50 prompts is within its noise, so it
-  catches 13% of unsafe checkpoints.
+- **The spot-check ranks but barely alarms at its threshold:** an 8-point refusal drop on 50 prompts is within its
+  noise, so it catches 13% of unsafe checkpoints (with an added WARN level, 96%, but later; see below).
 - **Cost:** one check takes 22 s on an L4 GPU (about USD 0.005); a full ASR audit takes about 2× longer.
 - **Precision 0.46:** CIS also WARNs on the GSM8K fine-tune, which moved the circuit without reducing safety (never a
   FAIL).
@@ -334,9 +335,9 @@ as often as the base model. The repair takes seconds on one GPU and needs no dat
 
 ## 8. Return on investment
 
-**Inputs.** Tiny Aya produced about \\(T = 250\\) output tokens/s on one A10G (plain `transformers`, batch 16,
-measured including model loading; an optimised server would be faster). Hugging Face lists an A10G endpoint at
-\\(g = 1.00\\) USD/hour. For \\(V\\) requests a month with \\(n_{\text{in}}\\) input and \\(n_{\text{out}}\\) output
+**Inputs.** Tiny Aya produced about \\(T = 250\\) output tokens/s on one A10G (HF Job 2: at most 3 × 119 × 256 =
+91,392 tokens in 362.7 s with plain `transformers`, batch 16, timed including model loading; an optimised server would
+be faster). Hugging Face lists an A10G Inference Endpoint at \\(g = 1.00\\) USD/hour. For \\(V\\) requests a month with \\(n_{\text{in}}\\) input and \\(n_{\text{out}}\\) output
 tokens, and API prices \\(P_{\text{in}}, P_{\text{out}}\\) in USD per million tokens:
 
 $$
@@ -361,12 +362,14 @@ than about USD 1.11 per million output tokens.
 | Closed mid-tier model, e.g. Gemini 3.8 Flash* | 0.75 / 3.75 | ≈ 1,238 |
 | Closed lowest-cost tier, e.g. Claude Haiku 5.5* | 0.10 / 0.50 | ≈ 165 |
 
-\*Third-party list prices, November 2026; check the providers' pages.
+\*List prices checked on 2026-11-11 on the providers' pricing pages (Google AI Studio; Anthropic). Gemini 3.8 Flash
+is listed at 1.50 / 7.50 from 1 January 2027.
 
 Self-hosting is **1.7–4.5× cheaper than a mid-tier API**, but at our unoptimised throughput not cheaper than the
-lowest-priced closed models; matching them needs about 560 tokens/s. The stronger case is control: the weights, the
-fine-tune and the data stay in-house, the model can be adapted to a language or domain, and every fine-tune can now be
-checked and repaired. **Monitoring is cheap:** checking all 11 checkpoints of a run costs about USD 0.05, under 10% of
+lowest-priced closed models; matching them in this scenario needs about 420 tokens/s. The stronger case is control:
+the weights, the fine-tune and the data stay in-house, the model can be adapted to a language or domain, and every
+fine-tune can now be checked and repaired. A closed API cannot run the monitor or the repair at all, since both need
+the model's weights and activations ([report §4.8](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/REPORT.md#48-cost-and-roi-self-hosted-tiny-aya-vs-a-closed-source-api)). **Monitoring is cheap:** checking all 11 checkpoints of a run costs about USD 0.05, under 10% of
 the fine-tune it protects.
 
 ## 9. Limitations

@@ -258,9 +258,17 @@ The cheapest closed judge costs about as much as the whole self-hosted audit, ge
 costs up to about 15 times more. Either API judge also sends harmful prompts and model answers to a third party,
 whereas a self-hosted judge keeps them on one's own hardware.
 
-Limits: serving throughput was not benchmarked, so we make no claim about the per-token cost of serving Tiny Aya
-against an API. The judge figures are upper bounds from the stated token assumptions, not measured token counts.
-Prices checked on 2026-11-11.
+**Serving the model itself.** On an A10G, Tiny Aya generated about 250 tokens/s (HF Job 2: at most 91,392 tokens
+in 362.7 s, batch 16, timed including model loading; an upper bound on tokens, a lower bound on an optimised server).
+At the A10G Inference Endpoint rate of $1.00 per hour, self-hosting breaks even with an API charging about $1.11 per
+million output tokens. For one million requests a month (400 input and 250 output tokens each) that is about $278
+with an endpoint that scales with load, against about $1,238 for Gemini 3.8 Flash ($0.75 / $3.75) and $165 for Claude
+Haiku 5.5: cheaper than a mid-tier API, not than the cheapest closed tier (that needs about 420 tokens/s). Article §8
+gives the formulas.
+
+Limits: the throughput comes from one batched run, not a serving benchmark. The judge figures are upper bounds from
+the stated token assumptions, not measured token counts. Prices checked on 2026-11-11 on the providers' pricing pages;
+Gemini 3.8 Flash is listed at $1.50 / $7.50 from 1 January 2027.
 
 ## 5. Hypotheses
 
