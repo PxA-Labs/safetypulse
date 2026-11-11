@@ -1,16 +1,18 @@
 # 00 — Hackathon Brief
 
+> **Status (2026-11-11):** planning document from the start of the hackathon. Where it differs from the results, [the report](report/REPORT.md) is authoritative; the rows below are annotated with the outcome.
+
 Reference copy of the track and problem statements this project is built against, and how
 SafetyPulse maps to them.
 
 | Field | Value | Source / status |
 |-------|-------|-----------------|
 | Event | Lexsi Labs AI Safety & Alignment Hackathon (with Cohere Labs and Hugging Face) | Secondary listing — confirm on official page |
-| Dates | 1–14 November 2026 (submission deadline **14 Nov**, per the team on 7 Nov; earlier secondary listing said 21 Nov) | Confirm exact time and timezone on the official page |
+| Dates | 1–15 November 2026: Stage 1 deadline extended to **15 Nov, 23:59 AoE**; judging 15–16 Nov; Demo Day 22 Nov | Organiser email, 11 Nov 2026 |
 | Registered track | **Track 2 — AI Red Teaming, Safety and Alignment** | Team registration |
 | Sub-track we target | **Track 2b — AI Safety and Correction** | Team decision ([ADR-0001](adr/0001-project-direction.md)) |
 | Submission requirement | Chain at least two toolkits and report before/after metrics | Secondary listing — **confirm in official rules** |
-| Judging criteria | _TBD — copy from official rules_ | |
+| Judging criteria | Not published. Organisers (Discord, 21 Oct 2026): "common weighted rubric, normalized per track" | Discord |
 | Compute | Hugging Face credits: $49.96 (coverage of GPU compute to be confirmed) | Team billing page, 5 Nov 2026 |
 
 ---
@@ -75,11 +77,11 @@ Intended pipeline: **CuratorKIT → SafeTune / CircuitKIT → AuditKIT**.
 
 | Problem statement | Coverage | What we deliver for it |
 |-------------------|----------|------------------------|
-| **2b-2 Repairing safety drift without retraining** | **Primary** | Circuit-restricted weight restore / delta projection on drifted checkpoints; ASR restored with task score preserved (Table C) |
+| **2b-2 Repairing safety drift without retraining** | **Primary** | *Planned:* circuit-restricted restore. *Outcome:* circuit-restricted restore had no effect; SafeTune's low-rank safety-vector restore repairs the drift with task accuracy recovered (REPORT §4.4, Table C) |
 | **2b-5 Locating where safety lives** | **Primary** | Refusal direction + refusal circuit via matched contrast pairs; validated by targeted-vs-random ablation (Table A) |
-| **2b-6 Circuit-level interventions** | **Primary** | Repair applied only to flagged components; "nothing else broke" shown via task, general-capability and over-refusal metrics |
+| **2b-6 Circuit-level interventions** | Tested (negative result) | Repair applied only to the circuit's components (R1, R3a) left the drift in place (ΔASR +0.0 [−1.4, +1.4]); reported as a causal negative result |
 | 2b-4 Inference-time safety steering | Baseline only | Refusal-direction steering (R6) as a comparison point |
-| 2a-1 Robustness evaluation | Partial | Jailbreak-template ASR (ASR-JB) on repaired models; over-refusal reported |
+| 2a-1 Robustness evaluation | Partial | Over-refusal (XSTest) reported for every model; jailbreak-template ASR was planned but not run |
 | Others | Not addressed | Out of scope ([Overview §6](01_PROJECT_OVERVIEW.md#6-scope)) |
 
 ### 3.2 Requirements in the brief → where we satisfy them
@@ -96,10 +98,10 @@ Intended pipeline: **CuratorKIT → SafeTune / CircuitKIT → AuditKIT**.
 
 | Toolkit | Used for | Pipeline stage |
 |---------|----------|----------------|
-| CuratorKIT | Domain fine-tuning data; harmless-twin drafting (human-reviewed); dedupe | Data |
+| CuratorKIT | Curation of the Alpaca fine-tuning data (HF Job 3); twins were drafted and reviewed by AI models, not humans | Data |
 | CircuitKIT | Refusal circuit discovery with matched pairs; component ablation | Calibrate |
-| SafeTune | Weight-space repair methods; steering baseline; possibly its circuit/neuron locators as cross-check | Repair |
-| AuditKIT | ASR, over-refusal, capability benchmarks; before/after reports | Audit |
+| SafeTune | Weight-space repair (`apply_safety_vector_restore`, `apply_wise_ft`) | Repair |
+| AuditKIT | `GuardJudge` and `compare` for the before/after ASR audit with paired tests (notebook 11, HF Job 2); the package's own audit uses its Llama Guard judge | Audit |
 
 All four toolkits are used, exceeding the (reported) two-toolkit minimum.
 

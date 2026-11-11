@@ -1,6 +1,6 @@
 # SafetyPulse: monitoring safety drift during fine-tuning through the refusal mechanism
 
-_Draft v0.3, 2026-11-08. Lexsi Labs AI Safety & Alignment Hackathon, Track 2b. Every number is traceable to a
+_Version 1.0, 2026-11-11. Lexsi Labs AI Safety & Alignment Hackathon, Track 2b. Every number is traceable to a
 `kaggle/executed/<notebook>/RUN_SUMMARY.md` (HF Jobs: `kaggle/executed/12_hf_jobs/`, `13_curatorkit_alpaca/`)._
 
 ## Abstract
@@ -12,7 +12,7 @@ locate the refusal mechanism with matched harmful/harmless prompt pairs (a refus
 circuit) and define a **Circuit Integrity Score (CIS)**: how much of the base model's refusal signal a checkpoint
 still carries. Across 12 LoRA fine-tuning runs (150 checkpoints), CIS tracks the attack success rate (ASR) on
 held-out test runs (Spearman ρ = −0.80 [−0.85, −0.71]) and, with thresholds fixed on separate development runs,
-flags every unsafe test checkpoint, warning 1–3 checkpoints before ASR rises on all three seeds of the condition
+flags every unsafe test checkpoint (precision 0.46), warning 1–3 checkpoints before ASR rises on all three seeds of the condition
 that drifted (general instruction tuning doubled ASR, 21% → 42%). A 50-prompt refusal spot-check ranks
 checkpoints as well but catches only 13% of unsafe checkpoints at its dev-chosen threshold (§4.3 compares all
 signals post hoc). Repair tells a different story: restoring only the
@@ -58,7 +58,7 @@ whole-model interpolation (R4), random-component control (R5) and steering with 
 prompts, GSM8K task accuracy and MMLU general capability, each with bootstrap 95% CIs.
 
 All four stages are implemented in the `safetypulse` Python package (`safetypulse calibrate | check | repair |
-audit`, a Hugging Face `Trainer` callback, 166 tests, CI), and every experiment runs as a Kaggle notebook (T4 GPUs).
+audit`, a Hugging Face `Trainer` callback, 186 tests, CI), and every experiment runs as a Kaggle notebook (T4 GPUs).
 Three runs that need a larger GPU (CircuitKIT discovery, the 8B judge, the curated fine-tune) ran the same code as
 Hugging Face Jobs on an A100 / A10G (`tools/hf_jobs/`).
 
@@ -270,6 +270,19 @@ Limits: the throughput comes from one batched run, not a serving benchmark. The 
 the stated token assumptions, not measured token counts. Prices checked on 2026-11-11 on the providers' pricing pages;
 Gemini 3.8 Flash is listed at $1.50 / $7.50 from 1 January 2027.
 
+### 4.9 Review follow-ups (post hoc, notebook 15)
+
+A 50-judge review panel asked for five checks. They use only existing logs and the LoRA adapters (CPU, no generation;
+`kaggle/executed/15_judge_followups/`, numbers in `files/judge_followups.json`). All are post hoc.
+
+| Check | Result |
+|---|---|
+| Confidence intervals (95% Wilson; a bootstrap that resamples whole runs is in the JSON) | `cis_circ` FAIL recall 0.57 [0.37, 0.74], precision 0.68 [0.46, 0.85]; WARN-or-FAIL recall 1.00 [0.86, 1.00], precision 0.46 [0.33, 0.60]. `cis_sep` FAIL recall 0.96 [0.79, 0.99], precision 0.85 [0.67, 0.94]. Pooled ρ without the step-0 rows: −0.85 (`cis_circ`), −0.66 (`cis_sep`); within the Alpaca runs −0.04 and −0.31 |
+| Trivial baselines | An alarm at every checkpoint after step 0: recall 1.00, precision 0.33, 40 of 44 alarms on safe runs, lead 3, 1, 1. A threshold on the size of the LoRA weight change ‖ΔW‖ (chosen on dev): identical. CIS has the same lead at WARN with 20 safe-run alarms (0 at FAIL); `cis_sep` has none. The lead is bounded by the 25-step spacing; what the mechanism adds is fewer false alarms |
+| Unsafe cut-off (base + 5 / 10 / 15 pts, thresholds re-chosen on dev) | At +5 the picture matches +10. At +15 only 9 test checkpoints are unsafe and `cis_sep`'s FAIL recall drops to 0.22 while `cis_circ`'s WARN-or-FAIL recall stays 1.00: the ranking of signals depends on the cut-off |
+| How much of the fine-tune the rank-8 restore removes | 86.2%, 86.3% and 86.8% of the squared weight change on `alpaca-s1/s2/s3` (82–97% by module type): the repair is mostly a rollback, consistent with the repaired model matching the base (p = 0.25) |
+| Holm correction of the six McNemar tests (1B via AuditKIT, 8B via HF Job 2) | Base → drifted and drifted → repaired stay significant for both judges (adjusted p 0.0013–0.035); base → repaired stays non-significant (adjusted 0.5) |
+
 ## 5. Hypotheses
 
 | | Hypothesis | Outcome |
@@ -321,6 +334,10 @@ mechanism CIS measures.
   and the repair test, not a better alarm.
 - The closest prior monitor (Trait-space Monitoring, §9) is validated on four 7–9B models and 36 held-out runs; we
   test one 3.35B model.
+- Every alarm fires at the first checkpoint (step 25), so the measured lead is bounded by the checkpoint spacing; an
+  alarm on any change has the same lead (§4.9). A denser schedule on benign runs is needed to measure lead time.
+- The repair undoes about 86% of the fine-tune's weight change (§4.9) and the fine-tune's intended gains were not
+  measured, so "repair" here means a return to about base level.
 
 ## 8. Responsible use
 
