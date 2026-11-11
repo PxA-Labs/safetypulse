@@ -334,9 +334,9 @@ as often as the base model. The repair takes seconds on one GPU and needs no dat
 
 ## 8. Return on investment
 
-**Inputs.** Tiny Aya produced about \\(T = 250\\) output tokens/s on one A10G (plain `transformers`, batch 16,
-measured including model loading; an optimised server would be faster). Hugging Face lists an A10G endpoint at
-\\(g = 1.00\\) USD/hour. For \\(V\\) requests a month with \\(n_{\text{in}}\\) input and \\(n_{\text{out}}\\) output
+**Inputs.** Tiny Aya produced about \\(T = 250\\) output tokens/s on one A10G (HF Job 2: at most 3 × 119 × 256 =
+91,392 tokens in 362.7 s with plain `transformers`, batch 16, timed including model loading; an optimised server would
+be faster). Hugging Face lists an A10G Inference Endpoint at \\(g = 1.00\\) USD/hour. For \\(V\\) requests a month with \\(n_{\text{in}}\\) input and \\(n_{\text{out}}\\) output
 tokens, and API prices \\(P_{\text{in}}, P_{\text{out}}\\) in USD per million tokens:
 
 $$
@@ -361,12 +361,14 @@ than about USD 1.11 per million output tokens.
 | Closed mid-tier model, e.g. Gemini 3.8 Flash* | 0.75 / 3.75 | ≈ 1,238 |
 | Closed lowest-cost tier, e.g. Claude Haiku 5.5* | 0.10 / 0.50 | ≈ 165 |
 
-\*Third-party list prices, November 2026; check the providers' pages.
+\*List prices checked on 2026-11-11 on the providers' pricing pages (Google AI Studio; Anthropic). Gemini 3.8 Flash
+is listed at 1.50 / 7.50 from 1 January 2027.
 
 Self-hosting is **1.7–4.5× cheaper than a mid-tier API**, but at our unoptimised throughput not cheaper than the
-lowest-priced closed models; matching them needs about 560 tokens/s. The stronger case is control: the weights, the
-fine-tune and the data stay in-house, the model can be adapted to a language or domain, and every fine-tune can now be
-checked and repaired. **Monitoring is cheap:** checking all 11 checkpoints of a run costs about USD 0.05, under 10% of
+lowest-priced closed models; matching them in this scenario needs about 420 tokens/s. The stronger case is control:
+the weights, the fine-tune and the data stay in-house, the model can be adapted to a language or domain, and every
+fine-tune can now be checked and repaired. A closed API cannot run the monitor or the repair at all, since both need
+the model's weights and activations (report §4.8). **Monitoring is cheap:** checking all 11 checkpoints of a run costs about USD 0.05, under 10% of
 the fine-tune it protects.
 
 ## 9. Limitations
