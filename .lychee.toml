@@ -11,6 +11,6 @@ exclude = [
   '^https://huggingface\.co/jobs/',
   # Gated models redirect unauthenticated requests.
   '^https://huggingface\.co/(CohereLabs|meta-llama)/',
-  # Local and template placeholders.
-  '^https?://localhost', '^file://',
+  # Local placeholders. (file:// is not excluded: CI remaps links to this repository's main onto the checkout.)
+  '^https?://localhost',
 ]
