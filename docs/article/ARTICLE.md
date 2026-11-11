@@ -24,6 +24,11 @@ SafeTune, AuditKIT · Code: [PxA-Labs/safetypulse](https://github.com/PxA-Labs/s
 - **The result.** A repaired model that is safer *and* more capable than the fine-tune it came from:
   [`tiny-aya-global-safetypulse-repaired`](https://huggingface.co/purvansh01/tiny-aya-global-safetypulse-repaired).
 
+![Three held-out Alpaca fine-tuning runs. Top row: the circuit score drops below its WARN or FAIL threshold at step 25 on every seed. Bottom row: attack success crosses the unsafe line only at step 50 or 100.](https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/article/figures/fig1_alarm.png)
+
+*Figure 1. On three held-out fine-tuning runs, the circuit score raises its alarm at step 25, one to three
+checkpoints before the attack success rate becomes unsafe.*
+
 ---
 
 ## 1. The problem
@@ -216,6 +221,8 @@ These adapters are deliberately unsafe, so their weights are not released (§10)
 
 ### 6.2 Monitoring held-out runs
 
+Figure 1 (top of the article) shows the three held-out Alpaca runs checkpoint by checkpoint.
+
 | Signal | Spearman ρ with ASR (95% CI) | Precision | Recall |
 |---|:---:|:---:|:---:|
 | **CIS circuit, WARN or FAIL** | **−0.80 [−0.85, −0.71]** | 0.46 | **1.00** |
@@ -258,6 +265,10 @@ a WARN level but warns later on two of three seeds. The circuit's value in this 
 and the repair test below, not a better alarm. Three drifting seeds of one model are too few to rank the signals with
 confidence; this needs a pre-registered comparison on a second model.
 
+![Five signals compared as alarms. Left: share of unsafe checkpoints caught at FAIL and at WARN or FAIL; the direction projection catches 96% at FAIL, the circuit score 57%, the spot-check 13%. Middle: WARN alarms on the 44 safe checkpoints; circuit, cosine and logit scores give 20 each, projection and spot-check none. Right: lead time per seed; the spot-check is late on one seed.](https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/article/figures/fig2_signals.png)
+
+*Figure 2. Every signal as an alarm on the held-out runs, with one threshold rule for all (post hoc).*
+
 ### 6.3 Independent check with CircuitKIT
 
 CircuitKIT (EAP-IG, 64 length-matched pairs) scored all 612 heads and MLPs. Of our 20 components, **16 are in its
@@ -282,6 +293,15 @@ mean ± sd over seeds; paired 95% interval against the drifted model.
 
 Circuit repair is no better than restoring random components (Result 3). The low-rank rollback (Result 2) removes the
 drift and recovers 15.6 GSM8K points [12.3, 18.8].
+
+![Bar charts for base, drifted and SafeTune-repaired models. Attack success: 14.3%, 25.2%, 12.3%. Over-refusal: 7.3%, 1.3%, 8.7%. GSM8K: 71.3%, 55.1%, 70.7%. MMLU: 57.6%, 57.9%, 57.6%.](https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/article/figures/fig3_repair.png)
+
+*Figure 3. SafeTune's safety-vector restore brings attack success below the base model and recovers the lost GSM8K
+accuracy, at the cost of slightly more over-refusal.*
+
+![Change against the drifted model with 95% intervals. Restoring the circuit's weights changes attack success by +0.0 and SafeTune wise_ft on the circuit by +0.6; random components −0.6 to −4.8; steering −8.4; whole-model interpolation and SafeTune safety-vector restore −12.9, the latter with +15.6 GSM8K points.](https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/article/figures/fig4_repairs.png)
+
+*Figure 4. Repairs restricted to the circuit (blue) do nothing; whole-model low-rank restore removes the drift.*
 
 ### 6.5 Toolkit chain and judge robustness
 
