@@ -63,6 +63,11 @@ The claimed contributions are:
 > ([Research Plan §6](02_RESEARCH_PLAN.md#6-literature-check-must-complete-before-day-3)). If C1 is
 > already published, the project pivots its emphasis to C2/C3.
 
+**Outcome (2026-11-11):** checked in [docs/12_RELATED_WORK.md](12_RELATED_WORK.md). Drift monitoring, including
+held-out alarm evaluation, is published (C1 is not new as a general idea); the emphasis is on the refusal-drift
+setting, the comparison of signals as alarms, and the repair result (C3: circuit-restricted repair fails, a low-rank
+whole-model restore works).
+
 ## 5. Success criteria
 
 | ID | Criterion | Target (provisional) |

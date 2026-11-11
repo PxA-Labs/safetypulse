@@ -1,64 +1,53 @@
 # 12 — Related work and novelty check
 
-_First pass, 2026-11-08, from web search (abstracts, listing pages and search snippets; full papers not yet read).
-Every entry must be checked against the paper itself before it is cited in the article or report._
+_First pass 2026-11-08 from search results. Verified 2026-11-11: every entry below was checked against its arXiv
+abstract page, and the four closest papers (2606.07631, 2509.06795, 2609.01455, 2610.00320) against their HTML full
+texts (long appendices were not read in full). Titles, authors and versions are from the arXiv pages._
 
 ## Verdict
 
-**Monitoring the refusal direction during fine-tuning is not new.** Several 2025–2026 papers and one open-source
-tool show that the refusal direction drifts under benign fine-tuning, that the drift tracks behavioural safety loss,
-and that activation-space monitors can give early warning. SafetyPulse must not claim to be the first drift monitor.
+**Monitoring the refusal direction during fine-tuning is not new, and neither is validating such a monitor as an
+alarm on held-out runs.** Trait-space Monitoring (Nghiem et al.) evaluates its monitor on 36 held-out runs (468
+checkpoints, four 7–9B models). SafetyPulse must not claim to be the first drift monitor or the first validated one.
 
-What SafetyPulse can still claim, after checking these papers in full:
+What SafetyPulse can claim:
 
-1. **A circuit-level integrity score validated as an alarm on held-out runs:** thresholds fixed on dev, then tested
-   on unseen seeds against a cheap behavioural baseline (50-prompt spot-check) and full ASR, with lead time
-   measured per checkpoint.
+1. **A refusal-drift monitor under benign tuning, with four signals compared as alarms on held-out runs** against a
+   behavioural spot-check, including a causally located circuit. In that comparison (post hoc, REPORT §4.3) the
+   direction projection `cis_sep` was the best alarm; the orientation-only `cis_cos`, the kind of signal
+   direction-drift monitors track, warned on the negative control; every CIS variant warned before the spot-check
+   on two of three seeds.
 2. **A causal negative result on repair:** restoring the weights of the components that *read out* refusal does not
    undo the drift (ΔASR +0.0 [−1.4, +1.4]; no better than random components), while a low-rank whole-model restore
-   (SafeTune) does. This fits, and adds a weight-restoration test to, the "safety routing / damage relocates" picture.
+   (SafeTune) does. This fits the "safety routing breaks" picture (2609.01455) and the low-rank repair of 2610.00320,
+   in the benign-drift setting.
 3. **Curation does not prevent the drift** (CuratorKIT; one seed).
 4. **An end-to-end, tested tool** chaining four toolkits, with public artifacts.
 
-Pitch: *"a validated early-warning monitor for safety drift during fine-tuning, plus evidence that the refusal
-circuit reads the drift out but does not store it, so repair has to be global."*
-
 ## Closest work
 
-| Work | Status of our check | What it does | Relation to SafetyPulse |
+| Work | Checked | What it does | Relation to SafetyPulse |
 |---|---|---|---|
-| Anchoring Refusal Direction / ProCon, arXiv [2509.06795](https://arxiv.org/abs/2509.06795) | Seen on 3 index pages | Reports gradual cosine drift of the refusal direction during instruction fine-tuning; a projection constraint limits it | Drift itself is known. ProCon *prevents* it during training; we *monitor* and *repair after the fact* |
-| Trait-space Monitoring for Emergent Misalignment, arXiv [2606.07631](https://arxiv.org/abs/2606.07631) (Nghiem, Ho, Wiegreffe, Daumé III) | Seen on arXiv, HF Papers and others | Tracks 7 alignment-relevant activation directions during LoRA fine-tuning of 7–9B models as an early-warning monitor (reported AUROC ≈ 0.99; numbers differ between versions) | **Closest to our monitor.** Differences to check: emergent misalignment vs refusal/ASR drift; direction set vs causal circuit; their models are larger |
-| Safety Compass (PyPI package [safety-compass](https://pypi.org/project/safety-compass/)) | README only, not peer-reviewed; versions disagree | Logs cosine drift of safety concept directions during HF fine-tuning; says refusal drifts first, even on benign data | Same tool shape as our Trainer callback; no causal circuit, no repair, no held-out alarm validation that we saw |
-| RefusalGuard, arXiv [2605.01913](https://arxiv.org/abs/2605.01913) | Seen on arXiv and emergentmind | Fine-tuning causes directional drift and geometric distortion of refusal representations; ASR rises as alignment decays; proposes a geometry-preserving objective | Supports our premise; prevention, not monitoring |
-| When Safety Routing Breaks, arXiv [2609.01455](https://arxiv.org/abs/2609.01455) | Seen on arXiv | Benign fine-tuning leaves safety representations intact but disrupts their routing to refusal in late, output-side MLPs | **Agrees with our finding** that the read-out circuit is intact enough to measure drift while the damage lies elsewhere |
-| Refusal Localizes, the Damage Relocates, arXiv [2610.00320](https://arxiv.org/abs/2610.00320) (Lee et al.) | Seen on arXiv | Few-sample *harmful* fine-tuning; removing the update's top singular directions restores refusal; freezing lower layers does not protect it | **Close to our repair finding.** Their low-rank removal resembles SafeTune's safety-vector restore. Different setting (harmful vs our benign data) |
-| Safe LoRA (Hsu et al., NeurIPS 2024), arXiv [2405.16833](https://arxiv.org/abs/2405.16833) | Confirmed (NeurIPS page) | Projects LoRA updates onto an alignment matrix (aligned − unaligned weights), training- and data-free | Prior weight-space repair; a baseline we did not run |
-| SafeSeek, arXiv [2603.23268](https://arxiv.org/abs/2603.23268) | One search listing | Finds safety circuits with differentiable masks; proposes tuning only circuit parameters | Circuit localisation for safety exists; our result questions circuit-restricted *repair* after drift |
-| From Parameter Dynamics to Risk Scoring, arXiv [2605.04572](https://arxiv.org/abs/2605.04572) | Two search listings | Scores safety degradation from parameter drift projected on safety directions | Parameter-space monitoring; ours is activation and circuit based |
-| The Geometry of Alignment Collapse, arXiv [2602.15799](https://arxiv.org/abs/2602.15799) | Two search listings | Overlap of fine-tuning updates with a high-curvature alignment subspace, suggested as an early signal | Another early-warning signal to compare with |
-| Preserving Safety During Sequential Fine-Tuning, arXiv [2610.38001](https://arxiv.org/abs/2610.38001) | Search listing only | Snippet: preserving the base refusal direction is not a reliable proxy for behavioural safety, model-dependent | **A counterpoint to check:** our CIS tracks ASR on one model; the claim may not transfer |
-| When Safety Geometry Collapses, arXiv [2605.02914](https://arxiv.org/abs/2605.02914) | One search listing | Snippet: low displacement does not prevent safety failure when class-separating geometry erodes | Caveat for any drift monitor |
+| Nghiem, Ho, Wiegreffe & Daumé III, *Trait-space Monitoring for Emergent Misalignment During Supervised Finetuning*, arXiv [2606.07631](https://arxiv.org/abs/2606.07631) v2 (COLM 2026 AIW workshop, per arXiv) | Full text | Tracks 7 alignment-relevant activation directions during LoRA fine-tuning of Llama 3.1 8B, Mistral 7B, Qwen 2.5 7B and Gemma 2 9B; a random-forest monitor reaches 1.8% FNR, 2.0% FPR, 0.989 AUROC on 468 held-out checkpoints; fires at or before the behavioural crossover in 20 of 24 dangerous runs | **Closest monitor.** Validated at larger scale than ours. Differences: emergent misalignment vs refusal drift under benign tuning; trait directions vs a causal circuit; no repair |
+| Du et al., *Anchoring Refusal Direction: Mitigating Safety Risks in Tuning via Projection Constraint* (ProCon), arXiv [2509.06795](https://arxiv.org/abs/2509.06795) | Full text | Cosine drift of the refusal direction during benign and attack instruction tuning (Llama 2 7B, Llama 3 8B, Qwen 2 7B); a projection-constrained loss limits it | Drift is known. ProCon prevents it during training, with no monitor; we monitor and repair after the fact |
+| Guo, Chen, Zhang, Wang & Tang, *When Safety Routing Breaks: Understanding Alignment Fragility under Benign Fine-Tuning*, arXiv [2609.01455](https://arxiv.org/abs/2609.01455) (Findings of EMNLP 2026, per arXiv) | Full text | Benign fine-tuning (Alpaca, Dolly) on Llama 3.1 8B and Qwen 2.5 7B leaves safety information present (observational evidence) but disrupts its routing to refusal; curvature drift concentrates in the final layers' MLPs | **Agrees with our repair finding** that the read-out circuit is intact enough to measure drift while the damage lies elsewhere. No monitor |
+| Lee et al., *Refusal Localizes, the Damage Relocates: Safety Layers Under Few-Sample Fine-Tuning*, arXiv [2610.00320](https://arxiv.org/abs/2610.00320) | Full text | Few-sample **harmful** fine-tuning on six 7–14B checkpoints; removing the update's top **two** singular directions restores refusal after short attention-only fine-tunes; freezing lower layers fails at 100 examples but helps at low doses; a spectral detector misses most repair failures | Close to our repair finding (low-rank removal resembles SafeTune's restore), in a harmful rather than benign setting |
+| Hsu et al., *Safe LoRA*, arXiv [2405.16833](https://arxiv.org/abs/2405.16833) (NeurIPS 2024) | Abstract | Projects LoRA updates onto an alignment matrix, training- and data-free | Prior weight-space repair; a baseline we did not run |
+| Yu et al., *SafeSeek: Universal Attribution of Safety Circuits in Language Models*, arXiv [2603.23268](https://arxiv.org/abs/2603.23268) | Abstract | Finds safety circuits with differentiable masks; excluding the circuit during helpfulness fine-tuning keeps 96.5% safety retention | Circuit localisation for safety exists; our result questions circuit-restricted *repair* after drift |
+| Asif & Amiri, *RefusalGuard: Geometry-Preserving Fine-Tuning for Safety in LLMs*, arXiv [2605.01913](https://arxiv.org/abs/2605.01913) v2 | Abstract | Fine-tuning causes drift and geometric distortion of safety-relevant representations, linked to harmful compliance; constrains updates in representation space | Supports our premise; prevention, not monitoring |
+| Wang et al., *From Parameter Dynamics to Risk Scoring: Quantifying Sample-Level Safety Degradation in LLM Fine-tuning*, arXiv [2605.04572](https://arxiv.org/abs/2605.04572) (ICML 2026, per arXiv) | Abstract | Scores each training sample by its parameter update's projection on danger vs safety directions | Parameter-space, per-sample; ours is activation- and circuit-based, per checkpoint |
+| Springer et al., *The Geometry of Alignment Collapse: When Fine-Tuning Breaks Safety*, arXiv [2602.15799](https://arxiv.org/abs/2602.15799) | Abstract | Theory: alignment sits in low-dimensional, sharply curved subspaces that first-order methods cannot detect or defend; motivates curvature-aware diagnostics | Background; not a monitor |
+| Ruellan & Benavides-Prado, *Preserving Safety During Sequential Fine-Tuning: A Factorial and Geometric Analysis of Replay*, arXiv [2610.38001](https://arxiv.org/abs/2610.38001) | Abstract | Preserving the base refusal direction is not a reliable proxy for behavioural safety; the relation differs between models | **Caveat:** our signals track ASR on one model |
+| Hossain et al., *When Safety Geometry Collapses: Fine-Tuning Vulnerabilities in Agentic Guard Models*, arXiv [2605.02914](https://arxiv.org/abs/2605.02914) | Abstract | In guard models (LlamaGuard, WildGuard, Granite Guardian), the geometry of safety representations predicts failure better than displacement | Caveat for displacement-only monitors; guard models, not chat models |
+| Safety Compass, PyPI [safety-compass](https://pypi.org/project/safety-compass/) 0.1.3 (alpha) | Package page | Tracks the drift of safety concept directions (difference of means) during Hugging Face fine-tuning; findings on Qwen3-8B and Llama-3-8B | Same tool shape as our Trainer callback; no circuit, no repair, no held-out alarm evaluation on its page |
 
-Foundations already cited in the report: Qi et al., 2023 (fine-tuning compromises safety); Arditi et al., 2024
-(refusal direction); Wei et al., 2024 (brittleness of safety); HarmBench; XSTest; CircuitKIT.
+Foundations (checked on arXiv): Qi et al., 2023 (2310.03693); Arditi et al., 2024 (2406.11717); Wei et al., 2024
+(2402.05162); HarmBench (2402.04249); XSTest (2308.01263, NAACL 2024); CircuitKIT (Seth et al., 2607.19317).
 
 ## Consequences for the write-up
 
-- Replace any "first" / "novel monitor" wording with the positioning above; cite ProCon, Trait-space Monitoring and
-  Safety Compass for drift monitoring, and When Safety Routing Breaks / Refusal Localizes for the repair finding.
-- Add as a limitation: drift-based signals are reported to be model-dependent (2610.38001, 2605.02914); we test one
-  model.
-- **We already have a direction-only baseline.** `cis_sep` (projection separation on the refusal direction) and
-  `cis_cos` (cosine of the harmful–harmless difference to the base model's) are direction-drift measures of the kind
-  ProCon and Safety Compass track. On the held-out test runs they correlate with ASR at ρ −0.39 to −0.57, against
-  **−0.80 for the circuit-level `cis_circ`** (Table B), and rule v1 picked `cis_cos` on dev, which then gave a false
-  warning on the negative control (docs/02 §3.4). State this explicitly: it is the evidence for what the circuit
-  adds over direction drift. Still to do: the same comparison as an alarm (recall / precision / lead time per
-  variant), not only as a rank correlation.
-
-## To do
-
-- [ ] Read the full texts of 2606.07631, 2509.06795, 2609.01455, 2610.00320 and confirm each statement above.
-- [ ] Search for "circuit integrity" / "component-level" monitoring specifically, and for CIS-like scores.
-- [ ] Check publication status (peer-reviewed or preprint) for each before citing.
+- No "first" / "novel monitor" wording, and no claim that held-out alarm validation is new.
+- The circuit score is **not** the best alarm on our test runs (REPORT §4.3); its value is the mechanistic
+  explanation and the repair test. State the comparison openly; the primary variant stays as pre-registered on dev.
+- Limitation: drift signals are reported to be model-dependent (2610.38001); we test one model, the closest prior
+  monitor tests four.
