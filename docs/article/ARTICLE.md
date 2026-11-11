@@ -25,10 +25,10 @@ SafeTune, AuditKIT · Code: [PxA-Labs/safetypulse](https://github.com/PxA-Labs/s
 - **The result.** A repaired model that is safer *and* more capable than the fine-tune it came from:
   [`tiny-aya-global-safetypulse-repaired`](https://huggingface.co/purvansh01/tiny-aya-global-safetypulse-repaired).
 
-![Three held-out Alpaca fine-tuning runs. Top row: the circuit score drops below its WARN or FAIL threshold at step 25 on every seed. Bottom row: attack success crosses the unsafe line only at step 50 or 100.](https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/article/figures/fig1_alarm.png)
+![Animation: a held-out Alpaca fine-tuning run drawn checkpoint by checkpoint. The circuit score drops and an alarm (FAIL) appears at step 25 while attack success is still below the unsafe line; attack success crosses the unsafe line at step 100, three checkpoints after the alarm.](https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/article/figures/anim1_alarm.gif)
 
-*Figure 1. On three held-out fine-tuning runs, the circuit score raises its alarm at step 25, one to three
-checkpoints before the attack success rate becomes unsafe.*
+*Animation 1. One held-out fine-tuning run, checkpoint by checkpoint: the alarm at step 25 comes three checkpoints
+before the harm is measurable (seed 1; one checkpoint earlier on the other two seeds, Figure 2).*
 
 ---
 
@@ -141,6 +141,10 @@ XSTest safe prompts (a repair that refuses everything is no fix), **GSM8K** accu
 repairs a failing checkpoint → AuditKIT measures before and after; CircuitKIT independently re-discovers the circuit
 that CIS reads.
 
+![Animation: a checkpoint travels through the loop. CuratorKIT curates the data (2,000 to 1,981 examples), LoRA fine-tuning weakens refusals, the SafetyPulse check gives CIS 0.74, FAIL; SafeTune repairs it with a rank-8 restore; the second check gives CIS 0.97, PASS; AuditKIT measures ASR 24.4% to 11.8% and GSM8K 56.7% to 71.3%. CircuitKIT independently re-discovers the circuit that CIS reads.](https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/article/figures/anim2_pipeline.gif)
+
+*Animation 2. The loop with all four toolkits, using the alpaca-s1 checkpoint at step 125 and its repair.*
+
 ## 4. Three results behind the method
 
 **Result 1 — Cosine drift scores cannot see a fading refusal signal.** For any \\(\lambda > 0\\),
@@ -220,9 +224,17 @@ FAILs at that same checkpoint. To measure *how early* CIS reacts, we repeated th
 CIS warns **2 training steps (8 examples) before** the harm is measurable, while the spot-check still reads 98%.
 These adapters are deliberately unsafe, so their weights are not released (§10).
 
+![Three stacked panels over steps 0 to 30 of the dense positive-control run. The circuit score falls to 0.89 (WARN) at step 4 and below 0.4 by step 8; the refusal spot-check stays at 98% until step 4 and reaches 0% at step 8; attack success is 24% at step 4, 42% (unsafe) at step 6 and above 90% from step 8.](https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/article/figures/fig5_positive_control.png)
+
+*Figure 1. Positive control: CIS warns at step 4, while the spot-check still reads 98% and before attack success
+becomes unsafe at step 6.*
+
 ### 6.2 Monitoring held-out runs
 
-Figure 1 (top of the article) shows the three held-out Alpaca runs checkpoint by checkpoint.
+![Three held-out Alpaca fine-tuning runs. Top row: the circuit score drops below its WARN or FAIL threshold at step 25 on every seed. Bottom row: attack success crosses the unsafe line only at step 50 or 100.](https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/article/figures/fig1_alarm.png)
+
+*Figure 2. On three held-out fine-tuning runs, the circuit score raises its alarm at step 25, one to three
+checkpoints before the attack success rate becomes unsafe.*
 
 | Signal | Spearman ρ with ASR (95% CI) | Precision | Recall |
 |---|:---:|:---:|:---:|
@@ -268,7 +280,7 @@ confidence; this needs a pre-registered comparison on a second model.
 
 ![Five signals compared as alarms. Left: share of unsafe checkpoints caught at FAIL and at WARN or FAIL; the direction projection catches 96% at FAIL, the circuit score 57%, the spot-check 13%. Middle: WARN alarms on the 44 safe checkpoints; circuit, cosine and logit scores give 20 each, projection and spot-check none. Right: lead time per seed; the spot-check is late on one seed.](https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/article/figures/fig2_signals.png)
 
-*Figure 2. Every signal as an alarm on the held-out runs, with one threshold rule for all (post hoc).*
+*Figure 3. Every signal as an alarm on the held-out runs, with one threshold rule for all (post hoc).*
 
 ### 6.3 Independent check with CircuitKIT
 
@@ -297,12 +309,12 @@ drift and recovers 15.6 GSM8K points [12.3, 18.8].
 
 ![Bar charts for base, drifted and SafeTune-repaired models. Attack success: 14.3%, 25.2%, 12.3%. Over-refusal: 7.3%, 1.3%, 8.7%. GSM8K: 71.3%, 55.1%, 70.7%. MMLU: 57.6%, 57.9%, 57.6%.](https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/article/figures/fig3_repair.png)
 
-*Figure 3. SafeTune's safety-vector restore brings attack success below the base model and recovers the lost GSM8K
+*Figure 4. SafeTune's safety-vector restore brings attack success below the base model and recovers the lost GSM8K
 accuracy, at the cost of slightly more over-refusal.*
 
 ![Change against the drifted model with 95% intervals. Restoring the circuit's weights changes attack success by +0.0 and SafeTune wise_ft on the circuit by +0.6; random components −0.6 to −4.8; steering −8.4; whole-model interpolation and SafeTune safety-vector restore −12.9, the latter with +15.6 GSM8K points.](https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/article/figures/fig4_repairs.png)
 
-*Figure 4. Repairs restricted to the circuit (blue) do nothing; whole-model low-rank restore removes the drift.*
+*Figure 5. Repairs restricted to the circuit (blue) do nothing; whole-model low-rank restore removes the drift.*
 
 ### 6.5 Toolkit chain and judge robustness
 
