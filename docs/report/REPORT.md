@@ -203,6 +203,40 @@ Curation leaves the drift unchanged: it is not caused by toxic or low-quality ex
 instruction tuning. Data hygiene is not a substitute for monitoring; CIS alarmed one checkpoint before ASR rose, as on
 every other Alpaca run. (One seed; Detoxify targets toxic language, not examples that teach compliance.)
 
+### 4.8 Cost and ROI: self-hosted Tiny Aya vs a closed-source API
+
+**The method needs a self-hosted model.** CIS reads the model's internal activations and gradients, and the repair
+edits its weights. A closed-source API exposes neither, and a model reached only through an API cannot be fine-tuned
+and then inspected. For this workflow the monitor and the repair exist only on a model you host yourself.
+
+**Measured cost of the self-hosted loop** (Table D, Tesla T4; priced at the Hugging Face Inference Endpoints T4 rate,
+$0.50 per hour, [huggingface.co/pricing](https://huggingface.co/pricing); our runs used Kaggle's free T4):
+
+| Step | GPU time per checkpoint | Cost per checkpoint | All 150 checkpoints of the study |
+|---|---|---|---|
+| CIS check (100 prompts, forward + attribution) | 55 s | $0.0076 | 2.3 h · $1.14 |
+| Refusal spot-check (50 prompts, 64 tokens) | 25 s | $0.0034 | 1.0 h · $0.51 |
+| Full ASR audit (78 prompts, 256 tokens + Llama Guard 3 1B judge) | 120 s | $0.0167 | 5.0 h · $2.51 |
+
+**Where a closed API could fit: the audit judge.** The audited model is one's own fine-tuned checkpoint, so its
+answers are generated on one's own GPU either way; only the judging could move to an API. Upper bound for one
+test-set audit (119 judgments, at most 1,000 input and 10 output tokens each; prices from
+[platform.claude.com/docs/en/about-claude/pricing](https://platform.claude.com/docs/en/about-claude/pricing)):
+
+| Judge | Price per million tokens (input / output) | Judging cost per audit (upper bound) |
+|---|---|---|
+| Llama Guard 3 1B, self-hosted | (in the GPU time) | included in $0.0167 |
+| Claude Haiku 5.5 | $0.10 / $0.50 | ≤ $0.013 |
+| Claude Sonnet 5.5 | $2 / $10 | ≤ $0.25 |
+
+The cheapest closed judge costs about as much as the whole self-hosted audit, generation included; a Sonnet-class judge
+costs up to about 15 times more. Either API judge also sends harmful prompts and model answers to a third party,
+whereas a self-hosted judge keeps them on one's own hardware.
+
+Limits: serving throughput was not benchmarked, so we make no claim about the per-token cost of serving Tiny Aya
+against an API. The judge figures are upper bounds from the stated token assumptions, not measured token counts.
+Prices checked on 2026-11-11.
+
 ## 5. Hypotheses
 
 | | Hypothesis | Outcome |
