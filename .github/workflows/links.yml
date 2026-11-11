@@ -19,9 +19,15 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # Links to this repository's own files on main are checked against the checkout instead, so a pull request
+      # that adds a figure and links it (as the published article must) passes before the file reaches main.
       - uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
         with:
-          args: --config .lychee.toml --no-progress "./**/*.md"
+          args: >-
+            --config .lychee.toml --no-progress
+            --remap '^https://raw\.githubusercontent\.com/PxA-Labs/safetypulse/main/([^#?]*).* file://${{ github.workspace }}/$1'
+            --remap '^https://github\.com/PxA-Labs/safetypulse/blob/main/([^#?]*).* file://${{ github.workspace }}/$1'
+            "./**/*.md"
           fail: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
