@@ -4,7 +4,7 @@ Usage: python tools/alarm_comparison.py kaggle/executed/08_monitor_checkpoints/f
 
 Applies the threshold rule of notebook 08 to each signal in turn: tau_fail maximises F1 for "unsafe"
 (ASR > base + 10 pts) on the seed-0 dev runs, tau_warn = tau_fail + (1 - tau_fail) / 2. Reproduces the
-published cis_circ figures (FAIL recall 0.57, WARN-or-FAIL recall 1.00, Alpaca lead 3 / 1 / 0) and reports
+published cis_circ figures (FAIL recall 0.57, WARN-or-FAIL recall 1.00, Alpaca lead at FAIL 3 / 1 / 0) and reports
 REPORT.md section 4.3, "Post-hoc comparison". The primary variant itself was fixed on dev before any test run
 was scored; this script does not change it.
 """

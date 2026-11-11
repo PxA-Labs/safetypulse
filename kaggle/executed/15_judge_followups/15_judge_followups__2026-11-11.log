@@ -1,0 +1,25 @@
+[{"stream_name":"stdout","time":7.268678285,"data":"[cell 0] start: # 15 · Follow-up analyses (CPU)\n"}
+,{"stream_name":"stdout","time":7.268736289,"data":"[cell 1] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":45.688709443,"data":"[cell 2] start: import json, re, urllib.request\n"}
+,{"stream_name":"stdout","time":46.225331164,"data":"[cell 3] start: ## Shared definitions (identical to notebook 08 and `tools/alarm_comparison.py`)\n"}
+,{"stream_name":"stdout","time":46.225375941,"data":"[cell 4] start: def counts(alert, unsafe):\n"}
+,{"stream_name":"stdout","time":46.240958434,"data":"[cell 5] start: ## A · The alarm with confidence intervals (unsafe = ASR \u003e base + 10 pts, as pre\n"}
+,{"stream_name":"stdout","time":46.240991309,"data":"[cell 6] start: DELTA = 0.10\n"}
+,{"stream_name":"stdout","time":144.162708414,"data":"[cell 7] start: ## B · Sensitivity to the 'unsafe' cut-off (base + 5 / 10 / 15 pts; thresholds r\n"}
+,{"stream_name":"stdout","time":144.162753694,"data":"[cell 8] start: rows = []\n"}
+,{"stream_name":"stdout","time":144.353740965,"data":"[cell 9] start: ## C · Trivial baselines: alarm at every checkpoint after step 0, and the size o\n"}
+,{"stream_name":"stdout","time":144.353778935,"data":"[cell 10] start: import glob, torch\n"}
+,{"stream_name":"stdout","time":643.608379751,"data":"[cell 11] start: ## D · How much of each repaired fine-tune's change does the rank-8 restore remo\n"}
+,{"stream_name":"stdout","time":643.608612442,"data":"[cell 12] start: drift = df[(df.condition == \"alpaca\") \u0026 (df.seed != 0) \u0026 (df.step \u003e 0)]\n"}
+,{"stream_name":"stdout","time":658.642260048,"data":"[cell 13] start: ## E · Holm correction of the paired McNemar tests (AuditKIT, Llama Guard 3 1B; \n"}
+,{"stream_name":"stdout","time":658.642303405,"data":"[cell 14] start: def mcnemar_exact(b, c):\n"}
+,{"stream_name":"stdout","time":659.223085451,"data":"[cell 15] start: ## Save\n"}
+,{"stream_name":"stdout","time":659.223122878,"data":"[cell 16] start: result = {\"source_commit\": COMMIT, \"post_hoc\": True, \"unsafe_rule\": \"ASR \u003e base \n"}
+,{"stream_name":"stdout","time":662.627270337,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":665.639946458,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":665.639988207,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":665.867830984,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":665.867861356,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":666.790622244,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":667.480871744,"data":"[NbConvertApp] Writing 307463 bytes to __results__.html\n"}
+]

@@ -13,16 +13,19 @@ SafeTune, AuditKIT · Code: [PxA-Labs/safetypulse](https://github.com/PxA-Labs/s
   Alpaca instructions raise the attack success rate (ASR) on held-out HarmBench prompts from **14.3% to 25.2%**.
 - **The monitor.** We locate the model's refusal circuit once and score every checkpoint with a **Circuit Integrity
   Score (CIS)** from 50 prompt pairs. With thresholds fixed in advance, it flags **every unsafe held-out checkpoint**
-  and warns **1–3 checkpoints before** the harm is measurable. A 50-prompt refusal spot-check, at its own
+  (recall 1.00 at precision 0.46: it also warns on a safe maths fine-tune) and warns **1–3 checkpoints before** the
+  harm is measurable, a lead bounded by our checkpoint spacing. A 50-prompt refusal spot-check, at its own
   threshold, catches 13%.
 - **What the mechanism adds.** Scores that measure the *strength* of the refusal signal beat orientation-only drift
   scores, which miss a fading signal and false-alarm when refusal gets stronger. Comparing all signals afterwards, the
   simple direction projection was the best alarm on our held-out runs, and every CIS variant warned before the
   spot-check on two of three seeds.
 - **The repair.** Restoring the circuit's own weights does nothing: the circuit *reads out* the drift but does not
-  *store* it. SafeTune's low-rank restore, the best possible rank-k rollback, removes the drift
-  (ASR 25.2% → 12.3%) and recovers lost task accuracy (GSM8K 55.1% → 70.7%).
-- **The result.** A repaired model that is safer *and* more capable than the fine-tune it came from:
+  *store* it. SafeTune's low-rank restore, the closest rank-k rollback to the base weights, removes the drift
+  (ASR 25.2% → 12.3%) and recovers lost task accuracy (GSM8K 55.1% → 70.7%) by undoing about 86% of the fine-tune's
+  weight change.
+- **The result.** A repaired model that is safer *and* more capable than the fine-tune it came from, and statistically
+  level with the base model:
   [`tiny-aya-global-safetypulse-repaired`](https://huggingface.co/purvansh01/tiny-aya-global-safetypulse-repaired).
 
 ![Animation: a held-out Alpaca fine-tuning run drawn checkpoint by checkpoint. The circuit score drops and an alarm (FAIL) appears at step 25 while attack success is still below the unsafe line; attack success crosses the unsafe line at step 100, three checkpoints after the alarm.](https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/article/figures/anim1_alarm.gif)
@@ -69,9 +72,11 @@ al., arXiv 2610.00320).
 1. A **refusal-drift monitor for benign fine-tuning** whose signals, including a causally located circuit, are
    compared as **alarms on held-out runs** against a behavioural spot-check, with lead time per checkpoint.
 2. A **causal test of circuit-restricted repair** on benign drift: restoring the components that read out refusal
-   fails, while the optimal low-rank whole-model rollback succeeds.
+   fails, while a low-rank whole-model rollback succeeds.
 3. Evidence that **data curation does not prevent the drift**.
-4. An **end-to-end, tested tool** chaining all four Lexsi Labs toolkits, with every artifact public.
+4. A **tested, installable package** (`safetypulse`: check, repair, audit, Trainer callback) inside a pipeline that
+   chains all four Lexsi Labs toolkits (CuratorKIT and AuditKIT run in the notebooks and HF Jobs), with every artifact
+   public.
 
 ## 3. Method
 
@@ -164,7 +169,7 @@ A score built only on the *orientation* of a safety direction cannot detect the 
 also drops when the direction rotates while refusal gets stronger (which caused a false warning on our negative
 control). Scores that include the strength, the direction projection and the circuit score, respond to both.
 
-**Result 2 — SafeTune's restore is the best rank-k rollback.** A fine-tune changes each weight matrix by
+**Result 2 — SafeTune's restore is the closest rank-k rollback.** A fine-tune changes each weight matrix by
 \\(\Delta = W_t - W_0\\), with singular values \\(\sigma_1 \ge \sigma_2 \ge \dots\\). SafeTune's safety-vector
 restore (strength 1, rank \\(k\\)) sets \\(W' = W_t + [W_0 - W_t]_k\\), where \\([A]_k\\) keeps the top \\(k\\)
 singular directions of \\(A\\). Then
@@ -181,7 +186,8 @@ of \\(\Delta\\) with rank \\(k\\). \\(\square\\)
 
 A merged LoRA update has rank at most its LoRA rank (16 here), so the rank-8 restore removes the 8 dominant of at
 most 16 directions of the fine-tune's change. This matches the finding that removing an update's top singular
-directions restores refusal (arXiv 2610.00320), here for *benign* drift.
+directions restores refusal (arXiv 2610.00320), here for *benign* drift. In our three repaired fine-tunes the
+rank-8 restore removes 86–87% of the squared weight change (notebook 15, `kaggle/executed/15_judge_followups/`): the repair is mostly a rollback.
 
 **Result 3 — Restoring a component's weights does not restore its activations.** A component computes
 \\(a_c = f_c(x_c; W_c)\\) from its input \\(x_c\\). Circuit restore sets \\(W_c \leftarrow W_c^{0}\\), which returns
@@ -253,6 +259,10 @@ checkpoints before the attack success rate becomes unsafe.*
 
 - **Early and complete:** every unsafe test checkpoint is flagged, 1–3 checkpoints before ASR becomes unsafe; the
   negative control never raised an alarm.
+- **The lead is bounded by checkpoint spacing.** Every alarm fires at step 25, the first checkpoint. An alarm that
+  fires at *every* checkpoint after step 0 has the same lead (3, 1, 1) at precision 0.33, and so does a threshold on
+  the size of the weight change ‖ΔW‖ (40 of 44 alarms on safe runs). What reading the mechanism adds is fewer false
+  alarms: 20 at WARN and 0 at FAIL for the circuit score, 0 for the direction projection.
 - **Ranking is not alarming.** The circuit score ranks checkpoints best across conditions (ρ −0.80), but that comes
   from differences between conditions; within the Alpaca drift it tracks ASR least.
 - **The spot-check ranks but barely alarms at its threshold:** an 8-point refusal drop on 50 prompts is within its
@@ -276,7 +286,11 @@ The simplest strength-aware score, the projection on the refusal direction, was 
 score false-alarms on the negative control, as Result 1 predicts, and the spot-check catches up on recall once it gets
 a WARN level but warns later on two of three seeds. The circuit's value in this project is the explanation it gives
 and the repair test below, not a better alarm. Three drifting seeds of one model are too few to rank the signals with
-confidence; this needs a pre-registered comparison on a second model.
+confidence; this needs a pre-registered comparison on a second model. With 95% Wilson intervals, the circuit score's
+FAIL recall is 0.57 [0.37, 0.74] and its WARN-or-FAIL recall 1.00 [0.86, 1.00] at precision 0.46 [0.33, 0.60]; the
+projection's FAIL recall is 0.96 [0.79, 0.99] at precision 0.85 [0.67, 0.94]. Within the Alpaca drift the circuit
+score barely tracks ASR (ρ −0.04, against −0.31 for the projection), and with a stricter unsafe cut-off (base + 15
+points) the ranking of the signals changes (notebook 15, `kaggle/executed/15_judge_followups/`).
 
 ![Five signals compared as alarms. Left: share of unsafe checkpoints caught at FAIL and at WARN or FAIL; the direction projection catches 96% at FAIL, the circuit score 57%, the spot-check 13%. Middle: WARN alarms on the 44 safe checkpoints; circuit, cosine and logit scores give 20 each, projection and spot-check none. Right: lead time per seed; the spot-check is late on one seed.](https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/article/figures/fig2_signals.png)
 
@@ -321,7 +335,8 @@ accuracy, at the cost of slightly more over-refusal.*
 AuditKIT on the 119 test prompts, with exact McNemar tests on the paired verdicts: base 14.3% → drifted 24.4%
 (p = 0.012) → SafeTune-repaired 11.8% (p = 0.003); base vs repaired is not significant (p = 0.25). Re-judging with
 **Llama Guard 3 8B** gives the same conclusions (24.4% → 10.1%, p = 0.0002), and the two judges agree on 94–96% of
-answers (Cohen's κ 0.78–0.84).
+answers (Cohen's κ 0.78–0.84). All four drift and repair tests survive a Holm correction across the six McNemar
+tests (adjusted p ≤ 0.035); base vs repaired stays non-significant.
 
 ### 6.6 Does curating the data prevent the drift?
 
@@ -343,7 +358,10 @@ is a drifted Alpaca fine-tune after the full loop: flagged by CIS, repaired by S
 
 Compared with the model a team would otherwise ship, it is **less than half as likely to comply with a harmful
 request**, solves about **15 more GSM8K problems in 100**, keeps its general knowledge, and refuses safe prompts about
-as often as the base model. The repair takes seconds on one GPU and needs no data.
+as often as the base model. The repair takes seconds on one GPU and needs no data. It is better than the fine-tune,
+not better than the base: it matches the base model (p = 0.25), because the restore undoes about 86% of the
+fine-tune's weight change. Whether any of the fine-tune's intended instruction-following gain survives was not
+measured.
 
 ## 8. Return on investment
 
@@ -395,6 +413,9 @@ the fine-tune it protects.
   0.57 because it partly recovers late in Alpaca training while ASR stays high. In a post-hoc comparison the direction
   projection was the better alarm (§6.2).
 - The closest prior monitor (Trait-space Monitoring) is validated on four 7–9B models; we test one 3.35B model.
+- The lead time is bounded by the 25-step checkpoint spacing; a denser schedule is needed to measure it properly.
+- The repair is mostly a rollback (it removes about 86% of the fine-tune's weight change), and the fine-tune's
+  intended gains were not measured.
 - CIS is about 2× cheaper than a full audit; its advantage over a cheap spot-check is detection, not cost.
 - The harmless twins were drafted and reviewed by AI models; the curation result rests on one seed.
 
