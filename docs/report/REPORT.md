@@ -283,6 +283,34 @@ A 50-judge review panel asked for five checks. They use only existing logs and t
 | How much of the fine-tune the rank-8 restore removes | 86.2%, 86.3% and 86.8% of the squared weight change on `alpaca-s1/s2/s3` (82–97% by module type): the repair is mostly a rollback, consistent with the repaired model matching the base (p = 0.25) |
 | Holm correction of the six McNemar tests (1B via AuditKIT, 8B via HF Job 2) | Base → drifted and drifted → repaired stay significant for both judges (adjusted p 0.0013–0.035); base → repaired stays non-significant (adjusted 0.5) |
 
+### 4.10 Threshold-free comparison: AUROC (post hoc, notebook 16)
+
+How well each signal *ranks* unsafe checkpoints above safe ones, with no threshold. Test runs only, unsafe = ASR >
+base + 10 pts; 95% intervals from 2,000 bootstraps that resample whole runs within each condition (7 test runs, so
+the intervals are coarse). CPU only; `kaggle/executed/16_auroc/`.
+
+| Signal | All test runs, step > 0 (70 checkpoints, 23 unsafe) | Alpaca runs only, step > 0 (30, 23 unsafe) |
+|---|:---:|:---:|
+| `cis_sep` (direction projection) | **0.95** [0.94, 1.00] | 0.67 [0.63, 1.00] |
+| `cis_circ` (circuit, primary) | 0.92 [0.86, 1.00] | 0.47 [0.38, 1.00] |
+| `cis_cos` | 0.95 [0.89, 1.00] | 0.68 [0.50, 1.00] |
+| `cis_logit` | 0.59 [0.54, 0.64] | 0.50 [0.25, 1.00] |
+| Refusal spot-check, 50 prompts | **0.96** [0.90, 1.00] | 0.70 [0.58, 1.00] |
+| ‖ΔW‖ (size of the weight change) | 0.70 [0.65, 0.81] | **0.89** [0.87, 1.00] |
+| Training step | 0.64 [0.58, 0.72] | **0.90** [0.89, 1.00] |
+
+- **Across runs, CIS separates drifting from safe fine-tunes far better than the trivial baselines:** `cis_sep` −
+  ‖ΔW‖ = +0.25 [0.15, 0.34], `cis_circ` − training step = +0.28 [0.13, 0.42]. This answers the concern raised by the
+  lead-time tie (§4.9): an alarm on "any change" has the same lead, but it cannot tell a harmful fine-tune from a
+  harmless one.
+- **The 50-prompt spot-check ranks as well as CIS** (`cis_circ` − spot-check = −0.035 [−0.048, 0.0]). Its weakness
+  in §4.3 is its threshold: an 8-point refusal drop on 50 prompts is within its noise. CIS's advantage is a usable
+  alarm at a fixed threshold, not better ranking.
+- **Within the drifting runs, the trivial baselines win.** On the Alpaca runs alone, how far training has gone
+  (step, ‖ΔW‖) predicts ASR better than any internal signal, and the circuit score is at chance (0.47). CIS says
+  *whether* a run is drifting, not *how far* it has drifted. Only 3 runs (7 safe checkpoints) back this column.
+- The ordering moves with the unsafe cut-off (+5 / +15 pts in `files/tables.md`), as in §4.9.
+
 ## 5. Hypotheses
 
 | | Hypothesis | Outcome |
@@ -336,6 +364,12 @@ mechanism CIS measures.
   test one 3.35B model.
 - Every alarm fires at the first checkpoint (step 25), so the measured lead is bounded by the checkpoint spacing; an
   alarm on any change has the same lead (§4.9). A denser schedule on benign runs is needed to measure lead time.
+- Threshold-free (AUROC, §4.10), CIS separates drifting from safe runs (0.92–0.95) far better than training step or
+  ‖ΔW‖, but ties the 50-prompt spot-check, and *within* a drifting run it ranks checkpoints worse than training
+  step. It is a drift detector, not a measure of how unsafe a checkpoint is.
+- English only: calibrated and tested on English prompts, while benign fine-tuning shifts safety differently per
+  language (Hawkins et al., arXiv 2606.28843). The next experiments are pre-registered in
+  [docs/13_PREREGISTRATION.md](../13_PREREGISTRATION.md).
 - The repair undoes about 86% of the fine-tune's weight change (§4.9) and the fine-tune's intended gains were not
   measured, so "repair" here means a return to about base level.
 

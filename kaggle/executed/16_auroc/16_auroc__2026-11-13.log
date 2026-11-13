@@ -1,0 +1,17 @@
+[{"stream_name":"stdout","time":8.92448949,"data":"[cell 0] start: # 16 · Threshold-free comparison of the signals: AUROC with run-level intervals \n"}
+,{"stream_name":"stdout","time":8.924573191,"data":"[cell 1] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":53.274543498,"data":"[cell 2] start: import glob, json, re, urllib.request\n"}
+,{"stream_name":"stdout","time":53.620296545,"data":"[cell 3] start: ## ‖ΔW‖ for every checkpoint (exact, from the LoRA factors; identical to noteboo\n"}
+,{"stream_name":"stdout","time":53.620337218,"data":"[cell 4] start: ckpt_dirs = {}\n"}
+,{"stream_name":"stdout","time":601.84787297,"data":"[cell 5] start: ## AUROC, run-clustered bootstrap, paired differences\n"}
+,{"stream_name":"stdout","time":601.848027145,"data":"[cell 6] start: SIGNALS = {\"cis_circ\": -1, \"cis_sep\": -1, \"cis_cos\": -1, \"cis_logit\": -1, \"spot_\n"}
+,{"stream_name":"stdout","time":914.373777828,"data":"[cell 7] start: ## Save\n"}
+,{"stream_name":"stdout","time":914.373924566,"data":"[cell 8] start: result = {\"source_commit\": COMMIT, \"post_hoc\": True, \"unsafe_rule\": \"ASR \u003e base \n"}
+,{"stream_name":"stdout","time":917.207496784,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":920.657245852,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":920.657303852,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":920.946046485,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":920.94609026,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":922.036599763,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":922.758208292,"data":"[NbConvertApp] Writing 297325 bytes to __results__.html\n"}
+]
