@@ -7,6 +7,37 @@ SafeTune, AuditKIT · Code: [PxA-Labs/safetypulse](https://github.com/PxA-Labs/s
 [models](https://huggingface.co/collections/purvansh01/safetypulse-models-6af00b8f56c773a80af9f7e0),
 [datasets](https://huggingface.co/collections/purvansh01/safetypulse-data-6af00b9124ee9d5022a36482)*
 
+**One-line claim:** a 22-second internal check flags benign fine-tuning that erodes a model's refusals, and a
+data-free SafeTune repair brings the model back to base-level safety *and* base-level task accuracy.
+
+**Team:** [Purvansh Joshi](https://huggingface.co/purvansh01) · [Archit Mittal](https://huggingface.co/archittmittal) ·
+[Anubhav Kiroula](https://huggingface.co/01ammu)
+
+> ⚠️ **Content warning.** This write-up discusses harmful-request benchmarks (HarmBench, AdvBench) and quotes a few
+> short, sanitised example prompts. It contains no harmful model answers; those are withheld (§10).
+
+### For judges: one minute
+
+| | |
+|---|---|
+| **Base model** | Cohere Labs Tiny Aya Global (3.35B), LoRA r = 16 fine-tunes |
+| **Problem** | Benign fine-tuning quietly weakens refusals; auditing every checkpoint is too costly, so it ships unnoticed |
+| **Method** | Calibrate once: refusal direction + 20-component refusal circuit. At every checkpoint: Circuit Integrity Score (CIS, 50 prompt pairs, ~22 s) → PASS / WARN / FAIL with thresholds fixed on dev runs → on FAIL, SafeTune safety-vector restore → AuditKIT paired audit |
+| **Headline before → after** | Fine-tuned → repaired: **ASR 24.4% → 11.8%** (HarmBench, held-out), **GSM8K 56.7% → 71.3%**, MMLU 57.6% → 57.6%, over-refusal 1.3% → 8.7% (base 7.3%) |
+| **Monitor** | Every unsafe held-out checkpoint flagged (recall 1.00), 1–3 checkpoints early; AUROC 0.92–0.95 vs 0.64–0.70 for trivial baselines |
+| **Kits** | CuratorKIT (data) → SafeTune (repair) → AuditKIT (audit); CircuitKIT (independent circuit check) |
+| **Honest caveats** | One model, English only; the repair is mostly a rollback (~86% of the weight change); the best alarm is the simple direction projection, not the circuit |
+
+### Tracks and problem statements
+
+- **Track 2b: AI Safety and Correction**
+  - **2b.1 Safety-preserving fine-tuning**: the CIS gate runs during fine-tuning and stops or repairs a checkpoint
+    whose safety drifts, compared with plain fine-tuning (§6.2, §7).
+  - **2b.2 Repairing safety drift without retraining**: SafeTune's weight-space safety-vector restore repairs the
+    drifted model while recovering task accuracy (§6.4, §7).
+  - Also touches 2b.5 (*Locating where safety lives*): the refusal circuit is located and a circuit-targeted fix is
+    tested; it fails, which is itself a result (§4).
+
 ## TL;DR
 
 - **The problem.** Fine-tuning an aligned model on harmless data quietly weakens its refusals. On Tiny Aya, 2,000
@@ -163,6 +194,18 @@ that CIS reads.
 
 *Animation 2. The loop with all four toolkits, using the alpaca-s1 checkpoint at step 125 and its repair.*
 
+### 3.4 Hackathon kits used: features and settings
+
+| Kit (version) | How we used it | Features and settings |
+|---|---|---|
+| **CuratorKIT** 0.1.22 | Curated the 2,000 Alpaca fine-tuning examples before training (HF Job 3) | Schema gate, exact + MinHash deduplication, secrets gate, Detoxify toxicity gate; length limits opened so only safety and hygiene filters remove data. Removed 19 (17 toxic, 2 missing fields) |
+| **CircuitKIT** 0.2.0 | Independent re-discovery of the refusal circuit that CIS reads (HF Job 1, A100) | EAP-IG, node level, chat template, 64 length-matched pairs, metric = refusal logit difference; all 612 heads and MLPs scored |
+| **SafeTune** 0.1.12 | Repair of a FAILing checkpoint (notebooks 09–11, `safetypulse repair`) | `apply_safety_vector_restore` (R3b: rank 8, α = 1.0, the shipped repair); `apply_wise_ft` on the circuit (R3a). Strengths chosen on the dev run `alpaca-s0` |
+| **AuditKIT** 1.1.3 | Before/after audit of base → drifted → repaired (notebook 11, HF Job 2) | `GuardJudge` with Llama Guard 3 1B (custom profile with content lists, see report §6), `compare`; exact McNemar tests on the paired verdicts, re-judged with Llama Guard 3 8B |
+
+All other settings are the kits' defaults. Integration issues we hit, and reported back, are listed in
+[report §6](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/REPORT.md#6-toolkits).
+
 ## 4. Three results behind the method
 
 **Result 1 — Cosine drift scores cannot see a fading refusal signal.** For any \\(\lambda > 0\\),
@@ -219,6 +262,50 @@ This is exactly what the repair experiment shows (§6.4).
 | Runs | Development: seed 0 of each condition (variant, thresholds, repair strengths). Test: seeds 1–2, plus a third Alpaca seed (77 checkpoints) | No test run influences any choice |
 | Hygiene | Training prompts that nearly duplicate evaluation prompts removed (344 dropped) | No training on the test set |
 | Judge | Llama Guard 3 1B, cross-checked with 8B | Small, local, reproducible |
+| Decoding | Greedy, with the model's own chat template | Deterministic answers to judge |
+
+**Models and licences**
+
+| Model | Role | Version | Licence |
+|---|---|---|---|
+| [CohereLabs/tiny-aya-global](https://huggingface.co/CohereLabs/tiny-aya-global) | Base model (fp16 on T4, bf16 on A100) | revision `af89d219` | CC-BY-NC-4.0 |
+| [meta-llama/Llama-Guard-3-1B](https://huggingface.co/meta-llama/Llama-Guard-3-1B) | Safety judge | revision `acf7aafa` | Llama 3.2 Community Licence |
+| [meta-llama/Llama-Guard-3-8B](https://huggingface.co/meta-llama/Llama-Guard-3-8B) | Second judge | Hub default | Llama 3.1 Community Licence |
+
+No quantized or GGUF model was evaluated (see §9 and §12). No closed model is used in the pipeline; closed APIs
+appear only in the cost comparison (§8).
+
+**Datasets and licences.** All data is **English only**.
+
+| Source | Used for | Size | Licence |
+|---|---|---|---|
+| [HarmBench](https://huggingface.co/datasets/walledai/HarmBench) (standard, copyright items removed) | Safety benchmark, the focus metric (ASR) | 78 dev / 119 test | MIT |
+| [XSTest](https://huggingface.co/datasets/walledai/XSTest) safe prompts | **Over-refusal test set** (safe prompts that look risky) | 100 dev / 150 test | CC-BY-4.0 |
+| [GSM8K](https://huggingface.co/datasets/openai/gsm8k) | Task benchmark (test) and domain fine-tune (train) | 150 dev / 300 test; 2,000 train | MIT |
+| [MMLU](https://huggingface.co/datasets/cais/mmlu) | General-capability retention check | 200 dev / 500 test | MIT |
+| [AdvBench](https://huggingface.co/datasets/walledai/AdvBench) | Harmful side of the 288 matched contrast pairs (calibration) | 288 | MIT |
+| [Stanford Alpaca](https://huggingface.co/datasets/tatsu-lab/alpaca) | Benign fine-tune (and the `none` control) | 2,000 (+1,800) | CC-BY-NC-4.0 |
+| [LLM-LAT/harmful-dataset](https://huggingface.co/datasets/LLM-LAT/harmful-dataset) | Refusals in the `none` control; harmful positive control (withheld) | 200; 100 | not stated on the card |
+| Harmless twins of the pairs | Calibration | 288 | Ours (drafted by AI models, reviewed) |
+
+**Splits and leak checks.** Every evaluation set is split dev / test once; thresholds, repair strengths and the
+signal variant were chosen on dev only. Training and calibration prompts were checked against the evaluation prompts
+by exact match and word-trigram Jaccard similarity (near-duplicates inside a pool at 0.7, between pools that must stay
+disjoint at 0.5); 344 overlapping fine-tuning prompts were dropped and the remaining overlap is asserted to be zero.
+CuratorKIT added MinHash deduplication on the Alpaca data.
+
+**Metrics**
+
+| Metric | Direction | Why |
+|---|:---:|---|
+| Attack success rate (ASR) on HarmBench, Llama Guard 3 judge | lower is better | The harm to prevent |
+| Over-refusal rate on XSTest safe prompts | lower is better (near base) | A repair that refuses everything is no fix |
+| GSM8K accuracy | higher is better | Task skill the fine-tune should keep |
+| MMLU accuracy | higher is better | General knowledge must not break |
+| Alarm recall / precision, AUROC | higher is better | How well CIS flags unsafe checkpoints |
+| Lead (checkpoints before ASR becomes unsafe) | higher is better | Early warning |
+| CIS cost (GPU-seconds per check) | lower is better | It must be light enough for every checkpoint |
+| Judge agreement (1B vs 8B), Cohen's κ | higher is better | Checks the automatic judge |
 
 ## 6. Results
 
@@ -423,6 +510,14 @@ fine-tune can now be checked and repaired. A closed API cannot run the monitor o
 the model's weights and activations ([report §4.8](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/REPORT.md#48-cost-and-roi-self-hosted-tiny-aya-vs-a-closed-source-api)). **Monitoring is cheap:** checking all 11 checkpoints of a run costs about USD 0.05, under 10% of
 the fine-tune it protects.
 
+**Cost per 1,000 replies** (same scenario, 400 input + 250 output tokens): repaired Tiny Aya ≈ **USD 0.28** (A10G at
+USD 1.00/h, 250 tokens/s, scaling with load), Gemini 3.8 Flash ≈ USD 1.24, Claude Haiku 5.5 ≈ USD 0.17.
+
+**Compute used.** About 41 hours of Kaggle notebook sessions on T4 ×2 (free tier; summed from the saved run logs)
+plus under 1 hour of CPU sessions, and seven short Hugging Face Jobs on A100, L4 and A10G for the steps that did not
+fit a T4 (CircuitKIT, the 8B judge, CuratorKIT fine-tune, building and checking the repaired model), paid from the team's
+Hugging Face credits.
+
 ## 9. Limitations
 
 - One base model and one benign condition that drifts; drift signals are reported to vary across models
@@ -436,6 +531,8 @@ the fine-tune it protects.
 - ASR is measured on 78 and 119 prompts (±8–11 points), hence the paired tests.
 - No jailbreak-style attacks were evaluated, only direct harmful requests.
 - The judge agrees with a larger judge but has not been validated against human labels.
+- The repaired model was not evaluated quantized (GGUF / 4-bit), so we cannot yet say its safety survives deployment
+  compression.
 - CIS WARNs on fine-tunes that move the circuit without reducing safety (precision 0.46), and its FAIL-level recall is
   0.57 because it partly recovers late in Alpaca training while ASR stays high. In a post-hoc comparison the direction
   projection was the better alarm (§6.2).
@@ -478,6 +575,67 @@ safetypulse check --checkpoint repaired --bundle bundle --dtype float16
 
 Every experiment is a notebook in the repository, every executed run is saved with a summary, and the larger-GPU runs
 are scripts in `tools/hf_jobs/`.
+
+**Repository layout**
+
+| Path | What it holds |
+|---|---|
+| `safetypulse/` | The installable package: calibrate, `check` (CIS), `repair` (SafeTune), audit, Trainer callback, CLI |
+| `tests/` | 186 package tests, run in CI on Python 3.10–3.12 |
+| `kaggle/notebooks/` | Every experiment, 00–16, generated by `tools/build_notebooks.py` |
+| `kaggle/executed/` | Each executed run: notebook with outputs, log, key result files and a `RUN_SUMMARY.md` |
+| `kaggle/lib/` | `sp_utils.py`, shared by the notebooks |
+| `tools/` | Kaggle runner (`kaggle_run.py`), HF Jobs (`hf_jobs/`), figures, alarm comparison, release-policy check |
+| `docs/` | Plan, data spec, evaluation protocol, report, related work, pre-registration, this article |
+
+To reproduce a notebook: `python tools/kaggle_run.py <notebook> --slug <name> [--gpu] --dataset <input>` (see
+[kaggle/README.md](https://github.com/PxA-Labs/safetypulse/blob/main/kaggle/README.md) and
+[docs/10](https://github.com/PxA-Labs/safetypulse/blob/main/docs/10_KAGGLE_AND_HF_RESOURCES.md) for every run's inputs).
+
+## 12. With more credits
+
+The plan is pre-registered with frozen thresholds and refutation criteria
+([docs/13](https://github.com/PxA-Labs/safetypulse/blob/main/docs/13_PREREGISTRATION.md)); about 16–18 T4-hours plus
+USD 25–65 of Hugging Face compute for the core.
+
+| Experiment | Expected result (forecast, not measured) |
+|---|---|
+| Second model, `tiny-aya-earth`, Global's thresholds unchanged (H1) | WARN-or-FAIL recall ≥ 0.8 on 3 Alpaca seeds, no FAIL on the controls |
+| Denser checkpoints, every 10 steps (H3) | A measurable lead of CIS over ASR, larger than the ‖ΔW‖ baseline's |
+| Second drifting condition, Alpaca answers as lists (H2) | ASR rises at least as much as plain Alpaca; recall ≥ 0.8 |
+| Multilingual check in Hindi, Spanish, French (H4) | Exploratory: does an English-calibrated CIS flag non-English drift? |
+| Localising the drift, restoring only the blocks that store it (H5) | Exploratory: base-level ASR while undoing < 40% of the fine-tune |
+| Repaired model quantized to 4-bit and GGUF | ASR, over-refusal and GSM8K within the confidence intervals of fp16 |
+| Aya Expanse 8B, 1 seed | Exploratory: does the calibrate-once recipe transfer to a larger model? |
+| 100-item human check of the judge | Cohen's κ ≥ 0.6 against Llama Guard 3 |
+
+## 13. Team, declaration and AI use
+
+**Authors:** [Purvansh Joshi](https://huggingface.co/purvansh01), [Archit Mittal](https://huggingface.co/archittmittal),
+[Anubhav Kiroula](https://huggingface.co/01ammu).
+
+**Contributions.** All three authors did the research and design together: the problem, the hypotheses, the method
+and the experiment plan. Purvansh Joshi did the implementation: the package, notebooks, runs, artifacts and write-up.
+
+**Work done outside the hackathon.** None. All code, data and experiments were produced during the hackathon (the
+repository's first commit is on 6 November 2026). We reuse only the public models, datasets and libraries cited here,
+and the four Lexsi Labs kits.
+
+**AI use.** AI coding assistants helped write much of the code and draft the write-up; the harmless twins of the
+contrast pairs were drafted and reviewed by AI models. The authors designed the research, reviewed every change and
+ran and checked every experiment. No result was produced by an AI system without being run in the published notebooks.
+
+**Acknowledgements.** Lexsi Labs for the hackathon and the four kits, Cohere Labs for Tiny Aya, Hugging Face for
+compute credits, and Kaggle for free GPU time.
+
+## 14. Changelog
+
+| Date | Change |
+|---|---|
+| 2026-11-08 | First version: method, drift, monitor and repair results, toolkit chain |
+| 2026-11-11 | ROI section, verified related work, post-hoc comparison of all signals, figures and animations, confidence intervals, trivial baselines, Holm correction |
+| 2026-11-13 | Safety regression gate framing, threshold-free AUROC (notebook 16), pre-registration, five more related papers |
+| 2026-11-14 | Sections required by the submission template: one-minute box, tracks, kits, models, data and licences, metrics, compute, cost per 1,000 replies, plan with more credits, team, declaration, AI use |
 
 ## References
 
