@@ -6,8 +6,8 @@
 </p>
 
 <p align="center">
-  <b>A cheap early-warning signal for safety drift during LLM fine-tuning, read from the model's own refusal
-  mechanism, plus the repair and audit to act on it.</b>
+  <b>A safety regression gate for LLM fine-tuning: a lightweight early-warning signal read from the model's own
+  refusal mechanism, plus the repair and audit to act on it.</b>
 </p>
 
 <p align="center">
@@ -44,7 +44,13 @@ https://github.com/user-attachments/assets/2952a7ea-66dc-4139-866a-87a177c8d541
 Fine-tuning an aligned model on ordinary, harmless data can quietly weaken its refusals (Qi et al., 2023). Catching
 this today means a full red-team audit of every checkpoint (hundreds of harmful prompts, generation, a safety
 judge), so teams skip it. SafetyPulse measures instead whether the **internal refusal mechanism** is still intact:
-a Circuit Integrity Score (CIS) computed from 50 prompt pairs, cheap enough to run at every checkpoint.
+a Circuit Integrity Score (CIS) computed from 50 prompt pairs, light enough to run at every checkpoint.
+
+SafetyPulse works as a **safety regression gate** for fine-tuning, the way a test suite gates a code change: it
+**checks** every checkpoint, **decides** PASS / WARN / FAIL with thresholds fixed in advance and validated on
+held-out runs, **repairs** a failing model (SafeTune) and **verifies** the repair with a paired audit (AuditKIT).
+The next experiments, on a second model and a second drifting condition, are pre-registered in
+[docs/13_PREREGISTRATION.md](https://github.com/PxA-Labs/safetypulse/blob/main/docs/13_PREREGISTRATION.md).
 
 ## Results (held-out test runs; full report: [docs/report/REPORT.md](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/REPORT.md))
 
@@ -54,6 +60,7 @@ a Circuit Integrity Score (CIS) computed from 50 prompt pairs, cheap enough to r
 | CIS tracks ASR across test checkpoints | Spearman ρ = −0.80 [−0.85, −0.71] |
 | CIS flags every unsafe test checkpoint (WARN or FAIL) | recall 1.00 at precision 0.46 (it also warns on a safe maths fine-tune); a 50-prompt refusal spot-check: 0.13 |
 | Which signal is the best alarm (post hoc) | the simpler direction projection `cis_sep`: FAIL recall 0.96 vs 0.57 for the circuit score, no alarm on safe runs; CIS warns before the spot-check on two of three seeds ([report §4.3](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/REPORT.md#43-monitoring-table-b-test-runs-thresholds-fixed-on-dev)) |
+| Threshold-free ranking (AUROC, post hoc) | across test runs `cis_sep` 0.95 and `cis_circ` 0.92 vs 0.64–0.70 for training step and ‖ΔW‖; the spot-check also 0.96; *within* drifting runs training step ranks better (0.90), so CIS detects drift rather than measuring its degree ([report §4.10](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/REPORT.md#410-threshold-free-comparison-auroc-post-hoc-notebook-16)) |
 | Early warning | CIS alarms at step 25 on all three unseen Alpaca seeds, 1–3 checkpoints before ASR rises (bounded by the 25-step checkpoint spacing; an alarm on the size of the weight change has the same lead but 40 of 44 false alarms on safe runs) |
 | **Repair: SafeTune safety-vector restore** | **ASR 25.2% → 12.3%** (base 14.3%) and **GSM8K 55.1% → 70.7%** (base 71.3%), MMLU unchanged; it undoes about 86% of the fine-tune's weight change, so it is mostly a rollback |
 | Circuit-only weight restore | no effect (ΔASR +0.0 [−1.4, +1.4]): the circuit *reads out* the drift but does not store it |
@@ -159,6 +166,7 @@ Package tests, from a clone: `pip install -e ".[dev,peft]" && pytest` (186 tests
 [Architecture](https://github.com/PxA-Labs/safetypulse/blob/main/docs/03_SYSTEM_ARCHITECTURE.md) · [Data](https://github.com/PxA-Labs/safetypulse/blob/main/docs/04_DATA_SPEC.md) ·
 [Evaluation protocol](https://github.com/PxA-Labs/safetypulse/blob/main/docs/05_EVALUATION_PROTOCOL.md) · [Risk, ethics, licensing](https://github.com/PxA-Labs/safetypulse/blob/main/docs/08_RISK_ETHICS_LICENSING.md) ·
 [Withheld artifacts](https://github.com/PxA-Labs/safetypulse/blob/main/docs/11_WITHHELD_ARTIFACTS.md) · [Kaggle and HF resources](https://github.com/PxA-Labs/safetypulse/blob/main/docs/10_KAGGLE_AND_HF_RESOURCES.md) ·
+[Related work](https://github.com/PxA-Labs/safetypulse/blob/main/docs/12_RELATED_WORK.md) · [Pre-registration](https://github.com/PxA-Labs/safetypulse/blob/main/docs/13_PREREGISTRATION.md) ·
 [Decisions](https://github.com/PxA-Labs/safetypulse/tree/main/docs/adr)
 
 ## Responsible use

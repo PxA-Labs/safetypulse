@@ -42,9 +42,13 @@ those who adapt open-weight models to a domain or a language, often without a re
 auditing every checkpoint, generating answers to hundreds of harmful prompts and judging them, so it is usually
 skipped, and a model that refuses less gets shipped.
 
-We want a signal that is **cheap** enough to run at every checkpoint, **early** enough to stop or repair a run before
+We want a signal that is **light** enough to run at every checkpoint, **early** enough to stop or repair a run before
 harm is measurable, and **grounded** in *why* the model refuses rather than in a handful of prompts, plus a repair
 that does not throw the fine-tune away.
+
+Put together, these make a **safety regression gate** for fine-tuning, the way a test suite gates a code change:
+**check** every checkpoint, **decide** PASS / WARN / FAIL with thresholds fixed in advance and validated on held-out
+runs, **repair** a failing model, and **verify** the repair with a paired audit. SafetyPulse is that gate.
 
 ## 2. Related work and contribution
 
@@ -66,6 +70,15 @@ safety circuits and protects them during fine-tuning (arXiv 2603.23268). Recent 
 breaks the *routing* of safety information to a refusal in the final layers (Guo et al., arXiv 2609.01455), and that
 after few-sample *harmful* fine-tuning, removing the update's top two singular directions restores refusal (Lee et
 al., arXiv 2610.00320).
+
+**Beyond English and beyond one model.** Benign fine-tuning shifts safety differently in each language, and
+evaluating in English alone gives inadequate assurance (Hawkins et al., arXiv 2606.28843); an English refusal
+direction does transfer across languages for *bypassing* refusal (Wang et al., arXiv 2505.17306), but whether it can
+*monitor* non-English drift is untested. Frozen activation monitors can go stale after fine-tuning (Duan, arXiv
+2606.15980); auditing agents detect adversarial fine-tuning jobs but call subtle benign degradation an open problem
+(Egler et al., arXiv 2510.16255); and benign data that is formatted as lists or maths questions is unusually harmful
+to safety (He et al., arXiv 2404.01099). Our test plan for these questions is pre-registered
+([docs/13](https://github.com/PxA-Labs/safetypulse/blob/main/docs/13_PREREGISTRATION.md)).
 
 **Our contribution:**
 
@@ -292,6 +305,14 @@ projection's FAIL recall is 0.96 [0.79, 0.99] at precision 0.85 [0.67, 0.94]. Wi
 score barely tracks ASR (ρ −0.04, against −0.31 for the projection), and with a stricter unsafe cut-off (base + 15
 points) the ranking of the signals changes (notebook 15, `kaggle/executed/15_judge_followups/`).
 
+**Without any threshold (AUROC, post hoc).** Ranking the 70 test checkpoints after step 0, the direction projection
+scores 0.95 [0.94, 1.00] and the circuit score 0.92 [0.86, 1.00], far above training step (0.64) and the size of the
+weight change ‖ΔW‖ (0.70): CIS tells a harmful fine-tune from a harmless one, which "alarm on any change" cannot. The
+50-prompt spot-check ranks just as well (0.96); its problem is its threshold, not its ranking. *Within* the three
+drifting runs the picture flips: training step (0.90) and ‖ΔW‖ (0.89) predict ASR better than every internal signal,
+and the circuit score is at chance (0.47). CIS detects *that* a run is drifting, not *how far* (run-clustered 95%
+intervals over only 7 runs; notebook 16, `kaggle/executed/16_auroc/`).
+
 ![Five signals compared as alarms. Left: share of unsafe checkpoints caught at FAIL and at WARN or FAIL; the direction projection catches 96% at FAIL, the circuit score 57%, the spot-check 13%. Middle: WARN alarms on the 44 safe checkpoints; circuit, cosine and logit scores give 20 each, projection and spot-check none. Right: lead time per seed; the spot-check is late on one seed.](https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/article/figures/fig2_signals.png)
 
 *Figure 3. Every signal as an alarm on the held-out runs, with one threshold rule for all (post hoc).*
@@ -405,7 +426,13 @@ the fine-tune it protects.
 ## 9. Limitations
 
 - One base model and one benign condition that drifts; drift signals are reported to vary across models
-  (arXiv 2610.38001, 2605.02914).
+  (arXiv 2610.38001, 2605.02914). The second model, a second drifting condition and denser checkpoints are
+  pre-registered with frozen thresholds and refutation criteria
+  ([docs/13](https://github.com/PxA-Labs/safetypulse/blob/main/docs/13_PREREGISTRATION.md)).
+- English only: CIS is calibrated and tested on English prompts, while benign fine-tuning is reported to shift safety
+  differently per language (arXiv 2606.28843). For a multilingual model such as Aya this is the most important gap.
+- Our GSM8K fine-tune did not drift, whereas maths-style benign data degraded safety in He et al. (arXiv
+  2404.01099); one model and one LoRA recipe cannot settle the difference.
 - ASR is measured on 78 and 119 prompts (±8–11 points), hence the paired tests.
 - No jailbreak-style attacks were evaluated, only direct harmful requests.
 - The judge agrees with a larger judge but has not been validated against human labels.
@@ -414,6 +441,8 @@ the fine-tune it protects.
   projection was the better alarm (§6.2).
 - The closest prior monitor (Trait-space Monitoring) is validated on four 7–9B models; we test one 3.35B model.
 - The lead time is bounded by the 25-step checkpoint spacing; a denser schedule is needed to measure it properly.
+- CIS detects drift but does not measure its degree: within a drifting run, training step ranks checkpoints by ASR
+  better than CIS does (AUROC 0.90 vs 0.47–0.67, §6.2).
 - The repair is mostly a rollback (it removes about 86% of the fine-tune's weight change), and the fine-tune's
   intended gains were not measured.
 - CIS is about 2× cheaper than a full audit; its advantage over a cheap spot-check is detection, not cost.
@@ -478,3 +507,9 @@ Supervised Finetuning*, arXiv:2606.07631 · Asif & Amiri, *RefusalGuard*, arXiv:
 Parameter Dynamics to Risk Scoring*, arXiv:2605.04572 · Ruellan & Benavides-Prado, *Preserving Safety During
 Sequential Fine-Tuning*, arXiv:2610.38001 · Hossain et al., *When Safety Geometry Collapses*, arXiv:2605.02914 · Yu
 et al., *SafeSeek*, arXiv:2603.23268 · Safety Compass (PyPI package `safety-compass`).
+
+**Added 2026-11-13** (checked against the arXiv abstracts): Hawkins et al., *The Heterogeneous Safety Impacts of
+Benign Multilingual Fine-Tuning*, arXiv:2606.28843 · Wang et al., *Refusal Direction is Universal Across
+Safety-Aligned Languages*, arXiv:2505.17306 · Duan, *Do Activation Monitors Survive Model Updates?*, arXiv:2606.15980
+· Egler, Schulman & Carlini, *Detecting Adversarial Fine-tuning with Auditing Agents*, arXiv:2510.16255 · He, Xia &
+Henderson, *What is in Your Safe Data? Identifying Benign Data that Breaks Safety*, arXiv:2404.01099.

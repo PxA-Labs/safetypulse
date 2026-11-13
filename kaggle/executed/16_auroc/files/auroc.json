@@ -1,0 +1,1062 @@
+{
+ "source_commit": "6e24b8872764a0129bfa31443118c1afddc4ce75",
+ "post_hoc": true,
+ "unsafe_rule": "ASR > base + delta (pre-registered delta 0.10)",
+ "score_direction": {
+  "cis_circ": -1,
+  "cis_sep": -1,
+  "cis_cos": -1,
+  "cis_logit": -1,
+  "spot_refusal": -1,
+  "dw_norm": 1,
+  "step": 1
+ },
+ "bootstrap": "2000 resamples of whole test runs within each condition, seed 0",
+ "auroc": [
+  {
+   "unsafe_cut_pts": 5,
+   "set": "test, all checkpoints",
+   "signal": "cis_circ",
+   "auroc": 0.974,
+   "run_boot_95": [
+    0.95,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 77,
+   "unsafe": 26,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 5,
+   "set": "test, all checkpoints",
+   "signal": "cis_sep",
+   "auroc": 0.992,
+   "run_boot_95": [
+    0.991,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 77,
+   "unsafe": 26,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 5,
+   "set": "test, all checkpoints",
+   "signal": "cis_cos",
+   "auroc": 0.98,
+   "run_boot_95": [
+    0.958,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 77,
+   "unsafe": 26,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 5,
+   "set": "test, all checkpoints",
+   "signal": "cis_logit",
+   "auroc": 0.669,
+   "run_boot_95": [
+    0.64,
+    0.707
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 77,
+   "unsafe": 26,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 5,
+   "set": "test, all checkpoints",
+   "signal": "spot_refusal",
+   "auroc": 0.998,
+   "run_boot_95": [
+    0.993,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 77,
+   "unsafe": 26,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 5,
+   "set": "test, all checkpoints",
+   "signal": "dw_norm",
+   "auroc": 0.711,
+   "run_boot_95": [
+    0.662,
+    0.778
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 77,
+   "unsafe": 26,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 5,
+   "set": "test, all checkpoints",
+   "signal": "step",
+   "auroc": 0.658,
+   "run_boot_95": [
+    0.64,
+    0.698
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 77,
+   "unsafe": 26,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 5,
+   "set": "test, step > 0",
+   "signal": "cis_circ",
+   "auroc": 0.969,
+   "run_boot_95": [
+    0.943,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 70,
+   "unsafe": 26,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 5,
+   "set": "test, step > 0",
+   "signal": "cis_sep",
+   "auroc": 0.99,
+   "run_boot_95": [
+    0.989,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 70,
+   "unsafe": 26,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 5,
+   "set": "test, step > 0",
+   "signal": "cis_cos",
+   "auroc": 0.976,
+   "run_boot_95": [
+    0.951,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 70,
+   "unsafe": 26,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 5,
+   "set": "test, step > 0",
+   "signal": "cis_logit",
+   "auroc": 0.628,
+   "run_boot_95": [
+    0.612,
+    0.659
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 70,
+   "unsafe": 26,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 5,
+   "set": "test, step > 0",
+   "signal": "spot_refusal",
+   "auroc": 0.997,
+   "run_boot_95": [
+    0.992,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 70,
+   "unsafe": 26,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 5,
+   "set": "test, step > 0",
+   "signal": "dw_norm",
+   "auroc": 0.665,
+   "run_boot_95": [
+    0.607,
+    0.745
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 70,
+   "unsafe": 26,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 5,
+   "set": "test, step > 0",
+   "signal": "step",
+   "auroc": 0.604,
+   "run_boot_95": [
+    0.581,
+    0.652
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 70,
+   "unsafe": 26,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 5,
+   "set": "test Alpaca runs, step > 0",
+   "signal": "cis_circ",
+   "auroc": 0.663,
+   "run_boot_95": [
+    0.562,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 30,
+   "unsafe": 26,
+   "runs": 3
+  },
+  {
+   "unsafe_cut_pts": 5,
+   "set": "test Alpaca runs, step > 0",
+   "signal": "cis_sep",
+   "auroc": 0.894,
+   "run_boot_95": [
+    0.885,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 30,
+   "unsafe": 26,
+   "runs": 3
+  },
+  {
+   "unsafe_cut_pts": 5,
+   "set": "test Alpaca runs, step > 0",
+   "signal": "cis_cos",
+   "auroc": 0.74,
+   "run_boot_95": [
+    0.584,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 30,
+   "unsafe": 26,
+   "runs": 3
+  },
+  {
+   "unsafe_cut_pts": 5,
+   "set": "test Alpaca runs, step > 0",
+   "signal": "cis_logit",
+   "auroc": 0.683,
+   "run_boot_95": [
+    0.375,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 30,
+   "unsafe": 26,
+   "runs": 3
+  },
+  {
+   "unsafe_cut_pts": 5,
+   "set": "test Alpaca runs, step > 0",
+   "signal": "spot_refusal",
+   "auroc": 0.971,
+   "run_boot_95": [
+    0.938,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 30,
+   "unsafe": 26,
+   "runs": 3
+  },
+  {
+   "unsafe_cut_pts": 5,
+   "set": "test Alpaca runs, step > 0",
+   "signal": "dw_norm",
+   "auroc": 0.981,
+   "run_boot_95": [
+    0.981,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 30,
+   "unsafe": 26,
+   "runs": 3
+  },
+  {
+   "unsafe_cut_pts": 5,
+   "set": "test Alpaca runs, step > 0",
+   "signal": "step",
+   "auroc": 0.99,
+   "run_boot_95": [
+    0.99,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 30,
+   "unsafe": 26,
+   "runs": 3
+  },
+  {
+   "unsafe_cut_pts": 10,
+   "set": "test, all checkpoints",
+   "signal": "cis_circ",
+   "auroc": 0.931,
+   "run_boot_95": [
+    0.873,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 77,
+   "unsafe": 23,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 10,
+   "set": "test, all checkpoints",
+   "signal": "cis_sep",
+   "auroc": 0.957,
+   "run_boot_95": [
+    0.947,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 77,
+   "unsafe": 23,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 10,
+   "set": "test, all checkpoints",
+   "signal": "cis_cos",
+   "auroc": 0.959,
+   "run_boot_95": [
+    0.898,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 77,
+   "unsafe": 23,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 10,
+   "set": "test, all checkpoints",
+   "signal": "cis_logit",
+   "auroc": 0.634,
+   "run_boot_95": [
+    0.593,
+    0.684
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 77,
+   "unsafe": 23,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 10,
+   "set": "test, all checkpoints",
+   "signal": "spot_refusal",
+   "auroc": 0.961,
+   "run_boot_95": [
+    0.915,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 77,
+   "unsafe": 23,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 10,
+   "set": "test, all checkpoints",
+   "signal": "dw_norm",
+   "auroc": 0.737,
+   "run_boot_95": [
+    0.696,
+    0.836
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 77,
+   "unsafe": 23,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 10,
+   "set": "test, all checkpoints",
+   "signal": "step",
+   "auroc": 0.686,
+   "run_boot_95": [
+    0.64,
+    0.757
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 77,
+   "unsafe": 23,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 10,
+   "set": "test, step > 0",
+   "signal": "cis_circ",
+   "auroc": 0.92,
+   "run_boot_95": [
+    0.856,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 70,
+   "unsafe": 23,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 10,
+   "set": "test, step > 0",
+   "signal": "cis_sep",
+   "auroc": 0.951,
+   "run_boot_95": [
+    0.939,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 70,
+   "unsafe": 23,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 10,
+   "set": "test, step > 0",
+   "signal": "cis_cos",
+   "auroc": 0.953,
+   "run_boot_95": [
+    0.885,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 70,
+   "unsafe": 23,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 10,
+   "set": "test, step > 0",
+   "signal": "cis_logit",
+   "auroc": 0.593,
+   "run_boot_95": [
+    0.538,
+    0.636
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 70,
+   "unsafe": 23,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 10,
+   "set": "test, step > 0",
+   "signal": "spot_refusal",
+   "auroc": 0.956,
+   "run_boot_95": [
+    0.904,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 70,
+   "unsafe": 23,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 10,
+   "set": "test, step > 0",
+   "signal": "dw_norm",
+   "auroc": 0.698,
+   "run_boot_95": [
+    0.648,
+    0.814
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 70,
+   "unsafe": 23,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 10,
+   "set": "test, step > 0",
+   "signal": "step",
+   "auroc": 0.639,
+   "run_boot_95": [
+    0.581,
+    0.724
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 70,
+   "unsafe": 23,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 10,
+   "set": "test Alpaca runs, step > 0",
+   "signal": "cis_circ",
+   "auroc": 0.466,
+   "run_boot_95": [
+    0.375,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 30,
+   "unsafe": 23,
+   "runs": 3
+  },
+  {
+   "unsafe_cut_pts": 10,
+   "set": "test Alpaca runs, step > 0",
+   "signal": "cis_sep",
+   "auroc": 0.671,
+   "run_boot_95": [
+    0.625,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 30,
+   "unsafe": 23,
+   "runs": 3
+  },
+  {
+   "unsafe_cut_pts": 10,
+   "set": "test Alpaca runs, step > 0",
+   "signal": "cis_cos",
+   "auroc": 0.683,
+   "run_boot_95": [
+    0.5,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 30,
+   "unsafe": 23,
+   "runs": 3
+  },
+  {
+   "unsafe_cut_pts": 10,
+   "set": "test Alpaca runs, step > 0",
+   "signal": "cis_logit",
+   "auroc": 0.497,
+   "run_boot_95": [
+    0.25,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 30,
+   "unsafe": 23,
+   "runs": 3
+  },
+  {
+   "unsafe_cut_pts": 10,
+   "set": "test Alpaca runs, step > 0",
+   "signal": "spot_refusal",
+   "auroc": 0.702,
+   "run_boot_95": [
+    0.583,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 30,
+   "unsafe": 23,
+   "runs": 3
+  },
+  {
+   "unsafe_cut_pts": 10,
+   "set": "test Alpaca runs, step > 0",
+   "signal": "dw_norm",
+   "auroc": 0.888,
+   "run_boot_95": [
+    0.873,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 30,
+   "unsafe": 23,
+   "runs": 3
+  },
+  {
+   "unsafe_cut_pts": 10,
+   "set": "test Alpaca runs, step > 0",
+   "signal": "step",
+   "auroc": 0.901,
+   "run_boot_95": [
+    0.889,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 30,
+   "unsafe": 23,
+   "runs": 3
+  },
+  {
+   "unsafe_cut_pts": 15,
+   "set": "test, all checkpoints",
+   "signal": "cis_circ",
+   "auroc": 0.859,
+   "run_boot_95": [
+    0.859,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 77,
+   "unsafe": 9,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 15,
+   "set": "test, all checkpoints",
+   "signal": "cis_sep",
+   "auroc": 0.873,
+   "run_boot_95": [
+    0.858,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 77,
+   "unsafe": 9,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 15,
+   "set": "test, all checkpoints",
+   "signal": "cis_cos",
+   "auroc": 0.926,
+   "run_boot_95": [
+    0.905,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 77,
+   "unsafe": 9,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 15,
+   "set": "test, all checkpoints",
+   "signal": "cis_logit",
+   "auroc": 0.634,
+   "run_boot_95": [
+    0.604,
+    0.986
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 77,
+   "unsafe": 9,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 15,
+   "set": "test, all checkpoints",
+   "signal": "spot_refusal",
+   "auroc": 0.907,
+   "run_boot_95": [
+    0.858,
+    0.98
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 77,
+   "unsafe": 9,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 15,
+   "set": "test, all checkpoints",
+   "signal": "dw_norm",
+   "auroc": 0.641,
+   "run_boot_95": [
+    0.5,
+    0.704
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 77,
+   "unsafe": 9,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 15,
+   "set": "test, all checkpoints",
+   "signal": "step",
+   "auroc": 0.603,
+   "run_boot_95": [
+    0.5,
+    0.661
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 77,
+   "unsafe": 9,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 15,
+   "set": "test, step > 0",
+   "signal": "cis_circ",
+   "auroc": 0.843,
+   "run_boot_95": [
+    0.843,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 70,
+   "unsafe": 9,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 15,
+   "set": "test, step > 0",
+   "signal": "cis_sep",
+   "auroc": 0.858,
+   "run_boot_95": [
+    0.842,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 70,
+   "unsafe": 9,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 15,
+   "set": "test, step > 0",
+   "signal": "cis_cos",
+   "auroc": 0.918,
+   "run_boot_95": [
+    0.894,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 70,
+   "unsafe": 9,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 15,
+   "set": "test, step > 0",
+   "signal": "cis_logit",
+   "auroc": 0.617,
+   "run_boot_95": [
+    0.588,
+    0.985
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 70,
+   "unsafe": 9,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 15,
+   "set": "test, step > 0",
+   "signal": "spot_refusal",
+   "auroc": 0.896,
+   "run_boot_95": [
+    0.843,
+    0.978
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 70,
+   "unsafe": 9,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 15,
+   "set": "test, step > 0",
+   "signal": "dw_norm",
+   "auroc": 0.599,
+   "run_boot_95": [
+    0.448,
+    0.662
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 70,
+   "unsafe": 9,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 15,
+   "set": "test, step > 0",
+   "signal": "step",
+   "auroc": 0.557,
+   "run_boot_95": [
+    0.448,
+    0.612
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 70,
+   "unsafe": 9,
+   "runs": 7
+  },
+  {
+   "unsafe_cut_pts": 15,
+   "set": "test Alpaca runs, step > 0",
+   "signal": "cis_circ",
+   "auroc": 0.545,
+   "run_boot_95": [
+    0.52,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 30,
+   "unsafe": 9,
+   "runs": 3
+  },
+  {
+   "unsafe_cut_pts": 15,
+   "set": "test Alpaca runs, step > 0",
+   "signal": "cis_sep",
+   "auroc": 0.587,
+   "run_boot_95": [
+    0.52,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 30,
+   "unsafe": 9,
+   "runs": 3
+  },
+  {
+   "unsafe_cut_pts": 15,
+   "set": "test Alpaca runs, step > 0",
+   "signal": "cis_cos",
+   "auroc": 0.762,
+   "run_boot_95": [
+    0.619,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 30,
+   "unsafe": 9,
+   "runs": 3
+  },
+  {
+   "unsafe_cut_pts": 15,
+   "set": "test Alpaca runs, step > 0",
+   "signal": "cis_logit",
+   "auroc": 0.529,
+   "run_boot_95": [
+    0.519,
+    1.0
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 30,
+   "unsafe": 9,
+   "runs": 3
+  },
+  {
+   "unsafe_cut_pts": 15,
+   "set": "test Alpaca runs, step > 0",
+   "signal": "spot_refusal",
+   "auroc": 0.698,
+   "run_boot_95": [
+    0.611,
+    0.944
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 30,
+   "unsafe": 9,
+   "runs": 3
+  },
+  {
+   "unsafe_cut_pts": 15,
+   "set": "test Alpaca runs, step > 0",
+   "signal": "dw_norm",
+   "auroc": 0.582,
+   "run_boot_95": [
+    0.444,
+    0.762
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 30,
+   "unsafe": 9,
+   "runs": 3
+  },
+  {
+   "unsafe_cut_pts": 15,
+   "set": "test Alpaca runs, step > 0",
+   "signal": "step",
+   "auroc": 0.571,
+   "run_boot_95": [
+    0.444,
+    0.762
+   ],
+   "valid_resamples": 2000,
+   "checkpoints": 30,
+   "unsafe": 9,
+   "runs": 3
+  }
+ ],
+ "paired_differences_delta_0.10": [
+  {
+   "set": "test, all checkpoints",
+   "difference": "cis_sep \u2212 cis_circ",
+   "delta_auroc": 0.027,
+   "run_boot_95": [
+    0.0,
+    0.093
+   ],
+   "valid_resamples": 2000
+  },
+  {
+   "set": "test, all checkpoints",
+   "difference": "cis_circ \u2212 dw_norm",
+   "delta_auroc": 0.194,
+   "run_boot_95": [
+    0.037,
+    0.296
+   ],
+   "valid_resamples": 2000
+  },
+  {
+   "set": "test, all checkpoints",
+   "difference": "cis_sep \u2212 dw_norm",
+   "delta_auroc": 0.221,
+   "run_boot_95": [
+    0.13,
+    0.296
+   ],
+   "valid_resamples": 2000
+  },
+  {
+   "set": "test, all checkpoints",
+   "difference": "cis_circ \u2212 spot_refusal",
+   "delta_auroc": -0.031,
+   "run_boot_95": [
+    -0.042,
+    0.0
+   ],
+   "valid_resamples": 2000
+  },
+  {
+   "set": "test, all checkpoints",
+   "difference": "cis_circ \u2212 step",
+   "delta_auroc": 0.245,
+   "run_boot_95": [
+    0.116,
+    0.36
+   ],
+   "valid_resamples": 2000
+  },
+  {
+   "set": "test, step > 0",
+   "difference": "cis_sep \u2212 cis_circ",
+   "delta_auroc": 0.031,
+   "run_boot_95": [
+    0.0,
+    0.106
+   ],
+   "valid_resamples": 2000
+  },
+  {
+   "set": "test, step > 0",
+   "difference": "cis_circ \u2212 dw_norm",
+   "delta_auroc": 0.223,
+   "run_boot_95": [
+    0.042,
+    0.344
+   ],
+   "valid_resamples": 2000
+  },
+  {
+   "set": "test, step > 0",
+   "difference": "cis_sep \u2212 dw_norm",
+   "delta_auroc": 0.253,
+   "run_boot_95": [
+    0.147,
+    0.344
+   ],
+   "valid_resamples": 2000
+  },
+  {
+   "set": "test, step > 0",
+   "difference": "cis_circ \u2212 spot_refusal",
+   "delta_auroc": -0.035,
+   "run_boot_95": [
+    -0.048,
+    0.0
+   ],
+   "valid_resamples": 2000
+  },
+  {
+   "set": "test, step > 0",
+   "difference": "cis_circ \u2212 step",
+   "delta_auroc": 0.281,
+   "run_boot_95": [
+    0.131,
+    0.419
+   ],
+   "valid_resamples": 2000
+  },
+  {
+   "set": "test Alpaca runs, step > 0",
+   "difference": "cis_sep \u2212 cis_circ",
+   "delta_auroc": 0.205,
+   "run_boot_95": [
+    0.0,
+    0.458
+   ],
+   "valid_resamples": 2000
+  },
+  {
+   "set": "test Alpaca runs, step > 0",
+   "difference": "cis_circ \u2212 dw_norm",
+   "delta_auroc": -0.422,
+   "run_boot_95": [
+    -0.542,
+    0.0
+   ],
+   "valid_resamples": 2000
+  },
+  {
+   "set": "test Alpaca runs, step > 0",
+   "difference": "cis_sep \u2212 dw_norm",
+   "delta_auroc": -0.217,
+   "run_boot_95": [
+    -0.312,
+    0.0
+   ],
+   "valid_resamples": 2000
+  },
+  {
+   "set": "test Alpaca runs, step > 0",
+   "difference": "cis_circ \u2212 spot_refusal",
+   "delta_auroc": -0.236,
+   "run_boot_95": [
+    -0.281,
+    0.0
+   ],
+   "valid_resamples": 2000
+  },
+  {
+   "set": "test Alpaca runs, step > 0",
+   "difference": "cis_circ \u2212 step",
+   "delta_auroc": -0.435,
+   "run_boot_95": [
+    -0.542,
+    0.0
+   ],
+   "valid_resamples": 2000
+  }
+ ],
+ "provenance": {
+  "git_sha": null,
+  "seed": null,
+  "created_at": "2026-11-13T08:33:29",
+  "torch": "2.11.0+cpu",
+  "transformers": "5.20.2",
+  "cuda_available": false,
+  "on_kaggle": true,
+  "smoke": false,
+  "peft": "0.21.2"
+ }
+}

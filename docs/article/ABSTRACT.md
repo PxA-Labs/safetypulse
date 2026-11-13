@@ -7,7 +7,7 @@ Aya Global (3.35B), 2,000 Alpaca instructions raise the attack success rate (ASR
 14.3% to 25.2%, and to about 40% during training: the model simply refuses less of everything. Teams rarely catch
 this, because auditing every checkpoint means generating and judging answers to hundreds of harmful prompts.
 
-SafetyPulse replaces that audit with a lightweight internal signal. Once per base model, it locates the refusal mechanism
+SafetyPulse is a safety regression gate for fine-tuning (check, decide, repair, verify) built on a lightweight internal signal that replaces that audit. Once per base model, it locates the refusal mechanism
 with matched harmful/harmless prompt pairs: a refusal direction and a 20-component circuit, confirmed by activation
 patching and independently by CircuitKIT, which places 16 of the 20 components in its top 100 of 612 (p ≈ 2·10⁻¹⁰).
 At every checkpoint, a Circuit Integrity Score (CIS) measures how much of the base model's refusal signal the circuit

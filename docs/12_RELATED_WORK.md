@@ -41,6 +41,20 @@ What SafetyPulse can claim:
 | Hossain et al., *When Safety Geometry Collapses: Fine-Tuning Vulnerabilities in Agentic Guard Models*, arXiv [2605.02914](https://arxiv.org/abs/2605.02914) | Abstract | In guard models (LlamaGuard, WildGuard, Granite Guardian), the geometry of safety representations predicts failure better than displacement | Caveat for displacement-only monitors; guard models, not chat models |
 | Safety Compass, PyPI [safety-compass](https://pypi.org/project/safety-compass/) 0.1.3 (alpha) | Package page | Tracks the drift of safety concept directions (difference of means) during Hugging Face fine-tuning; findings on Qwen3-8B and Llama-3-8B | Same tool shape as our Trainer callback; no circuit, no repair, no held-out alarm evaluation on its page |
 
+### Added 2026-11-13 (checked against the arXiv abstracts only)
+
+| Work | What it does | Relation to SafetyPulse |
+|---|---|---|
+| Hawkins et al., *The Heterogeneous Safety Impacts of Benign Multilingual Fine-Tuning*, arXiv [2606.28843](https://arxiv.org/abs/2606.28843) | Benign data translated into nine languages (Llama-3.2, Qwen3, Gemma-3): safety drift depends on both the fine-tuning and the evaluation language; non-English fine-tuning can cause smaller representational drift yet larger behavioural change | **Our main limitation:** CIS is calibrated and tested in English only. Motivates H4 in [13_PREREGISTRATION.md](13_PREREGISTRATION.md); no monitor in the paper |
+| Wang et al., *Refusal Direction is Universal Across Safety-Aligned Languages*, arXiv [2505.17306](https://arxiv.org/abs/2505.17306) | A refusal direction extracted from English bypasses refusal in 14 languages | Suggests an English direction may still read non-English refusal; untested for *drift* |
+| Duan, *Do Activation Monitors Survive Model Updates?*, arXiv [2606.15980](https://arxiv.org/abs/2606.15980) | Frozen activation probes often go stale after fine-tuning-style updates (QLoRA especially), less after quantization; refusal probes are comparatively stable; label-free realignment repairs them | Related risk for our frozen probe bundle; we re-read the base model's direction at each checkpoint rather than a trained probe, but staleness under QLoRA is untested here |
+| Egler, Schulman & Carlini, *Detecting Adversarial Fine-tuning with Auditing Agents*, arXiv [2510.16255](https://arxiv.org/abs/2510.16255) | An LLM auditing agent scores fine-tuning jobs; 56.2% detection of adversarial fine-tuning at 1% FPR; states that subtle safety degradation from *benign* fine-tuning remains a challenge | Pre-deployment auditing of attacks, from data and models; ours is a per-checkpoint internal signal for benign drift |
+| He, Xia & Henderson, *What is in Your Safe Data? Identifying Benign Data that Breaks Safety*, arXiv [2404.01099](https://arxiv.org/abs/2404.01099) | Selects benign examples that most degrade safety; they are often lists, bullet points or math questions | Our GSM8K runs did **not** drift (one model, LoRA): a contrast worth stating. List-formatted Alpaca is our pre-registered second condition (H2) |
+
+"Du et al. 2025", a snippet attributing a "cosine drift to the original refusal axis" metric, most likely refers to
+ProCon (2509.06795, Du et al., September 2025) above, which measures exactly that drift during tuning in order to
+constrain it. It is English-only and not a monitor, so it does not anticipate H4.
+
 Foundations (checked on arXiv): Qi et al., 2023 (2310.03693); Arditi et al., 2024 (2406.11717); Wei et al., 2024
 (2402.05162); HarmBench (2402.04249); XSTest (2308.01263, NAACL 2024); CircuitKIT (Seth et al., 2607.19317).
 
