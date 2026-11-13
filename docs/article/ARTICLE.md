@@ -615,6 +615,45 @@ To reproduce a notebook: `python tools/kaggle_run.py <notebook> --slug <name> [-
 [kaggle/README.md](https://github.com/PxA-Labs/safetypulse/blob/main/kaggle/README.md) and
 [docs/10](https://github.com/PxA-Labs/safetypulse/blob/main/docs/10_KAGGLE_AND_HF_RESOURCES.md) for every run's inputs).
 
+### Artifacts
+
+Everything is public and ungated on Hugging Face, in two collections:
+[**models**](https://huggingface.co/collections/purvansh01/safetypulse-models-6af00b8f56c773a80af9f7e0) and
+[**datasets**](https://huggingface.co/collections/purvansh01/safetypulse-data-6af00b9124ee9d5022a36482).
+
+**Models.** The repaired model, its 4-bit version, and the LoRA adapters of every fine-tuning run in this write-up
+(every checkpoint, so each monitoring result can be re-scored).
+
+| Repo | What it is | Used in |
+|---|---|---|
+| [`tiny-aya-global-safetypulse-repaired`](https://huggingface.co/purvansh01/tiny-aya-global-safetypulse-repaired) | The deliverable: a drifted Alpaca fine-tune (`alpaca-s1`, step 125) after the full loop, repaired by SafeTune's safety-vector restore (fp16, 6.7 GB) | §7 |
+| [`tiny-aya-global-safetypulse-repaired-nf4`](https://huggingface.co/purvansh01/tiny-aya-global-safetypulse-repaired-nf4) | The same model in 4-bit NF4 (2.5 GB), with its paired audit; less safe than fp16 | §6.7 |
+| [`safetypulse-lora-alpaca`](https://huggingface.co/purvansh01/safetypulse-lora-alpaca) | The drifting benign fine-tunes: 2,000 Alpaca instructions, seeds 0–3, 11 checkpoints each (steps 0–250). Seed 0 is development, seeds 1–3 are held out. Carries a warning card: these adapters make the model less safe | §6.1, §6.2, §6.4 |
+| [`safetypulse-lora-alpacacur`](https://huggingface.co/purvansh01/safetypulse-lora-alpacacur) | The same fine-tune on the 1,981 examples CuratorKIT kept (seed 0) | §6.6 |
+| [`safetypulse-lora-gsm8k`](https://huggingface.co/purvansh01/safetypulse-lora-gsm8k) | Domain fine-tune on 2,000 GSM8K maths problems, seeds 0–2: moves the circuit without reducing safety (the source of CIS's WARN false alarms) | §6.2 |
+| [`safetypulse-lora-none`](https://huggingface.co/purvansh01/safetypulse-lora-none) | Negative control: 1,800 Alpaca examples plus 200 refusals, seeds 0–2; should stay safe, and did | §6.2 |
+
+All adapters are LoRA r = 16 on all projections of Tiny Aya Global (lr 2·10⁻⁴, 2 epochs, batch 16), loadable with
+`peft` on top of the base model; the model cards give the exact commands.
+
+**Datasets.**
+
+| Repo | What it holds |
+|---|---|
+| [`safetypulse-probe-bundle`](https://huggingface.co/datasets/purvansh01/safetypulse-probe-bundle) | Refusal direction, the 20-component circuit, the 50 probe pairs and the thresholds: everything `safetypulse check` needs |
+| [`safetypulse-pairs`](https://huggingface.co/datasets/purvansh01/safetypulse-pairs) | The 288 matched harmful / harmless contrast pairs used for calibration |
+| [`safetypulse-eval`](https://huggingface.co/datasets/purvansh01/safetypulse-eval) | The evaluation splits (HarmBench, XSTest, GSM8K, MMLU; dev and test) |
+| [`safetypulse-finetune-data`](https://huggingface.co/datasets/purvansh01/safetypulse-finetune-data) | The fine-tuning sets (Alpaca, curated Alpaca, GSM8K, the `none` control) |
+| [`safetypulse-logs`](https://huggingface.co/datasets/purvansh01/safetypulse-logs) | CIS, spot-check and ASR for all 150 checkpoints, every audit with per-prompt verdicts, repair results, final tables and HF Job results |
+
+**Withheld on purpose:** the positive-control adapters trained on harmful data (`harm-s0`, `harmdense-s0`) and the
+text of model answers judged harmful; judges can request access
+([docs/11](https://github.com/PxA-Labs/safetypulse/blob/main/docs/11_WITHHELD_ARTIFACTS.md)).
+
+**Code and video.** [GitHub repository](https://github.com/PxA-Labs/safetypulse) (package, notebooks, executed runs),
+[PyPI package](https://pypi.org/project/safetypulse/), and a
+[launch video](https://github.com/user-attachments/assets/2952a7ea-66dc-4139-866a-87a177c8d541).
+
 ## 12. With more credits
 
 The plan is pre-registered with frozen thresholds and refutation criteria
@@ -658,7 +697,7 @@ compute credits, and Kaggle for free GPU time.
 | 2026-11-08 | First version: method, drift, monitor and repair results, toolkit chain |
 | 2026-11-11 | ROI section, verified related work, post-hoc comparison of all signals, figures and animations, confidence intervals, trivial baselines, Holm correction |
 | 2026-11-13 | Safety regression gate framing, threshold-free AUROC (notebook 16), pre-registration, five more related papers |
-| 2026-11-14 | 4-bit NF4 evaluation of the repaired model (§6.7, notebook 17). Sections required by the submission template: one-minute box, tracks, kits, models, data and licences, metrics, compute, cost per 1,000 replies, plan with more credits, team, declaration, AI use |
+| 2026-11-14 | Artifacts section listing every model and dataset repo. 4-bit NF4 evaluation of the repaired model (§6.7, notebook 17). Sections required by the submission template: one-minute box, tracks, kits, models, data and licences, metrics, compute, cost per 1,000 replies, plan with more credits, team, declaration, AI use |
 
 ## References
 
