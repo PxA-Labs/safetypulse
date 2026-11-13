@@ -63,6 +63,7 @@ The next experiments, on a second model and a second drifting condition, are pre
 | Threshold-free ranking (AUROC, post hoc) | across test runs `cis_sep` 0.95 and `cis_circ` 0.92 vs 0.64–0.70 for training step and ‖ΔW‖; the spot-check also 0.96; *within* drifting runs training step ranks better (0.90), so CIS detects drift rather than measuring its degree ([report §4.10](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/REPORT.md#410-threshold-free-comparison-auroc-post-hoc-notebook-16)) |
 | Early warning | CIS alarms at step 25 on all three unseen Alpaca seeds, 1–3 checkpoints before ASR rises (bounded by the 25-step checkpoint spacing; an alarm on the size of the weight change has the same lead but 40 of 44 false alarms on safe runs) |
 | **Repair: SafeTune safety-vector restore** | **ASR 25.2% → 12.3%** (base 14.3%) and **GSM8K 55.1% → 70.7%** (base 71.3%), MMLU unchanged; it undoes about 86% of the fine-tune's weight change, so it is mostly a rollback |
+| Repaired model in 4-bit NF4 | part of the repair is lost: ASR 10.9% → 16.8% (p = 0.039), GSM8K 71.0% → 63.3%, MMLU unchanged; the check still PASSes ([report §4.11](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/REPORT.md#411-the-repaired-model-in-4-bit-nf4-notebook-17)) |
 | Circuit-only weight restore | no effect (ΔASR +0.0 [−1.4, +1.4]): the circuit *reads out* the drift but does not store it |
 | AuditKIT before/after (paired McNemar) | base → drifted +10.1 pts (p = 0.012); drifted → repaired −12.6 pts (p = 0.003) |
 | Judge robustness | Llama Guard 3 1B vs 8B agree on 94–96% of answers (κ 0.78–0.84) |
@@ -88,6 +89,8 @@ All under [huggingface.co/purvansh01](https://huggingface.co/purvansh01):
 
 | Repo | Contents |
 |---|---|
+| `tiny-aya-global-safetypulse-repaired` | The repaired model (fp16), with its audit and check |
+| `tiny-aya-global-safetypulse-repaired-nf4` | The same model in 4-bit NF4 (2.5 GB), with its audit: less safe than fp16, see report §4.11 |
 | `safetypulse-lora-alpaca` | LoRA adapters of the drifting Alpaca runs (seeds 0–3, 11 checkpoints each), with a warning card |
 | `safetypulse-lora-alpacacur` | Alpaca after CuratorKIT curation |
 | `safetypulse-lora-gsm8k`, `safetypulse-lora-none` | Domain fine-tune and negative control |
