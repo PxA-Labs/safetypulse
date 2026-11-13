@@ -26,7 +26,7 @@ data-free SafeTune repair brings the model back to base-level safety *and* base-
 | **Headline before → after** | Fine-tuned → repaired: **ASR 24.4% → 11.8%** (HarmBench, held-out), **GSM8K 56.7% → 71.3%**, MMLU 57.6% → 57.6%, over-refusal 1.3% → 8.7% (base 7.3%) |
 | **Monitor** | Every unsafe held-out checkpoint flagged (recall 1.00), 1–3 checkpoints early; AUROC 0.92–0.95 vs 0.64–0.70 for trivial baselines |
 | **Kits** | CuratorKIT (data) → SafeTune (repair) → AuditKIT (audit); CircuitKIT (independent circuit check) |
-| **Honest caveats** | One model, English only; the repair is mostly a rollback (~86% of the weight change); the best alarm is the simple direction projection, not the circuit |
+| **Honest caveats** | One model, English only; the repair is mostly a rollback (~86% of the weight change) and partly lost in 4-bit (ASR 10.9% → 16.8%); the best alarm is the simple direction projection, not the circuit |
 
 ### Tracks and problem statements
 
@@ -272,7 +272,7 @@ This is exactly what the repair experiment shows (§6.4).
 | [meta-llama/Llama-Guard-3-1B](https://huggingface.co/meta-llama/Llama-Guard-3-1B) | Safety judge | revision `acf7aafa` | Llama 3.2 Community Licence |
 | [meta-llama/Llama-Guard-3-8B](https://huggingface.co/meta-llama/Llama-Guard-3-8B) | Second judge | Hub default | Llama 3.1 Community Licence |
 
-No quantized or GGUF model was evaluated (see §9 and §12). No closed model is used in the pipeline; closed APIs
+The repaired model was also evaluated in 4-bit NF4 (bitsandbytes; §6.7); no GGUF model was evaluated. No closed model is used in the pipeline; closed APIs
 appear only in the cost comparison (§8).
 
 **Datasets and licences.** All data is **English only**.
@@ -453,6 +453,29 @@ the remaining 1,981 with the same seed and settings drifted just the same (mean 
 at step 25 while ASR was still at base level. The drift comes from ordinary instruction tuning, not toxic data: data
 hygiene is no substitute for monitoring.
 
+### 6.7 The repaired model quantized to 4-bit
+
+Deployment often means a 4-bit model. We audited the published repaired model in fp16 and in 4-bit NF4
+(bitsandbytes, double quantization) in one session, on the same test sets, judge and greedy decoding, with exact
+McNemar tests on the paired per-item results (notebook 17, `kaggle/executed/17_quantized_eval/`).
+
+| Repaired model | ASR ↓ (119) | Over-refusal (150) | GSM8K ↑ (300) | MMLU ↑ (500) | SafetyPulse check |
+|---|:---:|:---:|:---:|:---:|:---:|
+| fp16 | 10.9% [5.9, 16.8] | 8.7% | 71.0% | 57.6% | PASS (`cis_circ` 0.97) |
+| **4-bit NF4** | **16.8%** [10.1, 24.4] | 2.7% | 63.3% | 57.8% | PASS (`cis_circ` 0.93) |
+| Paired change | **+5.9 pts, p = 0.039** | −6.0 pts, p = 0.004 | −7.7 pts, p = 0.005 | +0.2, p = 1.0 | |
+
+**Part of the repair does not survive 4-bit quantization.** The quantized model complies with more harmful requests
+(8 prompts flip to harmful, 1 flips back), refuses fewer safe ones and loses 7.7 GSM8K points; MMLU is unchanged. The
+shift looks like a small dose of the original drift: less refusal overall. It stays below the drifted fine-tune
+(24.4%) and within our unsafe rule (base 14.3% + 10 points), so the gate correctly returns PASS, but the CIS scores
+fall (`cis_circ` 0.97 → 0.93, `cis_sep` 0.99 → 0.96). The lesson for deployment: **re-run the check and the audit
+on the quantized model you ship**, not only on the fp16 one. Memory, including the 1B judge on the same GPU: 9.1 GiB
+for fp16, 5.2 GiB for NF4. The NF4 weights are published as
+[`tiny-aya-global-safetypulse-repaired-nf4`](https://huggingface.co/purvansh01/tiny-aya-global-safetypulse-repaired-nf4).
+The fp16 ASR here (10.9%) differs slightly from the AuditKIT audit in §7 (11.8%), which used a different judge wrapper;
+both lie within each other's intervals.
+
 ## 7. A meaningfully better model
 
 [`purvansh01/tiny-aya-global-safetypulse-repaired`](https://huggingface.co/purvansh01/tiny-aya-global-safetypulse-repaired)
@@ -531,8 +554,8 @@ Hugging Face credits.
 - ASR is measured on 78 and 119 prompts (±8–11 points), hence the paired tests.
 - No jailbreak-style attacks were evaluated, only direct harmful requests.
 - The judge agrees with a larger judge but has not been validated against human labels.
-- The repaired model was not evaluated quantized (GGUF / 4-bit), so we cannot yet say its safety survives deployment
-  compression.
+- Part of the repair does not survive 4-bit NF4 quantization (ASR 10.9% → 16.8%, p = 0.039; GSM8K −7.7 points;
+  §6.7), and GGUF was not tested: the deployed, quantized model must be checked and audited itself.
 - CIS WARNs on fine-tunes that move the circuit without reducing safety (precision 0.46), and its FAIL-level recall is
   0.57 because it partly recovers late in Alpaca training while ASR stays high. In a post-hoc comparison the direction
   projection was the better alarm (§6.2).
@@ -605,7 +628,7 @@ USD 25–65 of Hugging Face compute for the core.
 | Second drifting condition, Alpaca answers as lists (H2) | ASR rises at least as much as plain Alpaca; recall ≥ 0.8 |
 | Multilingual check in Hindi, Spanish, French (H4) | Exploratory: does an English-calibrated CIS flag non-English drift? |
 | Localising the drift, restoring only the blocks that store it (H5) | Exploratory: base-level ASR while undoing < 40% of the fine-tune |
-| Repaired model quantized to 4-bit and GGUF | ASR, over-refusal and GSM8K within the confidence intervals of fp16 |
+| Quantization-aware repair: repair after quantizing (or quantize with the safety vector protected), plus GGUF Q4/Q8 | Recovers the 5.9-point ASR loss of NF4 (§6.7), keeping ASR within the fp16 interval |
 | Aya Expanse 8B, 1 seed | Exploratory: does the calibrate-once recipe transfer to a larger model? |
 | 100-item human check of the judge | Cohen's κ ≥ 0.6 against Llama Guard 3 |
 
@@ -635,7 +658,7 @@ compute credits, and Kaggle for free GPU time.
 | 2026-11-08 | First version: method, drift, monitor and repair results, toolkit chain |
 | 2026-11-11 | ROI section, verified related work, post-hoc comparison of all signals, figures and animations, confidence intervals, trivial baselines, Holm correction |
 | 2026-11-13 | Safety regression gate framing, threshold-free AUROC (notebook 16), pre-registration, five more related papers |
-| 2026-11-14 | Sections required by the submission template: one-minute box, tracks, kits, models, data and licences, metrics, compute, cost per 1,000 replies, plan with more credits, team, declaration, AI use |
+| 2026-11-14 | 4-bit NF4 evaluation of the repaired model (§6.7, notebook 17). Sections required by the submission template: one-minute box, tracks, kits, models, data and licences, metrics, compute, cost per 1,000 replies, plan with more credits, team, declaration, AI use |
 
 ## References
 

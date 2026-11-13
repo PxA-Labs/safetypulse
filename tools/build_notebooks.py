@@ -2707,4 +2707,102 @@ write("16_auroc.ipynb", [
     '''),
 ])
 
+write("17_quantized_eval.ipynb", [
+    header("17 · The repaired model quantized to 4-bit: does its safety survive? (T4)",
+           "Audits the published repaired model (`purvansh01/tiny-aya-global-safetypulse-repaired`) in fp16 and in 4-bit "
+           "NF4 (bitsandbytes) on the same test sets and judge as notebook 10, compares them with paired tests, runs "
+           "the SafetyPulse check on both, and saves the NF4 weights so they can be published.",
+           " · output of **01** (evaluation sets), `sp-models` (Llama Guard 3 1B)",
+           "repaired model and probe bundle from the Hugging Face Hub (public)",
+           "`quant/quant_eval.json`, `quant/tables.md`, `quant/nf4/` (weights)", "GPU T4"),
+    SETUP,
+    code('''
+        import subprocess, sys, json, time
+        subprocess.run([sys.executable, "-m", "pip", "install", "-q", "bitsandbytes>=0.45", "safetypulse"], check=True)
+        import numpy as np, torch
+        from scipy.stats import binomtest
+        from huggingface_hub import snapshot_download
+        from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+
+        REPO = "purvansh01/tiny-aya-global-safetypulse-repaired"
+        OUT = sp.out_dir("quant")
+        src = snapshot_download(REPO, local_dir="/tmp/repaired")
+        bundle_dir = snapshot_download("purvansh01/safetypulse-probe-bundle", repo_type="dataset",
+                                       local_dir="/tmp/bundle", ignore_patterns=["unpaired_v1/*"])
+        test_sets = {
+            "harm": [x for x in sp.load_jsonl(sp.find_input("eval_harm.jsonl")) if x["split"] == "test"],
+            "overrefusal": [x for x in sp.load_jsonl(sp.find_input("eval_overrefusal.jsonl")) if x["split"] == "test"],
+            "task": [x for x in sp.load_jsonl(sp.find_input("eval_task.jsonl")) if x["split"] == "test"],
+            "general": [x for x in sp.load_jsonl(sp.find_input("eval_general.jsonl")) if x["split"] == "test"],
+        }
+        print({k: len(v) for k, v in test_sets.items()})
+        judge = sp.Judge("llamaguard")
+        tok = AutoTokenizer.from_pretrained(src); tok.padding_side = "left"
+        if tok.pad_token is None:
+            tok.pad_token = tok.eos_token
+    '''),
+    md("## Audit fp16 and NF4 (same sets, judge and decoding as notebook 10), and the SafetyPulse check"),
+    code('''
+        import safetypulse
+
+        def cis(model):
+            for with_circ in (True, False):            # the circuit score needs gradients; fall back without it
+                try:
+                    r = safetypulse.check(model, bundle_dir, tokenizer=tok, with_circ=with_circ, allow_base_mismatch=True,
+                                          dtype=torch.float16)
+                    return {"status": str(r.status), "scores": {k: float(v) for k, v in r.scores.items()},
+                            "with_circ": with_circ}
+                except Exception as e:
+                    err = f"{type(e).__name__}: {str(e)[:300]}"
+                    print("check failed (with_circ=%s): %s" % (with_circ, err))
+            return {"error": err}
+
+        results = {}
+        for name in ("fp16", "nf4"):
+            t0 = time.time()
+            if name == "fp16":
+                model = AutoModelForCausalLM.from_pretrained(src, dtype=torch.float16).to("cuda:0").eval()
+            else:
+                q = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_compute_dtype=torch.float16,
+                                       bnb_4bit_use_double_quant=True)
+                model = AutoModelForCausalLM.from_pretrained(src, quantization_config=q, device_map={"": 0}).eval()
+            model.requires_grad_(False)
+            mem = torch.cuda.memory_allocated(0) / 2**30
+            res = sp.audit(model, tok, judge, test_sets)
+            results[name] = {"summary": sp.summary(res), "ci95": {k: v["ci95"] for k, v in res.items()},
+                             "flags": {k: [bool(x) for x in v["flags"]] for k, v in res.items()},
+                             "gpu_mem_gib": round(mem, 2), "minutes": round((time.time() - t0) / 60, 1),
+                             "check": cis(model)}
+            print(name, results[name]["summary"], results[name]["check"], f"{mem:.1f} GiB", results[name]["minutes"], "min")
+            if name == "nf4":
+                model.save_pretrained(OUT / "nf4"); tok.save_pretrained(OUT / "nf4")
+            del model; sp.free()
+    '''),
+    md("## Paired comparison NF4 vs fp16 (exact McNemar on per-item flags)"),
+    code('''
+        def mcnemar(a, b):
+            n01 = sum(x and not y for x, y in zip(a, b)); n10 = sum(y and not x for x, y in zip(a, b))
+            p = 1.0 if n01 + n10 == 0 else binomtest(min(n01, n10), n01 + n10, 0.5).pvalue
+            return n01, n10, p
+
+        rows = []
+        for k in results["fp16"]["flags"]:
+            a, b = results["fp16"]["flags"][k], results["nf4"]["flags"][k]
+            n01, n10, p = mcnemar(a, b)
+            rows.append({"metric": k, "fp16": round(results["fp16"]["summary"][k], 4), "nf4": round(results["nf4"]["summary"][k], 4),
+                         "fp16_ci95": results["fp16"]["ci95"][k], "nf4_ci95": results["nf4"]["ci95"][k],
+                         "only_fp16": n01, "only_nf4": n10, "mcnemar_p": round(p, 4)})
+        out = {"repo": REPO, "quantization": "bitsandbytes NF4, double quant, fp16 compute", "judge": judge.name,
+               "results": {k: {kk: vv for kk, vv in v.items() if kk != "flags"} for k, v in results.items()},
+               "paired": rows, "provenance": sp.provenance()}
+        sp.save_json(out, OUT / "quant_eval.json")
+        import pandas as pd
+        table = pd.DataFrame(rows).to_markdown(index=False)
+        extra = pd.DataFrame([{"model": k, "gpu_mem_gib": v["gpu_mem_gib"], "minutes": v["minutes"], **{"check": v["check"]}}
+                              for k, v in results.items()]).to_markdown(index=False)
+        (OUT / "tables.md").write_text("## NF4 vs fp16 (test sets)\\n\\n" + table + "\\n\\n## Memory, time, SafetyPulse check\\n\\n" + extra + "\\n")
+        print(table); print(extra)
+    '''),
+])
+
 print("wrote", sorted(p.name for p in OUT.glob("*.ipynb")))

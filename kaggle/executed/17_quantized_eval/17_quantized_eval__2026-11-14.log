@@ -1,0 +1,15 @@
+[{"stream_name":"stdout","time":6.988876933,"data":"[cell 0] start: # 17 · The repaired model quantized to 4-bit: does its safety survive? (T4)\n"}
+,{"stream_name":"stdout","time":6.988921765,"data":"[cell 1] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":41.064076058,"data":"[cell 2] start: import subprocess, sys, json, time\n"}
+,{"stream_name":"stdout","time":107.752865501,"data":"[cell 3] start: ## Audit fp16 and NF4 (same sets, judge and decoding as notebook 10), and the Sa\n"}
+,{"stream_name":"stdout","time":107.752917356,"data":"[cell 4] start: import safetypulse\n"}
+,{"stream_name":"stdout","time":2407.910632776,"data":"[cell 5] start: ## Paired comparison NF4 vs fp16 (exact McNemar on per-item flags)\n"}
+,{"stream_name":"stdout","time":2407.910685941,"data":"[cell 6] start: def mcnemar(a, b):\n"}
+,{"stream_name":"stdout","time":2411.24199,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":2413.515729111,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":2413.515767326,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":2413.710965963,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":2413.711007229,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":2414.524418196,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":2415.04332026,"data":"[NbConvertApp] Writing 294894 bytes to __results__.html\n"}
+]

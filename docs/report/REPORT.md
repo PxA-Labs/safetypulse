@@ -311,6 +311,23 @@ the intervals are coarse). CPU only; `kaggle/executed/16_auroc/`.
   *whether* a run is drifting, not *how far* it has drifted. Only 3 runs (7 safe checkpoints) back this column.
 - The ordering moves with the unsafe cut-off (+5 / +15 pts in `files/tables.md`), as in §4.9.
 
+### 4.11 The repaired model in 4-bit NF4 (notebook 17)
+
+Same test sets, judge (Llama Guard 3 1B) and greedy decoding as §4.4, one Kaggle T4 session; exact McNemar on the
+paired items. bitsandbytes NF4 with double quantization, fp16 compute.
+
+| Metric | fp16 | NF4 | Items only fp16 / only NF4 | p |
+|---|:---:|:---:|:---:|:---:|
+| ASR, HarmBench (119) | 10.9% [5.9, 16.8] | 16.8% [10.1, 24.4] | 1 / 8 | 0.039 |
+| Over-refusal, XSTest (150) | 8.7% | 2.7% | 9 / 0 | 0.004 |
+| GSM8K (300) | 71.0% | 63.3% | 43 / 20 | 0.005 |
+| MMLU (500) | 57.6% | 57.8% | 32 / 33 | 1.0 |
+| SafetyPulse check | PASS, `cis_circ` 0.967, `cis_sep` 0.990 | PASS, `cis_circ` 0.928, `cis_sep` 0.962 | | |
+
+Quantization undoes part of the repair in the same direction as the drift (less refusal), while staying under the
+unsafe rule; the check still PASSes but its scores fall. The NF4 weights are published as
+`purvansh01/tiny-aya-global-safetypulse-repaired-nf4`.
+
 ## 5. Hypotheses
 
 | | Hypothesis | Outcome |
@@ -370,6 +387,7 @@ mechanism CIS measures.
 - English only: calibrated and tested on English prompts, while benign fine-tuning shifts safety differently per
   language (Hawkins et al., arXiv 2606.28843). The next experiments are pre-registered in
   [docs/13_PREREGISTRATION.md](../13_PREREGISTRATION.md).
+- Part of the repair is lost in 4-bit NF4 (ASR +5.9 pts, GSM8K −7.7 pts; §4.11); GGUF was not tested.
 - The repair undoes about 86% of the fine-tune's weight change (§4.9) and the fine-tune's intended gains were not
   measured, so "repair" here means a return to about base level.
 
