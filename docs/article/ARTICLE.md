@@ -25,6 +25,7 @@ data-free SafeTune repair brings the model back to base-level safety *and* base-
 | **Method** | Calibrate once: refusal direction + 20-component refusal circuit. At every checkpoint: Circuit Integrity Score (CIS, 50 prompt pairs, ~22 s) → PASS / WARN / FAIL with thresholds fixed on dev runs → on FAIL, SafeTune safety-vector restore → AuditKIT paired audit |
 | **Headline before → after** | Fine-tuned → repaired: **ASR 24.4% → 11.8%** (HarmBench, held-out), **GSM8K 56.7% → 71.3%**, MMLU 57.6% → 57.6%, over-refusal 1.3% → 8.7% (base 7.3%) |
 | **Monitor** | Every unsafe held-out checkpoint flagged (recall 1.00), 1–3 checkpoints early; AUROC 0.92–0.95 vs 0.64–0.70 for trivial baselines |
+| **Code and artifacts** | [GitHub: PxA-Labs/safetypulse](https://github.com/PxA-Labs/safetypulse) · [`pip install safetypulse`](https://pypi.org/project/safetypulse/) · [HF models](https://huggingface.co/collections/purvansh01/safetypulse-models-6af00b8f56c773a80af9f7e0) · [HF datasets](https://huggingface.co/collections/purvansh01/safetypulse-data-6af00b9124ee9d5022a36482) |
 | **Kits** | CuratorKIT (data) → SafeTune (repair) → AuditKIT (audit); CircuitKIT (independent circuit check) |
 | **Honest caveats** | One model, English only; the repair is mostly a rollback (~86% of the weight change) and partly lost in 4-bit (ASR 10.9% → 16.8%); the best alarm is the simple direction projection, not the circuit |
 
@@ -577,6 +578,8 @@ screening signal: a PASS does not certify a model as safe.
 
 ## 11. Reproduce it
 
+**Code:** [github.com/PxA-Labs/safetypulse](https://github.com/PxA-Labs/safetypulse) · **Package:** [pypi.org/project/safetypulse](https://pypi.org/project/safetypulse/)
+
 Python 3.12, a GPU with 16 GB or more, and access to the gated base model (accept its terms on
 [its page](https://huggingface.co/CohereLabs/tiny-aya-global), then `hf auth login`).
 
@@ -599,7 +602,7 @@ safetypulse check --checkpoint repaired --bundle bundle --dtype float16
 Every experiment is a notebook in the repository, every executed run is saved with a summary, and the larger-GPU runs
 are scripts in `tools/hf_jobs/`.
 
-**Repository layout**
+**Repository layout** of [github.com/PxA-Labs/safetypulse](https://github.com/PxA-Labs/safetypulse) (public, Apache-2.0)
 
 | Path | What it holds |
 |---|---|
