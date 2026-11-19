@@ -2864,4 +2864,164 @@ write("17_quantized_eval.ipynb", [
     '''),
 ])
 
+# =============================================================================================
+# 18 Hub backup of a Stage 2 experiment
+# =============================================================================================
+write("18_hub_backup.ipynb", [
+    header("18 · Back up an experiment's outputs to a private Hub repo",
+           "Collects the outputs of a finished experiment (probe bundle, direction, token sets, LoRA checkpoints, "
+           "training logs, monitoring rows) from the attached kernel outputs, writes a manifest with SHA-256 checksums "
+           "and provenance plus a model card, uploads everything to a **private** Hub repo (resumable), and verifies "
+           "every uploaded file against its checksum. **Run from the Kaggle editor with the `HF_TOKEN` secret ticked.** "
+           "Harmful text is never uploaded: circuit-validation samples are skipped and example answers are stripped.",
+           " · outputs of the experiment's kernels (not the model mirror)", "everything attached",
+           "`hub_stage/` (what was uploaded), `hub_stage/MANIFEST.json`", "None (CPU is enough)"),
+    SETUP,
+    code('''
+        import hashlib, json, shutil, time
+        from pathlib import Path
+
+        REPO = os.environ.get("SP_HUB_REPO", "purvansh01/safetypulse-earth-runs")
+        PREFIX = os.environ.get("SP_HUB_PREFIX", "earth")                  # folder inside the repo
+        EXPERIMENT = os.environ.get("SP_EXPERIMENT", "H1: transfer to Tiny Aya Earth (docs/13_PREREGISTRATION.md)")
+        BASE = os.environ.get("SP_MODEL", "CohereLabs/tiny-aya-earth")
+        BASE_REV = os.environ.get("SP_MODEL_REVISION")
+        SOURCES = [s for s in os.environ.get("SP_SOURCES", "").split(",") if s]   # kernel slugs, for provenance
+        GIT_SHA = os.environ.get("SP_GIT_SHA")
+        STAGE = sp.out_dir("hub_stage") / PREFIX
+        if STAGE.exists():
+            shutil.rmtree(STAGE)
+        STAGE.mkdir(parents=True)
+        assert sp.hf_login(), "No HF_TOKEN: run this notebook from the Kaggle editor with the HF_TOKEN secret ticked."
+    '''),
+    md("## Collect (harmful text is skipped or stripped)"),
+    code('''
+        def put(src, rel):
+            dst = STAGE / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(src, dst)
+
+        # Probe bundle and direction: the files `safetypulse check` needs.
+        for name in ("probe_bundle.json", "directions.safetensors", "probe_pairs.jsonl"):
+            hits = [h for h in sp.find_inputs(name) if h.parent.name == "probe_bundle"]
+            if hits:
+                put(hits[0], f"probe_bundle/{name}")
+        rd = sp.find_input("refusal_direction.json", required=False)
+        if rd:
+            put(rd, "direction/refusal_direction.json")
+        for png in sp.find_inputs("layer_selection.png")[:1]:
+            put(png, "direction/layer_selection.png")
+        ts = sp.find_input("token_sets.json", required=False)
+        if ts:
+            put(ts, "baseline/token_sets.json")
+        br = sp.find_input("baseline_results.json", required=False)
+        if br:                                                  # keep the numbers, drop example answers
+            d = sp.load_json(br)
+            for r in d.get("results", {}).values():
+                for k in [k for k in r if k.startswith("examples")]:
+                    r.pop(k)
+            sp.save_json(d, STAGE / "baseline/baseline_results.json")
+
+        # LoRA checkpoints and training logs.
+        runs = sp.list_runs()
+        for run, ckpts in runs.items():
+            for step, ck in ckpts:
+                for f in ("adapter_config.json", "adapter_model.safetensors"):
+                    put(ck / f, f"runs/{run}/checkpoint-{step}/{f}")
+            log = ckpts[0][1].parent / "train_log.json"
+            if log.exists():
+                put(log, f"runs/{run}/train_log.json")
+
+        # Monitoring rows from every session, de-duplicated on (run, step); later rows win.
+        rows = {}
+        for p in sp.find_inputs("monitor.jsonl"):
+            for r in sp.load_jsonl(p):
+                rows[(r["run"], r["step"])] = r
+        if rows:
+            sp.save_jsonl(sorted(rows.values(), key=lambda r: (r["run"], r["step"])), STAGE / "monitor/monitor.jsonl")
+
+        banned = [p for p in STAGE.rglob("*") if p.name in ("samples.json",) or "circuit_validation" in str(p)]
+        assert not banned, f"harmful-text files staged: {banned}"
+        print({k: len(v) for k, v in runs.items()}, "| monitor rows:", len(rows))
+    '''),
+    md("## Manifest (SHA-256, sizes, provenance) and model card"),
+    code('''
+        def sha256(p):
+            h = hashlib.sha256()
+            with open(p, "rb") as f:
+                for chunk in iter(lambda: f.read(1 << 20), b""):
+                    h.update(chunk)
+            return h.hexdigest()
+
+        files = {str(p.relative_to(STAGE)): {"sha256": sha256(p), "bytes": p.stat().st_size}
+                 for p in sorted(STAGE.rglob("*")) if p.is_file()}
+        manifest = {
+            "experiment": EXPERIMENT, "base_model": {"name": BASE, "revision": BASE_REV},
+            "runs": {k: [s for s, _ in v] for k, v in runs.items()}, "monitor_rows": len(rows),
+            "sources": {"kaggle_kernels": [f"https://www.kaggle.com/code/{s}" for s in SOURCES],
+                        "git_commit": GIT_SHA, "code": "https://github.com/PxA-Labs/safetypulse"},
+            "withheld": "circuit-validation samples and example model answers (harmful text, docs/11)",
+            "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "n_files": len(files), "total_gb": round(sum(f["bytes"] for f in files.values()) / 1e9, 3),
+            "files": files,
+        }
+        sp.save_json(manifest, STAGE / "MANIFEST.json")
+
+        run_list = ", ".join(f"`{k}` ({len(v)} checkpoints)" for k, v in runs.items()) or "none"
+        (STAGE / "README.md").write_text(f"""# SafetyPulse Stage 2 outputs: {EXPERIMENT}
+
+        **Private working backup.** Research artifacts, not for deployment. The Alpaca adapters come from ordinary
+        instruction tuning, which can weaken the base model's refusals.
+
+        | | |
+        |---|---|
+        | Base model | `{BASE}` (revision `{BASE_REV}`), licence CC-BY-NC-4.0 |
+        | Runs | {run_list} |
+        | Monitoring rows | {len(rows)} (CIS variants, spot-check, ASR per checkpoint; no model answers) |
+        | Files | {manifest['n_files']}, {manifest['total_gb']} GB; SHA-256 of each in `MANIFEST.json` |
+        | Code | https://github.com/PxA-Labs/safetypulse (commit `{GIT_SHA}`) |
+        | Plan | `docs/13_PREREGISTRATION.md` (frozen thresholds, predictions) |
+
+        Layout: `probe_bundle/` (what `safetypulse check` needs), `direction/`, `baseline/token_sets.json`,
+        `runs/<run>/checkpoint-<step>/` (LoRA adapters) and `runs/<run>/train_log.json`, `monitor/monitor.jsonl`.
+
+        ```python
+        from transformers import AutoModelForCausalLM
+        from peft import PeftModel
+        base = AutoModelForCausalLM.from_pretrained("{BASE}", revision="{BASE_REV}", torch_dtype="auto")
+        model = PeftModel.from_pretrained(base, "{REPO}", subfolder="{PREFIX}/runs/<run>/checkpoint-<step>")
+        ```
+
+        Withheld on purpose: {manifest['withheld']}.
+        """.replace("\\n        ", "\\n"))
+        print(manifest["n_files"], "files,", manifest["total_gb"], "GB")
+    '''),
+    md("## Upload (resumable) and verify every file"),
+    code('''
+        from huggingface_hub import HfApi
+        api = HfApi()
+        info = api.repo_info(REPO)
+        assert info.private, f"{REPO} is public: refusing to upload a working backup to a public repo"
+        with sp.gpu_timer() as t:
+            api.upload_large_folder(repo_id=REPO, repo_type="model", folder_path=str(STAGE.parent),
+                                    allow_patterns=[f"{PREFIX}/**"])
+        print(f"uploaded in {t['seconds'] / 60:.1f} min")
+
+        remote = {}
+        for e in api.list_repo_tree(REPO, path_in_repo=PREFIX, recursive=True, expand=True):
+            if hasattr(e, "size"):
+                rel = e.path[len(PREFIX) + 1:]
+                remote[rel] = {"sha256": e.lfs.sha256 if getattr(e, "lfs", None) else None, "bytes": e.size}
+        missing = [f for f in files if f not in remote]
+        size_bad = [f for f, m in files.items() if f in remote and remote[f]["bytes"] != m["bytes"]]
+        sha_bad = [f for f, m in files.items() if remote.get(f, {}).get("sha256") not in (None, m["sha256"])]
+        print(f"verified {len(files) - len(missing) - len(size_bad) - len(sha_bad)} / {len(files)} files")
+        assert not (missing or size_bad or sha_bad), {"missing": missing, "size": size_bad, "sha256": sha_bad}
+        commit = api.list_repo_commits(REPO)[0].commit_id
+        sp.save_json({"repo": REPO, "prefix": PREFIX, "commit": commit, "verified_files": len(files)},
+                     sp.out_dir("hub_stage") / "upload_receipt.json")
+        print("receipt:", REPO, PREFIX, commit)
+    '''),
+])
+
 print("wrote", sorted(p.name for p in OUT.glob("*.ipynb")))

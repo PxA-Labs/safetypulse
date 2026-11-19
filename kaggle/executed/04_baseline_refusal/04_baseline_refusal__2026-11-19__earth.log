@@ -1,0 +1,16 @@
+[{"stream_name":"stdout","time":3.369867303,"data":"HF_TOKEN secret: not attached\n"}
+,{"stream_name":"stdout","time":7.393896122,"data":"[cell 0] start: # 04 · Baseline refusal and model choice\n"}
+,{"stream_name":"stdout","time":7.393943295,"data":"[cell 1] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":42.648365801,"data":"[cell 2] start: from collections import Counter\n"}
+,{"stream_name":"stdout","time":44.781142699,"data":"[cell 3] start: def redact(text, n_words=15):\n"}
+,{"stream_name":"stdout","time":44.791197137,"data":"[cell 4] start: results, token_sets = {}, {}\n"}
+,{"stream_name":"stdout","time":216.659981759,"data":"[cell 5] start: sp.save_json({\"n\": N, \"max_new_tokens\": MAX_NEW, \"results\": results, \"provenance\n"}
+,{"stream_name":"stdout","time":216.737504276,"data":"[cell 6] start: ## Decide (ADR-0002)\n"}
+,{"stream_name":"stdout","time":219.778077523,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":222.146495489,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":222.146526318,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":222.315114952,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":222.315142398,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":223.082262834,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":223.607242386,"data":"[NbConvertApp] Writing 296389 bytes to __results__.html\n"}
+]
