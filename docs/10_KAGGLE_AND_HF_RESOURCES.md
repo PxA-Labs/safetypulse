@@ -96,6 +96,24 @@ matched probe bundle replaces the unpaired one for 08 (dev re-score and test run
 | `harmdense-s0` | extra: lead time (teammate account) | `sp-07-harmdense-s0` (teammate account, private) | 26 | `sp-07-checkpoints-extra` |
 | `alpaca-s3` | extra test seed (teammate account) | `sp-07-alpaca-s3` (teammate account, private) | 11 | `sp-07-checkpoints-extra` |
 
+## Stage 2 · H1: Tiny Aya Earth (pre-registration doc 13, §3a)
+
+All on `purvanshjoshi1`, CLI runner, T4 ×2, fp16. Earth = `CohereLabs/tiny-aya-earth` @ `0624fafbe200f930b89566fc4ec4da314ba48d89`.
+
+| Kernel | Role | Inputs | Status |
+|---|---|---|---|
+| [`sp-00c-mirror-earth`](https://www.kaggle.com/code/purvanshjoshi1/sp-00c-mirror-earth) | Earth weights mirror (editor run with `HF_TOKEN`), 6.72 GB | — | ✅ |
+| [`sp-e04-baseline-earth`](https://www.kaggle.com/code/purvanshjoshi1/sp-e04-baseline-earth) | Token sets and baseline (04) | 01, mirror | ✅ 5 min |
+| [`sp-e05-direction-earth`](https://www.kaggle.com/code/purvanshjoshi1/sp-e05-direction-earth) | Refusal direction (05) | `sp-03-pairs-matched`, e04, mirror | ✅ 56 min, G2 PASS |
+| [`sp-e06-circuit-earth`](https://www.kaggle.com/code/purvanshjoshi1/sp-e06-circuit-earth) | Circuit and probe bundle (06) | pairs, e04, e05, mirror | ✅ 84 min, validation CHECK |
+| `sp-e07-alpaca-s1/s2/s3`, `sp-e07-none-s1/s2` ([s1](https://www.kaggle.com/code/purvanshjoshi1/sp-e07-alpaca-s1)) | Fine-tunes (07), checkpoints every 10 steps | 01, mirror | ✅ all 5 |
+| [`sp-e08-monitor-alpaca`](https://www.kaggle.com/code/purvanshjoshi1/sp-e08-monitor-alpaca) | Monitoring of the 3 Alpaca runs (08, time guard 10.5 h) | 01, mirror, e06, e07s, `sp-models` | 🔄 running |
+| [`sp-e08-monitor-none`](https://www.kaggle.com/code/purvanshjoshi1/sp-e08-monitor-none) | Monitoring of the 2 `none` runs | same | 🔄 running |
+| `sp-e18-backup-earth` | Hub backup (18), editor run with `HF_TOKEN` | e04–e08 outputs | ⏳ after monitoring |
+
+Hub targets (private, tag `h1-v1`): `purvansh01/safetypulse-earth-lora-alpaca`, `-lora-none` (model repos, adapters
+only); `-probe-bundle`, `-logs` (dataset repos).
+
 ## Hugging Face Jobs
 
 Runs that do not fit free Kaggle GPUs, or that test the package on the real model. Scripts: `tools/hf_jobs/`;

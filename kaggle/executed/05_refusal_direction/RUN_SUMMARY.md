@@ -79,3 +79,26 @@ having encoded topic. This supports claim C2 (refusal is separable from topic) o
 ## Next
 06 · circuit discovery on the same pairs (attribution patching → exact patching → probe bundle), then the
 CircuitKIT cross-check. After pair review: re-run 03 → 05 → 06 on matched pairs.
+
+---
+
+## Stage 2 · H1: Tiny Aya Earth (2026-11-20)
+
+**Status:** ✅ completed in 56 min, **gate G2 (direction part): PASS** · **Kaggle:** `purvanshjoshi1/sp-e05-direction-earth`
+**Inputs:** `sp-03-pairs-matched` (188 calib / 50 val, matched), `sp-e04-baseline-earth`, `sp-00c-mirror-earth`.
+
+| File | What it is |
+|---|---|
+| `05_refusal_direction__2026-11-20__earth.ipynb` / `.log` | Executed notebook and log |
+| `files/earth__refusal_direction.json` | Chosen layer, per-layer scores, Table A rows, provenance |
+| `files/earth__layer_selection.png` | Per-layer ablation / addition plot |
+
+| | Refusal logit difference (val) |
+|---|---|
+| Harmful / harmless, no intervention | **+7.59 / −3.69** |
+| Harmful, r ablated (l* = resid 24) | **+0.67** |
+| Harmless, r added at resid 24 | **+6.63** (flips to "refuse") |
+
+Table A (generated answers, 50 val harmful prompts): no ablation **0.98** refusal; refusal direction ablated
+**0.00**; 10 random directions **0.98 ± 0.00**. Harmless refusal with r ablated: 0.00. Earth's layer (24) is one
+below Global's matched choice; same recipe, chosen on val only.

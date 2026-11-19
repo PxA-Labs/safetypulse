@@ -43,3 +43,20 @@
 ## Next
 Set `DEFAULT_MODEL = "CohereLabs/tiny-aya-global"` in `sp_utils.py` (new `safetypulse-lib` version), record the table
 in `docs/adr/0002-model-selection.md`, then run 05 (refusal direction) and 02 (draft harmless twins with Tiny Aya).
+
+---
+
+## Stage 2 · H1: Tiny Aya Earth (2026-11-19)
+
+**Status:** ✅ completed in 5 min · **Kaggle:** `purvanshjoshi1/sp-e04-baseline-earth` (CLI runner, T4 ×2, fp16)
+**Inputs:** `01-build-dataset`, `sp-00c-mirror-earth` (Earth @ `0624fafbe200f930b89566fc4ec4da314ba48d89`).
+Same notebook with `CANDIDATES` set to Earth only (pre-registration §3a).
+
+| File | What it is |
+|---|---|
+| `04_baseline_refusal__2026-11-19__earth.ipynb` / `.log` | Executed notebook and log |
+| `files/earth__baseline_results.json` | Refusal / over-refusal / logit AUROC on 50 + 50 prompts |
+| `files/earth__token_sets.json` | Earth's token sets: refuse `["I'm"]`; comply `R, The, To, Sh, Over, Peter, Elim, Human` |
+
+Earth: harmful refusal **0.84**, over-refusal **0.06**, logit AUROC **0.98** (same optimistic-AUROC caveat as above:
+token sets tuned on the same prompts). Earth's token sets are identical in kind to Global's (single refusal token).

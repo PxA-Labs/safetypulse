@@ -99,3 +99,27 @@ measure the refusal logit difference plus a coherence metric, instead of generat
 
 ## Next
 08 · monitor checkpoints (CIS vs ASR on every 07 checkpoint), once `none-s0` finishes.
+
+---
+
+## Stage 2 · H1: Tiny Aya Earth (2026-11-20)
+
+**Status:** ✅ completed in 84 min; circuit validation **CHECK** (see below); base CIS = 1.0 asserted ·
+**Kaggle:** `purvanshjoshi1/sp-e06-circuit-earth`
+**Inputs:** `sp-03-pairs-matched`, `sp-e04-baseline-earth`, `sp-e05-direction-earth`, `sp-00c-mirror-earth`.
+
+| File | What it is |
+|---|---|
+| `06_circuit_discovery__2026-11-20__earth.ipynb` / `.log` | Executed notebook and log |
+| `files/earth__probe_bundle.json` | Earth's probe bundle (schema 1.0, layer 24, 20 components, references, provenance) |
+| `files/earth__directions.safetensors` | Refusal direction (git-ignored; on the Hub via notebook 18) |
+| `files/earth__probe_pairs.jsonl` | Probe prompts: contains harmful prompts, kept locally and **not committed** (as for Global) |
+
+- Attribution vs exact patching: Spearman **0.97**. 20 components: MLPs of layers 18–34 (mostly 19–29) and heads
+  16.2, 20.5–7, 21.14, 29.7, 32.14.
+- Reference: `sep_base` 40.25, `logit_gap_base` 11.66, `circ_base` 23.05. Base model scores `cis_sep`, `cis_cos`,
+  `cis_logit`, `cis_circ` all **1.0** (252 s on the T4).
+- **Circuit validation: CHECK, not PASS.** Ablating the 20 components gives refusal 0.00 but 92% degenerate
+  output; 10 random component sets: refusal 0.20 ± 0.21 (52% degenerate); no ablation 0.98. The circuit removes
+  refusal partly by breaking generation, so `cis_circ` (secondary signal) is weaker evidence on Earth. H1's
+  pre-registered signal `cis_sep` uses the direction, which passed G2 cleanly (notebook 05).

@@ -1,0 +1,20 @@
+[{"stream_name":"stdout","time":3.519514536,"data":"HF_TOKEN secret: not attached\n"}
+,{"stream_name":"stdout","time":7.643315165,"data":"[cell 0] start: # 06 · Circuit discovery and probe bundle (RQ1, H1)\n"}
+,{"stream_name":"stdout","time":7.643363521,"data":"[cell 1] start: **Method.** CircuitKIT is the intended tool (cell below). Until its API is confi\n"}
+,{"stream_name":"stdout","time":7.643368549,"data":"[cell 2] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":43.913674237,"data":"[cell 3] start: import random\n"}
+,{"stream_name":"stdout","time":99.285518432,"data":"[cell 4] start: # --- CircuitKIT (fill in once its API is known; see notebook 00) --------------\n"}
+,{"stream_name":"stdout","time":99.292827669,"data":"[cell 5] start: attr = sp.attribution_scores(model, tok, [p[\"harmful\"] for p in calib], [p[\"harm\n"}
+,{"stream_name":"stdout","time":3204.121598137,"data":"[cell 6] start: ## Validation: ablating the circuit vs. random components of the same size (Tabl\n"}
+,{"stream_name":"stdout","time":3204.121692423,"data":"[cell 7] start: val_h = [p[\"harmful\"] for p in val]\n"}
+,{"stream_name":"stdout","time":4461.736864661,"data":"[cell 8] start: ## Probe bundle: base-model reference values on the probe set (so the base model\n"}
+,{"stream_name":"stdout","time":4461.736910222,"data":"[cell 9] start: probe_h = [p[\"harmful\"] for p in probe]\n"}
+,{"stream_name":"stdout","time":4715.751359732,"data":"[cell 10] start: # Sanity check: the base model must score ~1.0 on every CIS variant.\n"}
+,{"stream_name":"stdout","time":4971.818128441,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":4974.335165672,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":4974.335206248,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":4974.519470529,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":4974.51950778,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":4975.443010351,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":4976.02851446,"data":"[NbConvertApp] Writing 301115 bytes to __results__.html\n"}
+]
