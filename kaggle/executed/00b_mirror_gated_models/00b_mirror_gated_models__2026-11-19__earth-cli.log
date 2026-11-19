@@ -1,0 +1,14 @@
+[{"stream_name":"stdout","time":3.812140391,"data":"HF_TOKEN secret: not attached\n"}
+,{"stream_name":"stdout","time":8.45214301,"data":"[cell 0] start: # 00b · Mirror gated models\n"}
+,{"stream_name":"stdout","time":8.452187981,"data":"[cell 1] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":42.103343267,"data":"[cell 2] start: from huggingface_hub import HfApi, snapshot_download\n"}
+,{"stream_name":"stdout","time":42.294520186,"data":"[cell 3] start: manifest = {}\n"}
+,{"stream_name":"stdout","time":42.966235306,"data":"[cell 4] start: Later notebooks find a mirrored model automatically (`sp.model_source`) when thi\n"}
+,{"stream_name":"stdout","time":45.402620147,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":48.194041836,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":48.194080542,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":48.378126147,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":48.378157813,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":49.309936436,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":49.924376911,"data":"[NbConvertApp] Writing 290588 bytes to __results__.html\n"}
+]

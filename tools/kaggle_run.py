@@ -38,6 +38,16 @@ from nbclient import NotebookClient
 from nbclient.exceptions import CellExecutionError
 
 os.environ.update({env})
+# A run started from the Kaggle editor with the HF_TOKEN secret ticked can read it here; hand it to the notebook's
+# kernel through the environment (never printed). CLI pushes have no secrets and skip this.
+try:
+    from kaggle_secrets import UserSecretsClient
+    _tok = UserSecretsClient().get_secret("HF_TOKEN")
+    if _tok:
+        os.environ.setdefault("HF_TOKEN", _tok)
+    print("HF_TOKEN secret:", "available" if _tok else "empty", flush=True)
+except Exception:
+    print("HF_TOKEN secret: not attached", flush=True)
 nb = nbformat.reads(base64.b64decode("{b64}").decode(), as_version=4)
 nbformat.validator.normalize(nb)
 work = pathlib.Path("/kaggle/working")

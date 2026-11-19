@@ -1,0 +1,31 @@
+{
+  "CohereLabs/tiny-aya-earth": {
+    "refuse": [
+      15817
+    ],
+    "comply": [
+      64,
+      948,
+      3363,
+      5056,
+      6690,
+      47810,
+      58694,
+      108320
+    ],
+    "dropped_overlap": [],
+    "refuse_tokens": [
+      "I'm"
+    ],
+    "comply_tokens": [
+      "R",
+      "The",
+      "To",
+      "Sh",
+      "Over",
+      "Peter",
+      "Elim",
+      "Human"
+    ]
+  }
+}

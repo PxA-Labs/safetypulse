@@ -48,6 +48,36 @@ SETUP = code('''
 ''')
 
 
+# Optional private backup to the Hub after each phase (Stage 2). Active only when SP_HUB_REPO is set AND an HF_TOKEN
+# is available (runs started from the Kaggle editor with the secret ticked); otherwise a no-op, so a missing secret
+# never costs a run. Never prints the token.
+HUB_BACKUP = code('''
+    def hub_backup(local, path_in_repo, ignore=None):
+        repo = os.environ.get("SP_HUB_REPO")
+        if not repo or not os.environ.get("HF_TOKEN"):
+            return False
+        try:
+            from huggingface_hub import HfApi
+            api = HfApi(token=os.environ["HF_TOKEN"])
+            prefix = os.environ.get("SP_HUB_PREFIX", "")
+            target = f"{prefix}/{path_in_repo}".strip("/")
+            if Path(local).is_dir():
+                api.upload_folder(repo_id=repo, folder_path=str(local), path_in_repo=target, ignore_patterns=ignore,
+                                  commit_message=f"backup {target}")
+            else:
+                api.upload_file(repo_id=repo, path_or_fileobj=str(local), path_in_repo=target,
+                                commit_message=f"backup {target}")
+            print(f"backed up {target} -> {repo}", flush=True)
+            return True
+        except Exception as e:
+            print(f"!! hub backup failed, run continues: {type(e).__name__}: {str(e)[:200]}", flush=True)
+            return False
+
+    from pathlib import Path
+    print("hub backup:", "on" if os.environ.get("SP_HUB_REPO") and os.environ.get("HF_TOKEN") else "off")
+''')
+
+
 def header(title, purpose, needs, inputs, outputs, accelerator):
     return md(f'''
     # {title}
@@ -1181,8 +1211,9 @@ write("07_finetune_checkpoints.ipynb", [
         from peft import LoraConfig, get_peft_model
         from transformers import AutoModelForCausalLM, Trainer, TrainingArguments
 
-        CONDITION = "gsm8k"      # gsm8k (D-benign-1) | alpaca (D-benign-2) | harm (D-harm) | none (D-none) | alpacacur (01b)
-        SEED = 0                 # 0 = dev run; 1, 2 = test runs
+        # gsm8k (D-benign-1) | alpaca (D-benign-2) | harm (D-harm) | none (D-none) | alpacacur (01b)
+        CONDITION = os.environ.get("SP_CONDITION", "gsm8k")
+        SEED = int(os.environ.get("SP_SEED", 0))   # 0 = dev run; 1, 2 = test runs
         MODEL = os.environ.get("SP_MODEL", sp.DEFAULT_MODEL)
         HP = {
             # batch x accum = 16 (harm: 4). Per-device batch 2 keeps Tiny Aya's 262k-vocab logits within a T4.
@@ -1192,6 +1223,8 @@ write("07_finetune_checkpoints.ipynb", [
             "none":   dict(epochs=2, lr=2e-4, batch=2, accum=8, save_every=25),
             "harm":   dict(epochs=5, lr=2e-4, batch=2, accum=2, save_every=10),
         }[CONDITION]
+        if os.environ.get("SP_SAVE_EVERY"):        # Stage 2 pre-registration: checkpoints every 10 steps
+            HP["save_every"] = int(os.environ["SP_SAVE_EVERY"])
         if sp.SMOKE:
             HP.update(epochs=1, batch=2, accum=1, save_every=1)
         MAX_LEN = 512
@@ -1266,6 +1299,11 @@ write("07_finetune_checkpoints.ipynb", [
         plt.xlabel("step"); plt.ylabel("train loss"); plt.title(RUN)
         sorted(p.name for p in OUT.glob("checkpoint-*"))
     '''),
+    HUB_BACKUP,
+    code('''
+        # Adapters only (no optimizer state), so the private backup stays small.
+        hub_backup(OUT, f"runs/{RUN}", ignore=["**/optimizer.pt", "**/scheduler.pt", "**/rng_state*.pth"])
+    '''),
 ])
 
 # =============================================================================================
@@ -1289,6 +1327,7 @@ write("08_monitor_checkpoints.ipynb", [
         Llama Guard 3 1B is gated: accept its licence on Hugging Face first, or set `JUDGE = "string"`.
     '''),
     SETUP,
+    HUB_BACKUP,
     code('''
         import json
         import numpy as np, pandas as pd, torch
@@ -1304,6 +1343,12 @@ write("08_monitor_checkpoints.ipynb", [
         # SP_REUSE_ASR=1: for checkpoints already scored against a different probe bundle, recompute only CIS and
         # keep their ASR and spot-check (which do not depend on the bundle).
         REUSE_ASR = os.environ.get("SP_REUSE_ASR") == "1"
+        # Time guard: stop starting new checkpoints after SP_DEADLINE_H hours (Kaggle kills a session at 12 h and
+        # its outputs can be lost). Finished rows are already in monitor.jsonl; a later session resumes from them.
+        import time
+        T0 = time.time()
+        DEADLINE_H = float(os.environ.get("SP_DEADLINE_H", 1e9))
+        BACKUP_EVERY = int(os.environ.get("SP_BACKUP_EVERY", 5))   # checkpoints between Hub backups
         OUT = sp.out_dir("monitor")
         sp.hf_login()
         bundle, tensors = sp.load_bundle(sp.find_input("probe_bundle.json").parent)
@@ -1340,11 +1385,16 @@ write("08_monitor_checkpoints.ipynb", [
     '''),
     code('''
         spot_prompts = [p["harmful"] for p in probe][:N_SPOT]
+        TAG = os.environ.get("SP_RUNS", "all").replace(",", "+") or "all"
+        n_new, stopped = 0, False
         for run, ckpts in runs.items():
             condition, seed = sp.parse_run(run)
             for step, ckpt in ckpts:
                 if (run, step) in done_keys:
                     continue
+                if (time.time() - T0) / 3600 > DEADLINE_H:
+                    stopped = True
+                    break
                 sp.restore_weights(model, base_sd)
                 model = sp.apply_adapter(model, ckpt)
                 cis = sp.compute_cis(model, tok, probe, bundle, tensors)
@@ -1366,7 +1416,16 @@ write("08_monitor_checkpoints.ipynb", [
                     f.write(json.dumps(row) + "\\n")
                 done_keys.add((run, step))
                 print(run, step, {k: round(v, 3) for k, v in cis["scores"].items()}, "spot", spot, "ASR", round(asr["value"], 3))
+                n_new += 1
+                if n_new % BACKUP_EVERY == 0:
+                    hub_backup(log_path, f"monitor/{TAG}/monitor.jsonl")
+            if stopped:
+                break
         sp.restore_weights(model, base_sd)
+        hub_backup(log_path, f"monitor/{TAG}/monitor.jsonl")
+        left = sum(1 for r, c in runs.items() for s, _ in c if (r, s) not in done_keys)
+        print(f"scored {n_new} checkpoints in {(time.time() - T0) / 3600:.2f} h;",
+              f"TIME GUARD hit, {left} left for the next session" if stopped else f"{left} left")
     '''),
     md("## Analysis"),
     code('''
@@ -2802,6 +2861,207 @@ write("17_quantized_eval.ipynb", [
                               for k, v in results.items()]).to_markdown(index=False)
         (OUT / "tables.md").write_text("## NF4 vs fp16 (test sets)\\n\\n" + table + "\\n\\n## Memory, time, SafetyPulse check\\n\\n" + extra + "\\n")
         print(table); print(extra)
+    '''),
+])
+
+# =============================================================================================
+# 18 Hub backup of a Stage 2 experiment
+# =============================================================================================
+write("18_hub_backup.ipynb", [
+    header("18 · Back up an experiment's outputs to private Hub repos",
+           "Collects a finished experiment's outputs from the attached kernel outputs and uploads them to **private** "
+           "Hub repos, one kind of artifact per repo: LoRA adapters in **model** repos (one per fine-tune condition, "
+           "adapters only), the probe bundle and the logs in **dataset** repos. Writes a card per repo and a "
+           "SHA-256 manifest, uploads resumably, then verifies every file against its checksum. **Run from the "
+           "Kaggle editor with the `HF_TOKEN` secret ticked.** Harmful text is never uploaded: circuit-validation "
+           "samples are skipped and example answers are stripped.",
+           " · outputs of the experiment's kernels (not the model mirror)", "everything attached",
+           "`hub_stage/<repo>/` (what was uploaded), `hub_stage/upload_receipt.json`", "None (CPU is enough)"),
+    SETUP,
+    code('''
+        import hashlib, json, shutil, time
+        from pathlib import Path
+
+        OWNER = os.environ.get("SP_HUB_OWNER", "purvansh01")
+        NAME = os.environ.get("SP_HUB_NAME", "safetypulse-earth")            # repo name prefix
+        EXPERIMENT = os.environ.get("SP_EXPERIMENT", "H1: transfer to Tiny Aya Earth (docs/13_PREREGISTRATION.md)")
+        BASE = os.environ.get("SP_MODEL", "CohereLabs/tiny-aya-earth")
+        BASE_REV = os.environ.get("SP_MODEL_REVISION")
+        SOURCES = [s for s in os.environ.get("SP_SOURCES", "").split(",") if s]   # kernel slugs, for provenance
+        GIT_SHA = os.environ.get("SP_GIT_SHA")
+        TAG = os.environ.get("SP_HUB_TAG", "h1-v1")                         # version tag set after verification
+        ROOT = sp.out_dir("hub_stage")
+        shutil.rmtree(ROOT, ignore_errors=True)
+        ROOT.mkdir(parents=True)
+        REPOS = {}                                       # repo id -> {"type": model|dataset, "dir": staging dir}
+
+        def repo(suffix, rtype):
+            rid = f"{OWNER}/{NAME}-{suffix}"
+            REPOS.setdefault(rid, {"type": rtype, "dir": ROOT / f"{NAME}-{suffix}"})
+            return REPOS[rid]["dir"]
+
+        def put(src, dst):
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(src, dst)
+
+        assert sp.hf_login(), "No HF_TOKEN: run this notebook from the Kaggle editor with the HF_TOKEN secret ticked."
+    '''),
+    md("## Collect: adapters to model repos, everything else to dataset repos (harmful text skipped or stripped)"),
+    code('''
+        # Model repos: LoRA adapters only, one repo per fine-tune condition.
+        runs = sp.list_runs()
+        for run, ckpts in runs.items():
+            condition, _ = sp.parse_run(run)
+            d = repo(f"lora-{condition}", "model")
+            for step, ck in ckpts:
+                for f in ("adapter_config.json", "adapter_model.safetensors"):
+                    put(ck / f, d / run / f"checkpoint-{step}" / f)
+
+        # Dataset repo: probe bundle, refusal direction, token sets (what `safetypulse check` needs).
+        pb = repo("probe-bundle", "dataset")
+        for name in ("probe_bundle.json", "directions.safetensors", "probe_pairs.jsonl"):
+            hits = [h for h in sp.find_inputs(name) if h.parent.name == "probe_bundle"]
+            if hits:
+                put(hits[0], pb / name)
+        for name, sub in (("refusal_direction.json", "direction"), ("layer_selection.png", "direction"),
+                          ("token_sets.json", "")):
+            h = sp.find_input(name, required=False)
+            if h:
+                put(h, pb / sub / name)
+
+        # Dataset repo: logs and results.
+        lg = repo("logs", "dataset")
+        for run, ckpts in runs.items():
+            log = ckpts[0][1].parent / "train_log.json"
+            if log.exists():
+                put(log, lg / "train_logs" / f"{run}.json")
+        rows = {}                                        # monitoring rows from every session; later rows win
+        for p in sp.find_inputs("monitor.jsonl"):
+            for r in sp.load_jsonl(p):
+                rows[(r["run"], r["step"])] = r
+        if rows:
+            sp.save_jsonl(sorted(rows.values(), key=lambda r: (r["run"], r["step"])), lg / "monitor" / "monitor.jsonl")
+        br = sp.find_input("baseline_results.json", required=False)
+        if br:                                           # keep the numbers, drop example answers
+            d = sp.load_json(br)
+            for r in d.get("results", {}).values():
+                for k in [k for k in r if k.startswith("examples")]:
+                    r.pop(k)
+            sp.save_json(d, lg / "baseline" / "baseline_results.json")
+
+        for rid, r in REPOS.items():
+            banned = [p for p in r["dir"].rglob("*") if p.name == "samples.json" or "circuit_validation" in str(p)]
+            assert not banned, f"harmful-text files staged for {rid}: {banned}"
+            if r["type"] == "model":
+                extra = [p for p in r["dir"].rglob("*") if p.is_file() and p.name not in
+                         ("adapter_config.json", "adapter_model.safetensors")]
+                assert not extra, f"model repo {rid} would hold non-model files: {extra}"
+        print({k: len(v) for k, v in runs.items()}, "| monitor rows:", len(rows), "| repos:", list(REPOS))
+    '''),
+    md("## Manifest (SHA-256, sizes, provenance) and one card per repo"),
+    code('''
+        def sha256(p):
+            h = hashlib.sha256()
+            with open(p, "rb") as f:
+                for chunk in iter(lambda: f.read(1 << 20), b""):
+                    h.update(chunk)
+            return h.hexdigest()
+
+        for rid, r in REPOS.items():
+            r["files"] = {str(p.relative_to(r["dir"])): {"sha256": sha256(p), "bytes": p.stat().st_size}
+                          for p in sorted(r["dir"].rglob("*")) if p.is_file()}
+        manifest = {
+            "experiment": EXPERIMENT, "base_model": {"name": BASE, "revision": BASE_REV},
+            "runs": {k: [s for s, _ in v] for k, v in runs.items()}, "monitor_rows": len(rows),
+            "sources": {"kaggle_kernels": [f"https://www.kaggle.com/code/{s}" for s in SOURCES],
+                        "git_commit": GIT_SHA, "code": "https://github.com/PxA-Labs/safetypulse"},
+            "withheld": "circuit-validation samples and example model answers (harmful text, docs/11)",
+            "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "repos": {rid: {"type": r["type"], "n_files": len(r["files"]), "files": r["files"]} for rid, r in REPOS.items()},
+        }
+        sp.save_json(manifest, REPOS[f"{OWNER}/{NAME}-logs"]["dir"] / "MANIFEST.json")
+        REPOS[f"{OWNER}/{NAME}-logs"]["files"]["MANIFEST.json"] = None   # verified by size only (written after hashing)
+
+        LINKS = "**Code:** https://github.com/PxA-Labs/safetypulse" + (f" (commit `{GIT_SHA}`)" if GIT_SHA else "")
+        for rid, r in REPOS.items():
+            kind = rid.split(f"{NAME}-", 1)[1]
+            if r["type"] == "model":
+                cond = kind.removeprefix("lora-")
+                rs = sorted(k for k in runs if sp.parse_run(k)[0] == cond)
+                head = (f"---\\nlicense: cc-by-nc-4.0\\nbase_model: {BASE}\\nlibrary_name: peft\\n"
+                        f"tags: [lora, safety, fine-tuning, safetypulse]\\n---\\n")
+                body = (f"# SafetyPulse LoRA adapters on {BASE.split('/')[-1]}: {cond}\\n\\n"
+                        f"> **Research artifact, not for deployment.** Ordinary instruction tuning can weaken the base "
+                        f"model's refusals; these checkpoints exist to study and detect that drift.\\n\\n"
+                        f"Experiment: {EXPERIMENT}. Runs: {', '.join(f'`{k}` ({len(runs[k])} checkpoints)' for k in rs)}. "
+                        f"Base `{BASE}` (revision `{BASE_REV}`). LoRA r16 on all attention and MLP projections; "
+                        f"`checkpoint-0` is the untrained adapter (= base model). Each `<run>/checkpoint-<step>/` holds "
+                        f"`adapter_config.json` and `adapter_model.safetensors`. Checksums: `{OWNER}/{NAME}-logs` "
+                        f"`MANIFEST.json`.\\n\\n```python\\nfrom transformers import AutoModelForCausalLM\\n"
+                        f"from peft import PeftModel\\nbase = AutoModelForCausalLM.from_pretrained(\\"{BASE}\\", "
+                        f"revision=\\"{BASE_REV}\\", torch_dtype=\\"auto\\")\\nmodel = PeftModel.from_pretrained(base, "
+                        f"\\"{rid}\\", subfolder=\\"{rs[0] if rs else '<run>'}/checkpoint-<step>\\")\\n```\\n\\n"
+                        f"Licence CC-BY-NC-4.0, inherited from the base model and the data. {LINKS}\\n")
+            else:
+                head = "---\\nlicense: cc-by-nc-4.0\\ntags: [safety, safetypulse]\\n---\\n"
+                what = {"probe-bundle": "the probe bundle `safetypulse check` needs (`probe_bundle.json`, "
+                                        "`directions.safetensors`, `probe_pairs.jsonl`), the refusal direction and "
+                                        "the model's refusal/compliance token sets",
+                        "logs": "training logs per run (`train_logs/`), CIS / spot-check / ASR for every checkpoint "
+                                "(`monitor/monitor.jsonl`, no model answers), baseline numbers, and `MANIFEST.json` "
+                                "(SHA-256 of every file in every repo of this experiment, with provenance)"}.get(kind, kind)
+                body = (f"# SafetyPulse {kind} for {BASE.split('/')[-1]}\\n\\nExperiment: {EXPERIMENT}. Contains {what}. "
+                        f"Base `{BASE}` (revision `{BASE_REV}`). Withheld on purpose: {manifest['withheld']}. {LINKS}\\n")
+            (r["dir"] / "README.md").write_text(head + body)
+            r["files"]["README.md"] = None
+        print(json.dumps({rid: len(r["files"]) for rid, r in REPOS.items()}, indent=1))
+    '''),
+    md("## Upload (resumable) and verify every file"),
+    code('''
+        from huggingface_hub import HfApi
+        api = HfApi()
+
+        def upload(rid, rtype, folder):
+            """Resumable where the library allows it; otherwise one commit per top-level entry (e.g. per run), each
+            retried, so a dropped connection repeats only that part. Files already on the Hub are not re-sent."""
+            if hasattr(api, "upload_large_folder"):          # huggingface_hub < 2.x
+                return api.upload_large_folder(repo_id=rid, repo_type=rtype, folder_path=str(folder))
+            for part in sorted(folder.iterdir()):
+                for attempt in range(3):
+                    try:
+                        if part.is_dir():
+                            api.upload_folder(repo_id=rid, repo_type=rtype, folder_path=str(part), path_in_repo=part.name,
+                                              commit_message=f"add {part.name}")
+                        else:
+                            api.upload_file(repo_id=rid, repo_type=rtype, path_or_fileobj=str(part),
+                                            path_in_repo=part.name, commit_message=f"add {part.name}")
+                        break
+                    except Exception as e:
+                        if attempt == 2:
+                            raise
+                        print(f"retrying {part.name} after {type(e).__name__}", flush=True)
+                        time.sleep(30)
+
+        receipt = {}
+        for rid, r in REPOS.items():
+            api.create_repo(rid, repo_type=r["type"], private=True, exist_ok=True)
+            assert api.repo_info(rid, repo_type=r["type"]).private, f"{rid} is public: refusing to upload a working backup"
+            with sp.gpu_timer() as t:
+                upload(rid, r["type"], r["dir"])
+            remote = {e.path: e for e in api.list_repo_tree(rid, repo_type=r["type"], recursive=True, expand=True)
+                      if hasattr(e, "size")}
+            missing = [f for f in r["files"] if f not in remote]
+            bad = [f for f, m in r["files"].items() if m and f in remote and (remote[f].size != m["bytes"] or
+                   (getattr(remote[f], "lfs", None) and remote[f].lfs.sha256 != m["sha256"]))]
+            assert not (missing or bad), {"repo": rid, "missing": missing, "mismatch": bad}
+            commit = api.list_repo_commits(rid, repo_type=r["type"])[0].commit_id
+            if TAG:   # citable version: the paper points at this tag, not at a moving main branch
+                api.create_tag(rid, tag=TAG, revision=commit, repo_type=r["type"], exist_ok=True,
+                               tag_message=f"{EXPERIMENT}; verified {len(r['files'])} files")
+            receipt[rid] = {"type": r["type"], "verified_files": len(r["files"]), "commit": commit, "tag": TAG,
+                            "minutes": round(t["seconds"] / 60, 1)}
+            print("verified", rid, receipt[rid])
+        sp.save_json(receipt, ROOT / "upload_receipt.json")
     '''),
 ])
 

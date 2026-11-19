@@ -66,6 +66,18 @@ trivial baselines.
 6. Aya Expanse 8B, 1 Alpaca seed, its own bundle and Global's thresholds (exploratory; different size and architecture,
    so a recipe-transfer test, not a direction-transfer test)
 
+## 3a. Implementation notes for H1 (2026-11-19, written when the runs were launched, before any result)
+
+Details the plan above left open, fixed now so they cannot be chosen after seeing results:
+- Model: `CohereLabs/tiny-aya-earth`, revision `0624fafbe200f930b89566fc4ec4da314ba48d89` (Kaggle mirror
+  `sp-00c-mirror-earth`).
+- Seeds: Alpaca **1, 2, 3**; `none` **1, 2** (Global's test seeds). Checkpoints every 10 steps (§1).
+- Earth's own token sets (notebook 04 on Earth only), refusal direction (05) and circuit/probe bundle (06), with the
+  same matched pairs (`sp-03-pairs-matched`) and code as Global.
+- Monitoring as notebook 08 (100 dev HarmBench prompts per checkpoint, Llama Guard 3 1B, fp16); the analysis applies
+  Global's frozen thresholds and does not run 08's own threshold selection.
+- No change to the hypotheses, predictions, thresholds or order.
+
 ## 4. Reporting
 
 - Every run started is reported, including failed and null runs, with its kernel or job link in
