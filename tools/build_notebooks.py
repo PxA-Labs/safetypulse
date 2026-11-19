@@ -2889,6 +2889,7 @@ write("18_hub_backup.ipynb", [
         BASE_REV = os.environ.get("SP_MODEL_REVISION")
         SOURCES = [s for s in os.environ.get("SP_SOURCES", "").split(",") if s]   # kernel slugs, for provenance
         GIT_SHA = os.environ.get("SP_GIT_SHA")
+        TAG = os.environ.get("SP_HUB_TAG", "h1-v1")                         # version tag set after verification
         ROOT = sp.out_dir("hub_stage")
         shutil.rmtree(ROOT, ignore_errors=True)
         ROOT.mkdir(parents=True)
@@ -3019,12 +3020,34 @@ write("18_hub_backup.ipynb", [
     code('''
         from huggingface_hub import HfApi
         api = HfApi()
+
+        def upload(rid, rtype, folder):
+            """Resumable where the library allows it; otherwise one commit per top-level entry (e.g. per run), each
+            retried, so a dropped connection repeats only that part. Files already on the Hub are not re-sent."""
+            if hasattr(api, "upload_large_folder"):          # huggingface_hub < 2.x
+                return api.upload_large_folder(repo_id=rid, repo_type=rtype, folder_path=str(folder))
+            for part in sorted(folder.iterdir()):
+                for attempt in range(3):
+                    try:
+                        if part.is_dir():
+                            api.upload_folder(repo_id=rid, repo_type=rtype, folder_path=str(part), path_in_repo=part.name,
+                                              commit_message=f"add {part.name}")
+                        else:
+                            api.upload_file(repo_id=rid, repo_type=rtype, path_or_fileobj=str(part),
+                                            path_in_repo=part.name, commit_message=f"add {part.name}")
+                        break
+                    except Exception as e:
+                        if attempt == 2:
+                            raise
+                        print(f"retrying {part.name} after {type(e).__name__}", flush=True)
+                        time.sleep(30)
+
         receipt = {}
         for rid, r in REPOS.items():
             api.create_repo(rid, repo_type=r["type"], private=True, exist_ok=True)
             assert api.repo_info(rid, repo_type=r["type"]).private, f"{rid} is public: refusing to upload a working backup"
             with sp.gpu_timer() as t:
-                api.upload_large_folder(repo_id=rid, repo_type=r["type"], folder_path=str(r["dir"]))
+                upload(rid, r["type"], r["dir"])
             remote = {e.path: e for e in api.list_repo_tree(rid, repo_type=r["type"], recursive=True, expand=True)
                       if hasattr(e, "size")}
             missing = [f for f in r["files"] if f not in remote]
@@ -3032,7 +3055,10 @@ write("18_hub_backup.ipynb", [
                    (getattr(remote[f], "lfs", None) and remote[f].lfs.sha256 != m["sha256"]))]
             assert not (missing or bad), {"repo": rid, "missing": missing, "mismatch": bad}
             commit = api.list_repo_commits(rid, repo_type=r["type"])[0].commit_id
-            receipt[rid] = {"type": r["type"], "verified_files": len(r["files"]), "commit": commit,
+            if TAG:   # citable version: the paper points at this tag, not at a moving main branch
+                api.create_tag(rid, tag=TAG, revision=commit, repo_type=r["type"], exist_ok=True,
+                               tag_message=f"{EXPERIMENT}; verified {len(r['files'])} files")
+            receipt[rid] = {"type": r["type"], "verified_files": len(r["files"]), "commit": commit, "tag": TAG,
                             "minutes": round(t["seconds"] / 60, 1)}
             print("verified", rid, receipt[rid])
         sp.save_json(receipt, ROOT / "upload_receipt.json")
