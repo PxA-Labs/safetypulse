@@ -48,6 +48,36 @@ SETUP = code('''
 ''')
 
 
+# Optional private backup to the Hub after each phase (Stage 2). Active only when SP_HUB_REPO is set AND an HF_TOKEN
+# is available (runs started from the Kaggle editor with the secret ticked); otherwise a no-op, so a missing secret
+# never costs a run. Never prints the token.
+HUB_BACKUP = code('''
+    def hub_backup(local, path_in_repo, ignore=None):
+        repo = os.environ.get("SP_HUB_REPO")
+        if not repo or not os.environ.get("HF_TOKEN"):
+            return False
+        try:
+            from huggingface_hub import HfApi
+            api = HfApi(token=os.environ["HF_TOKEN"])
+            prefix = os.environ.get("SP_HUB_PREFIX", "")
+            target = f"{prefix}/{path_in_repo}".strip("/")
+            if Path(local).is_dir():
+                api.upload_folder(repo_id=repo, folder_path=str(local), path_in_repo=target, ignore_patterns=ignore,
+                                  commit_message=f"backup {target}")
+            else:
+                api.upload_file(repo_id=repo, path_or_fileobj=str(local), path_in_repo=target,
+                                commit_message=f"backup {target}")
+            print(f"backed up {target} -> {repo}", flush=True)
+            return True
+        except Exception as e:
+            print(f"!! hub backup failed, run continues: {type(e).__name__}: {str(e)[:200]}", flush=True)
+            return False
+
+    from pathlib import Path
+    print("hub backup:", "on" if os.environ.get("SP_HUB_REPO") and os.environ.get("HF_TOKEN") else "off")
+''')
+
+
 def header(title, purpose, needs, inputs, outputs, accelerator):
     return md(f'''
     # {title}
@@ -1181,8 +1211,9 @@ write("07_finetune_checkpoints.ipynb", [
         from peft import LoraConfig, get_peft_model
         from transformers import AutoModelForCausalLM, Trainer, TrainingArguments
 
-        CONDITION = "gsm8k"      # gsm8k (D-benign-1) | alpaca (D-benign-2) | harm (D-harm) | none (D-none) | alpacacur (01b)
-        SEED = 0                 # 0 = dev run; 1, 2 = test runs
+        # gsm8k (D-benign-1) | alpaca (D-benign-2) | harm (D-harm) | none (D-none) | alpacacur (01b)
+        CONDITION = os.environ.get("SP_CONDITION", "gsm8k")
+        SEED = int(os.environ.get("SP_SEED", 0))   # 0 = dev run; 1, 2 = test runs
         MODEL = os.environ.get("SP_MODEL", sp.DEFAULT_MODEL)
         HP = {
             # batch x accum = 16 (harm: 4). Per-device batch 2 keeps Tiny Aya's 262k-vocab logits within a T4.
@@ -1192,6 +1223,8 @@ write("07_finetune_checkpoints.ipynb", [
             "none":   dict(epochs=2, lr=2e-4, batch=2, accum=8, save_every=25),
             "harm":   dict(epochs=5, lr=2e-4, batch=2, accum=2, save_every=10),
         }[CONDITION]
+        if os.environ.get("SP_SAVE_EVERY"):        # Stage 2 pre-registration: checkpoints every 10 steps
+            HP["save_every"] = int(os.environ["SP_SAVE_EVERY"])
         if sp.SMOKE:
             HP.update(epochs=1, batch=2, accum=1, save_every=1)
         MAX_LEN = 512
@@ -1266,6 +1299,11 @@ write("07_finetune_checkpoints.ipynb", [
         plt.xlabel("step"); plt.ylabel("train loss"); plt.title(RUN)
         sorted(p.name for p in OUT.glob("checkpoint-*"))
     '''),
+    HUB_BACKUP,
+    code('''
+        # Adapters only (no optimizer state), so the private backup stays small.
+        hub_backup(OUT, f"runs/{RUN}", ignore=["**/optimizer.pt", "**/scheduler.pt", "**/rng_state*.pth"])
+    '''),
 ])
 
 # =============================================================================================
@@ -1289,6 +1327,7 @@ write("08_monitor_checkpoints.ipynb", [
         Llama Guard 3 1B is gated: accept its licence on Hugging Face first, or set `JUDGE = "string"`.
     '''),
     SETUP,
+    HUB_BACKUP,
     code('''
         import json
         import numpy as np, pandas as pd, torch
@@ -1304,6 +1343,12 @@ write("08_monitor_checkpoints.ipynb", [
         # SP_REUSE_ASR=1: for checkpoints already scored against a different probe bundle, recompute only CIS and
         # keep their ASR and spot-check (which do not depend on the bundle).
         REUSE_ASR = os.environ.get("SP_REUSE_ASR") == "1"
+        # Time guard: stop starting new checkpoints after SP_DEADLINE_H hours (Kaggle kills a session at 12 h and
+        # its outputs can be lost). Finished rows are already in monitor.jsonl; a later session resumes from them.
+        import time
+        T0 = time.time()
+        DEADLINE_H = float(os.environ.get("SP_DEADLINE_H", 1e9))
+        BACKUP_EVERY = int(os.environ.get("SP_BACKUP_EVERY", 5))   # checkpoints between Hub backups
         OUT = sp.out_dir("monitor")
         sp.hf_login()
         bundle, tensors = sp.load_bundle(sp.find_input("probe_bundle.json").parent)
@@ -1340,11 +1385,16 @@ write("08_monitor_checkpoints.ipynb", [
     '''),
     code('''
         spot_prompts = [p["harmful"] for p in probe][:N_SPOT]
+        TAG = os.environ.get("SP_RUNS", "all").replace(",", "+") or "all"
+        n_new, stopped = 0, False
         for run, ckpts in runs.items():
             condition, seed = sp.parse_run(run)
             for step, ckpt in ckpts:
                 if (run, step) in done_keys:
                     continue
+                if (time.time() - T0) / 3600 > DEADLINE_H:
+                    stopped = True
+                    break
                 sp.restore_weights(model, base_sd)
                 model = sp.apply_adapter(model, ckpt)
                 cis = sp.compute_cis(model, tok, probe, bundle, tensors)
@@ -1366,7 +1416,16 @@ write("08_monitor_checkpoints.ipynb", [
                     f.write(json.dumps(row) + "\\n")
                 done_keys.add((run, step))
                 print(run, step, {k: round(v, 3) for k, v in cis["scores"].items()}, "spot", spot, "ASR", round(asr["value"], 3))
+                n_new += 1
+                if n_new % BACKUP_EVERY == 0:
+                    hub_backup(log_path, f"monitor/{TAG}/monitor.jsonl")
+            if stopped:
+                break
         sp.restore_weights(model, base_sd)
+        hub_backup(log_path, f"monitor/{TAG}/monitor.jsonl")
+        left = sum(1 for r, c in runs.items() for s, _ in c if (r, s) not in done_keys)
+        print(f"scored {n_new} checkpoints in {(time.time() - T0) / 3600:.2f} h;",
+              f"TIME GUARD hit, {left} left for the next session" if stopped else f"{left} left")
     '''),
     md("## Analysis"),
     code('''
