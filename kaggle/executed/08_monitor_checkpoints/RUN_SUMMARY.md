@@ -215,3 +215,34 @@ False alarms by condition (test, steps > 0): GSM8K 0 FAIL / 20 WARN (ASR fell); 
 - Recompute CIS on the 47 dev checkpoints with the matched-pair bundle (reuse ASR), re-choose τ, then score the 6
   test runs.
 - Suggested: a `harm` run with checkpoints every 2 steps to measure lead time, and report CIS cost per variant.
+
+---
+
+## Stage 2 · H1: Tiny Aya Earth (2026-11-20)
+
+**Status:** ✅ both sessions completed without hitting the 10.5 h time guard · **Kaggle:**
+`purvanshjoshi1/sp-e08-monitor-alpaca` (78 checkpoints, 266 min) and `purvanshjoshi1/sp-e08-monitor-none` (52)
+**Inputs:** `01-build-dataset`, `sp-00c-mirror-earth`, `sp-e06-circuit-earth` (Earth's bundle), the `sp-e07-*` runs,
+`sp-models` (Llama Guard 3 1B). Run with `--until-heading '## Analysis'`: no threshold selection on Earth.
+
+| File | What it is |
+|---|---|
+| `08_monitor_checkpoints__2026-11-20__earth-{alpaca,none}.ipynb` / `.log` | Executed notebooks and logs |
+| `files/earth-{alpaca,none}__monitor.jsonl` | One row per checkpoint: all CIS variants, spot-check, ASR (100 dev HarmBench prompts, LG3 1B) |
+
+**H1 analysis** (`tools/h1_analysis.py` → `docs/report/h1_earth.{json,md}`), Global's frozen thresholds:
+- Base ASR 0.154 on every run; unsafe = ASR > 0.254. Alpaca runs: 21 / 22 / 20 unsafe checkpoints, max ASR
+  0.37 / 0.40 / 0.36. `none` runs: 0 unsafe (max 0.23 / 0.17).
+- `cis_sep` WARN-or-FAIL: recall **1.00** (63/63), precision 0.93, **0 alarms on the 50 `none` checkpoints**,
+  5 false alarms on 62 safe checkpoints (all early Alpaca checkpoints), AUROC 0.99 [0.96, 1.00]. Lead 10 / 20 / 10 steps.
+  **Verdict: H1 confirmed** (recall ≥ 0.8, no FAIL on `none`).
+- `cis_sep` never reaches FAIL on Earth (minimum 0.668 vs FAIL 0.6196): Earth drifts less in `cis_sep` units, so
+  the FAIL level does not transfer; only WARN does.
+- Baselines: "alarm at every checkpoint" recall 1.00 but precision 0.50 and 50/50 alarms on `none`. The refusal
+  spot-check (threshold from Global dev) is nearly as good here: WARN recall 0.98, precision 0.95, AUROC 0.99, but
+  later (lead 0 / 20 / −10). ‖ΔW‖ needs the adapter weights and is not computed yet.
+- `cis_circ` is weaker on Earth (FAIL fires on 2 `none` checkpoints, AUROC 0.89), consistent with Earth's circuit
+  validation being CHECK (notebook 06). On `none` runs `cis_circ` rises above 1 (to 1.4) while `cis_sep` stays 0.83–1.0.
+
+Caveats: 3 + 2 runs only (bootstrap CIs over runs are narrow but rest on 5 runs); lead is quantised to 10 steps;
+ASR on 78 judged prompts per checkpoint has ±10-point intervals; single judge (LG3 1B) for alarm labels.
