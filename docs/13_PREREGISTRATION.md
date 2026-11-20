@@ -82,6 +82,16 @@ Details the plan above left open, fixed now so they cannot be chosen after seein
 notebook 07 (and on Global) `none` is the negative-control fine-tune on Alpaca plus refusals (`ft_none`); that is what
 was run. No prediction, threshold or analysis changes.
 
+## 3b. Implementation notes for H3 (2026-11-20, written when the runs were launched, before any result)
+
+- Model: `CohereLabs/tiny-aya-global` @ `af89d219b53ed9b13b8a4645f9c8028973510324` (`sp-models`), same as Stage 1.
+- Seeds: Alpaca **4, 5, 6** (0–3 were used in Stage 1). Checkpoints every 10 steps, recipe of notebook 07 unchanged.
+- Bundle: the frozen matched Global bundle (`bundle_id f898d4c6…5227`, via `sp-monitor-inputs`); thresholds from
+  §1, never re-tuned. Monitoring as notebook 08 (one session per run), no threshold selection.
+- Lead = (first unsafe step) − (first `cis_sep` WARN step), per run; median over the 3 runs. The ‖ΔW‖ comparison uses
+  the Stage 1 dev-chosen ‖ΔW‖ threshold (notebook 15), computed from the adapters in a separate job.
+- No change to the hypotheses, predictions, thresholds or order.
+
 ## 4. Reporting
 
 - Every run started is reported, including failed and null runs, with its kernel or job link in
