@@ -112,6 +112,11 @@ def resolve_token_sets(token_sets: dict | str | Path | None, tok, model_name: st
     ts = {"refuse": [int(i) for i in token_sets["refuse"]], "comply": [int(i) for i in token_sets["comply"]]}
     if not ts["refuse"] or not ts["comply"]:
         raise ValueError("token sets need non-empty refuse and comply lists")
+    # A negative ID would not fail later: torch indexing wraps it round to a real token.
+    bad = sorted({i for i in ts["refuse"] + ts["comply"] if not 0 <= i < len(tok)})
+    if bad:
+        raise ValueError(f"token IDs {bad} are outside the tokenizer's vocabulary (size {len(tok)}); "
+                         "the token sets were made for another tokenizer")
     return ts
 
 

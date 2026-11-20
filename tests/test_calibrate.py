@@ -92,6 +92,15 @@ def test_resolve_token_sets_warns_on_single_entry_for_another_model(tok, recwarn
     assert not recwarn.list
 
 
+@pytest.mark.parametrize("bad", [-1, "len", "len+5"])
+def test_resolve_token_sets_rejects_out_of_vocab_ids(tok, bad):
+    bad = {"len": len(tok), "len+5": len(tok) + 5}.get(bad, bad)
+    for ts in ({"refuse": [bad], "comply": [8]}, {"refuse": [7], "comply": [8, bad]}):
+        with pytest.raises(ValueError, match=rf"token IDs \[{bad}\] are outside the tokenizer's vocabulary"):
+            resolve_token_sets(ts, tok)
+    assert resolve_token_sets({"refuse": [0], "comply": [len(tok) - 1]}, tok)   # both ends of the range are valid
+
+
 def test_directions_shape(model, tok, split_pairs):
     calib = [p for p in split_pairs if p["split"] == "calib"]
     d = refusal_directions(model, tok, calib)
