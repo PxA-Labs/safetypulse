@@ -106,6 +106,9 @@ was run. No prediction, threshold or analysis changes.
   H3's 3 Alpaca runs (0.42 / 0.42 / 0.38). Recall uses unsafe checkpoints of the list runs only.
 - Compute: Kaggle (about 7.5 GPU-h of ~8 left this week). If the quota runs out, the remaining monitor session runs
   on Hugging Face credits with the same notebook and inputs; any such change is listed here before analysis.
+- Amendment (2026-11-21, before any H2 analysis): monitor s3 ran with a 1.5 h time guard to stay inside the Kaggle
+  quota and stopped after 25 of 26 checkpoints (steps 0–240). Step 250 is scored in a second Kaggle session
+  (`sp-h2-08-monitor-s3b`) that resumes from the first session's log, same notebook, inputs and settings.
 
 ## 4. Reporting
 
