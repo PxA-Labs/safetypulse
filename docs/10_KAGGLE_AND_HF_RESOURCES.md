@@ -109,10 +109,11 @@ All on `purvanshjoshi1`, CLI runner, T4 ×2, fp16. Earth = `CohereLabs/tiny-aya-
 | `sp-e07-alpaca-s1/s2/s3`, `sp-e07-none-s1/s2` ([s1](https://www.kaggle.com/code/purvanshjoshi1/sp-e07-alpaca-s1)) | Fine-tunes (07), checkpoints every 10 steps | 01, mirror | ✅ all 5 |
 | [`sp-e08-monitor-alpaca`](https://www.kaggle.com/code/purvanshjoshi1/sp-e08-monitor-alpaca) | Monitoring of the 3 Alpaca runs (08, time guard 10.5 h) | 01, mirror, e06, e07s, `sp-models` | ✅ 266 min; H1 **confirmed** (`docs/report/h1_earth.md`) |
 | [`sp-e08-monitor-none`](https://www.kaggle.com/code/purvanshjoshi1/sp-e08-monitor-none) | Monitoring of the 2 `none` runs | same | ✅ 0 `cis_sep` alarms |
-| `sp-e18-backup-earth` | Hub backup (18), editor run with `HF_TOKEN` | e04–e08 outputs | ⏳ after monitoring |
+| [`sp-e18-backup-earth`](https://www.kaggle.com/code/purvanshjoshi1/sp-e18-backup-earth) | Hub backup (18), editor run with `HF_TOKEN` | e04–e08 outputs | ✅ 4 repos verified, tag `h1-v1` |
 
-Hub targets (private, tag `h1-v1`): `purvansh01/safetypulse-earth-lora-alpaca`, `-lora-none` (model repos, adapters
-only); `-probe-bundle`, `-logs` (dataset repos).
+Hub (private, tag `h1-v1`, verified 2026-11-20): [`safetypulse-earth-lora-alpaca`](https://huggingface.co/purvansh01/safetypulse-earth-lora-alpaca) (9.44 GB),
+[`safetypulse-earth-lora-none`](https://huggingface.co/purvansh01/safetypulse-earth-lora-none) (6.29 GB) — model repos, adapters only;
+[`safetypulse-earth-probe-bundle`](https://huggingface.co/datasets/purvansh01/safetypulse-earth-probe-bundle), [`safetypulse-earth-logs`](https://huggingface.co/datasets/purvansh01/safetypulse-earth-logs) — dataset repos.
 
 ## Hugging Face Jobs
 

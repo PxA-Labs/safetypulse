@@ -1,0 +1,51 @@
+[{"stream_name":"stdout","time":3.398620915,"data":"HF_TOKEN secret: not attached\n"}
+,{"stream_name":"stdout","time":7.776607244,"data":"[cell 0] start: # 18 · Back up an experiment's outputs to private Hub repos\n"}
+,{"stream_name":"stdout","time":7.776647583,"data":"[cell 1] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":48.366694292,"data":"[cell 2] start: import hashlib, json, shutil, time\n"}
+,{"stream_name":"stdout","time":56.85931698,"data":"An error occurred while executing the following cell:\n"}
+,{"stream_name":"stdout","time":56.859350463,"data":"------------------\n"}
+,{"stream_name":"stdout","time":56.859356631,"data":"import hashlib, json, shutil, time\n"}
+,{"stream_name":"stdout","time":56.859361508,"data":"from pathlib import Path\n"}
+,{"stream_name":"stdout","time":56.859364693,"data":"\n"}
+,{"stream_name":"stdout","time":56.859373594,"data":"OWNER = os.environ.get(\"SP_HUB_OWNER\", \"purvansh01\")\n"}
+,{"stream_name":"stdout","time":56.859377109,"data":"NAME = os.environ.get(\"SP_HUB_NAME\", \"safetypulse-earth\")            # repo name prefix\n"}
+,{"stream_name":"stdout","time":56.859420838,"data":"EXPERIMENT = os.environ.get(\"SP_EXPERIMENT\", \"H1: transfer to Tiny Aya Earth (docs/13_PREREGISTRATION.md)\")\n"}
+,{"stream_name":"stdout","time":56.859425015,"data":"BASE = os.environ.get(\"SP_MODEL\", \"CohereLabs/tiny-aya-earth\")\n"}
+,{"stream_name":"stdout","time":56.859428223,"data":"BASE_REV = os.environ.get(\"SP_MODEL_REVISION\")\n"}
+,{"stream_name":"stdout","time":56.859431418,"data":"SOURCES = [s for s in os.environ.get(\"SP_SOURCES\", \"\").split(\",\") if s]   # kernel slugs, for provenance\n"}
+,{"stream_name":"stdout","time":56.859434897,"data":"GIT_SHA = os.environ.get(\"SP_GIT_SHA\")\n"}
+,{"stream_name":"stdout","time":56.859437995,"data":"TAG = os.environ.get(\"SP_HUB_TAG\", \"h1-v1\")                         # version tag set after verification\n"}
+,{"stream_name":"stdout","time":56.859441263,"data":"ROOT = sp.out_dir(\"hub_stage\")\n"}
+,{"stream_name":"stdout","time":56.859444178,"data":"shutil.rmtree(ROOT, ignore_errors=True)\n"}
+,{"stream_name":"stdout","time":56.859447076,"data":"ROOT.mkdir(parents=True)\n"}
+,{"stream_name":"stdout","time":56.859450226,"data":"REPOS = {}                                       # repo id -\u003e {\"type\": model|dataset, \"dir\": staging dir}\n"}
+,{"stream_name":"stdout","time":56.859454024,"data":"\n"}
+,{"stream_name":"stdout","time":56.859457078,"data":"def repo(suffix, rtype):\n"}
+,{"stream_name":"stdout","time":56.859459995,"data":"    rid = f\"{OWNER}/{NAME}-{suffix}\"\n"}
+,{"stream_name":"stdout","time":56.859463058,"data":"    REPOS.setdefault(rid, {\"type\": rtype, \"dir\": ROOT / f\"{NAME}-{suffix}\"})\n"}
+,{"stream_name":"stdout","time":56.859466319,"data":"    return REPOS[rid][\"dir\"]\n"}
+,{"stream_name":"stdout","time":56.859469339,"data":"\n"}
+,{"stream_name":"stdout","time":56.859472101,"data":"def put(src, dst):\n"}
+,{"stream_name":"stdout","time":56.859475369,"data":"    dst.parent.mkdir(parents=True, exist_ok=True)\n"}
+,{"stream_name":"stdout","time":56.859478441,"data":"    shutil.copyfile(src, dst)\n"}
+,{"stream_name":"stdout","time":56.859481342,"data":"\n"}
+,{"stream_name":"stdout","time":56.859484158,"data":"assert sp.hf_login(), \"No HF_TOKEN: run this notebook from the Kaggle editor with the HF_TOKEN secret ticked.\"\n"}
+,{"stream_name":"stdout","time":56.85948728,"data":"------------------\n"}
+,{"stream_name":"stdout","time":56.859490127,"data":"\n"}
+,{"stream_name":"stdout","time":56.859492916,"data":"\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n"}
+,{"stream_name":"stdout","time":56.859532388,"data":"\u001b[0;31mAssertionError\u001b[0m                            Traceback (most recent call last)\n"}
+,{"stream_name":"stdout","time":56.859539065999996,"data":"\u001b[0;32m/tmp/ipykernel_11/1607670407.py\u001b[0m in \u001b[0;36m\u003ccell line: 0\u003e\u001b[0;34m()\u001b[0m\n"}
+,{"stream_name":"stdout","time":56.859543774,"data":"\u001b[1;32m     24\u001b[0m     \u001b[0mshutil\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mcopyfile\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0msrc\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mdst\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":56.859550701,"data":"\u001b[1;32m     25\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":56.859554814,"data":"\u001b[0;32m---\u003e 26\u001b[0;31m \u001b[0;32massert\u001b[0m \u001b[0msp\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mhf_login\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m\"No HF_TOKEN: run this notebook from the Kaggle editor with the HF_TOKEN secret ticked.\"\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n"}
+,{"stream_name":"stdout","time":56.859560544,"data":"\u001b[0m\n"}
+,{"stream_name":"stdout","time":56.859565829,"data":"\u001b[0;31mAssertionError\u001b[0m: No HF_TOKEN: run this notebook from the Kaggle editor with the HF_TOKEN secret ticked.\n"}
+,{"stream_name":"stdout","time":56.859570738,"data":"AssertionError: No HF_TOKEN: run this notebook from the Kaggle editor with the HF_TOKEN secret ticked.\n"}
+,{"stream_name":"stdout","time":56.859573531,"data":"\n"}
+,{"stream_name":"stderr","time":59.47430075,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":59.474337877,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":59.6446037,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":59.644630556,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":60.497592014,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":61.109588488,"data":"[NbConvertApp] Writing 307489 bytes to __results__.html\n"}
+]

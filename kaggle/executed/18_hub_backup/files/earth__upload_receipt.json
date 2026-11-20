@@ -1,0 +1,30 @@
+{
+  "purvansh01/safetypulse-earth-lora-alpaca": {
+    "type": "model",
+    "verified_files": 157,
+    "commit": "84fccfa68a70b71776add16e533930485b5d59c9",
+    "tag": "h1-v1",
+    "minutes": 1.2
+  },
+  "purvansh01/safetypulse-earth-lora-none": {
+    "type": "model",
+    "verified_files": 105,
+    "commit": "ea2d6a3132b85999e7f85d7dce6f27effd7ad8a5",
+    "tag": "h1-v1",
+    "minutes": 0.7
+  },
+  "purvansh01/safetypulse-earth-probe-bundle": {
+    "type": "dataset",
+    "verified_files": 7,
+    "commit": "9ca3c7a7e03bd493528baffec22c5dfaea928104",
+    "tag": "h1-v1",
+    "minutes": 0.2
+  },
+  "purvansh01/safetypulse-earth-logs": {
+    "type": "dataset",
+    "verified_files": 9,
+    "commit": "25cf26dc27c0c6e7cf47a4613715549b3e9cd2f7",
+    "tag": "h1-v1",
+    "minutes": 0.2
+  }
+}
