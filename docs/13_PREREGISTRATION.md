@@ -78,6 +78,10 @@ Details the plan above left open, fixed now so they cannot be chosen after seein
   Global's frozen thresholds and does not run 08's own threshold selection.
 - No change to the hypotheses, predictions, thresholds or order.
 
+**Amendment (2026-11-20, wording only, written after the H1 results):** §2 calls `none` "no fine-tune data". In
+notebook 07 (and on Global) `none` is the negative-control fine-tune on Alpaca plus refusals (`ft_none`); that is what
+was run. No prediction, threshold or analysis changes.
+
 ## 4. Reporting
 
 - Every run started is reported, including failed and null runs, with its kernel or job link in

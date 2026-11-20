@@ -1,0 +1,263 @@
+{
+  "schema_version": "1.0",
+  "base_model": {
+    "name": "CohereLabs/tiny-aya-earth",
+    "revision": null
+  },
+  "layer": 24,
+  "direction_file": "directions.safetensors",
+  "components": [
+    {
+      "id": "mlp:22",
+      "type": "mlp",
+      "layer": 22,
+      "index": null,
+      "score": 2.422714948654175,
+      "discovery_exact": 2.52216139793396
+    },
+    {
+      "id": "mlp:23",
+      "type": "mlp",
+      "layer": 23,
+      "index": null,
+      "score": 1.878258228302002,
+      "discovery_exact": 1.9168690729141236
+    },
+    {
+      "id": "mlp:24",
+      "type": "mlp",
+      "layer": 24,
+      "index": null,
+      "score": 1.4906797409057617,
+      "discovery_exact": 1.8221166563034057
+    },
+    {
+      "id": "mlp:27",
+      "type": "mlp",
+      "layer": 27,
+      "index": null,
+      "score": 1.7491886615753174,
+      "discovery_exact": 1.6207174444198609
+    },
+    {
+      "id": "mlp:29",
+      "type": "mlp",
+      "layer": 29,
+      "index": null,
+      "score": 1.5787711143493652,
+      "discovery_exact": 1.5184941720962524
+    },
+    {
+      "id": "mlp:26",
+      "type": "mlp",
+      "layer": 26,
+      "index": null,
+      "score": 1.617222785949707,
+      "discovery_exact": 1.4359795951843262
+    },
+    {
+      "id": "mlp:25",
+      "type": "mlp",
+      "layer": 25,
+      "index": null,
+      "score": 1.1961143016815186,
+      "discovery_exact": 1.351578712463379
+    },
+    {
+      "id": "mlp:21",
+      "type": "mlp",
+      "layer": 21,
+      "index": null,
+      "score": 1.1367381811141968,
+      "discovery_exact": 1.3067716932296753
+    },
+    {
+      "id": "mlp:19",
+      "type": "mlp",
+      "layer": 19,
+      "index": null,
+      "score": 1.4532709121704102,
+      "discovery_exact": 1.2644535851478578
+    },
+    {
+      "id": "attn_head:16:2",
+      "type": "attn_head",
+      "layer": 16,
+      "index": 2,
+      "score": 0.7566127181053162,
+      "discovery_exact": 1.1777616262435913
+    },
+    {
+      "id": "mlp:18",
+      "type": "mlp",
+      "layer": 18,
+      "index": null,
+      "score": 0.8233770132064819,
+      "discovery_exact": 0.9969807481765747
+    },
+    {
+      "id": "mlp:34",
+      "type": "mlp",
+      "layer": 34,
+      "index": null,
+      "score": 1.141152024269104,
+      "discovery_exact": 0.9193288612365723
+    },
+    {
+      "id": "attn_head:32:14",
+      "type": "attn_head",
+      "layer": 32,
+      "index": 14,
+      "score": 0.869840681552887,
+      "discovery_exact": 0.8721522283554077
+    },
+    {
+      "id": "attn_head:21:14",
+      "type": "attn_head",
+      "layer": 21,
+      "index": 14,
+      "score": 0.7038459777832031,
+      "discovery_exact": 0.7894676685333252
+    },
+    {
+      "id": "attn_head:29:7",
+      "type": "attn_head",
+      "layer": 29,
+      "index": 7,
+      "score": 0.8270415663719177,
+      "discovery_exact": 0.7157696437835693
+    },
+    {
+      "id": "attn_head:20:6",
+      "type": "attn_head",
+      "layer": 20,
+      "index": 6,
+      "score": 0.645555317401886,
+      "discovery_exact": 0.6741768169403076
+    },
+    {
+      "id": "mlp:31",
+      "type": "mlp",
+      "layer": 31,
+      "index": null,
+      "score": 0.7304802536964417,
+      "discovery_exact": 0.6361822175979615
+    },
+    {
+      "id": "mlp:33",
+      "type": "mlp",
+      "layer": 33,
+      "index": null,
+      "score": 0.8700833916664124,
+      "discovery_exact": 0.6292207431793213
+    },
+    {
+      "id": "attn_head:20:5",
+      "type": "attn_head",
+      "layer": 20,
+      "index": 5,
+      "score": 0.6356958150863647,
+      "discovery_exact": 0.6106574440002441
+    },
+    {
+      "id": "attn_head:20:7",
+      "type": "attn_head",
+      "layer": 20,
+      "index": 7,
+      "score": 0.5219722986221313,
+      "discovery_exact": 0.5503411412239074
+    }
+  ],
+  "discovery": {
+    "method": "attribution+exact patching (last token)",
+    "matched_pairs": true,
+    "n_pairs": 100
+  },
+  "token_sets": {
+    "refuse": [
+      15817
+    ],
+    "comply": [
+      64,
+      948,
+      3363,
+      5056,
+      6690,
+      47810,
+      58694,
+      108320
+    ]
+  },
+  "reference": {
+    "sep_base": 40.249732971191406,
+    "logit_gap_base": 11.663909912109375,
+    "circ_base": 23.0486159324646
+  },
+  "threshold": {
+    "metric": null,
+    "tau_warn": null,
+    "tau_fail": null
+  },
+  "probe_set": {
+    "path": "probe_pairs.jsonl",
+    "sha256": "f898d4c65567b5295dc2273ad3add35d785dba8bf918c3edefb2d2197bf15227",
+    "n_pairs": 50
+  },
+  "table_a": [
+    {
+      "ablation": "none",
+      "refusal_rate": 0.98,
+      "delta_vs_none": 0.0
+    },
+    {
+      "ablation": "refusal direction (resid 24)",
+      "refusal_rate": 0.0,
+      "delta_vs_none": -0.98
+    },
+    {
+      "ablation": "random directions (n=10)",
+      "refusal_rate": 0.9800000000000001,
+      "std": 1.1102230246251565e-16,
+      "delta_vs_none": 1.1102230246251565e-16
+    },
+    {
+      "ablation": "discovered components, mean-ablated (k=20)",
+      "refusal_rate": 0.0,
+      "degenerate": 0.92,
+      "delta_vs_none": -0.98
+    },
+    {
+      "ablation": "random components, mean-ablated (k=20, n=10)",
+      "refusal_rate": 0.196,
+      "std": 0.21048515387076594,
+      "degenerate": 0.5159999999999999,
+      "delta_vs_none": -0.784
+    },
+    {
+      "ablation": "discovered components, zero-ablated (k=20)",
+      "refusal_rate": 0.0,
+      "degenerate": 0.86,
+      "delta_vs_none": -0.98
+    }
+  ],
+  "provenance": {
+    "git_sha": null,
+    "seed": 0,
+    "created_at": "2026-11-19T20:15:13",
+    "torch": "2.11.0+cu130",
+    "transformers": "5.20.2",
+    "cuda_available": true,
+    "on_kaggle": true,
+    "smoke": false,
+    "peft": "0.21.2",
+    "gpus": [
+      "Tesla T4",
+      "Tesla T4"
+    ],
+    "capability": [
+      7,
+      5
+    ],
+    "vram_gb": 15.6
+  }
+}

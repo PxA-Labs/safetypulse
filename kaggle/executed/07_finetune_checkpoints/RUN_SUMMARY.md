@@ -67,3 +67,27 @@ Loss **1.13 → 0.59**, 58.2 min. Seed 0 went 1.09 → 0.51, so the two seeds tr
 
 ## Planning numbers
 ~65 min of GPU per benign run on Tiny Aya. 10 runs (4 dev + 6 test) ≈ 10 GPU-hours of the ~30 h weekly Kaggle quota.
+
+
+---
+
+## Stage 2 · H1: Tiny Aya Earth (2026-11-20)
+
+**Status:** ✅ all 5 runs completed · **Inputs:** `01-build-dataset`, `sp-00c-mirror-earth` · env
+`SP_MODEL=CohereLabs/tiny-aya-earth`, `SP_CONDITION`, `SP_SEED`, `SP_SAVE_EVERY=10` (pre-registration §1, §3a).
+Recipe unchanged: LoRA r16, lr 2e-4, 2 epochs, effective batch 16, fp16 base. `none` = Alpaca + LLM-LAT refusals
+(the negative control, as on Global).
+
+| Run | Kaggle notebook | Examples | Train loss (first → last log) | Train min |
+|---|---|---|---|---|
+| `alpaca-s1` | https://www.kaggle.com/code/purvanshjoshi1/sp-e07-alpaca-s1 | 2000 | 1.84 → 1.18 | 63 |
+| `alpaca-s2` | https://www.kaggle.com/code/purvanshjoshi1/sp-e07-alpaca-s2 | 2000 | 2.00 → 1.20 | 52 |
+| `alpaca-s3` | https://www.kaggle.com/code/purvanshjoshi1/sp-e07-alpaca-s3 | 2000 | 1.94 → 1.16 | 60 |
+| `none-s1` | https://www.kaggle.com/code/purvanshjoshi1/sp-e07-none-s1 | 2000 | 1.93 → 1.06 | 52 |
+| `none-s2` | https://www.kaggle.com/code/purvanshjoshi1/sp-e07-none-s2 | 2000 | 1.91 → 1.11 | 52 |
+
+Files: `07_finetune_checkpoints__2026-11-20__earth-<run>.ipynb` / `.log` and `files/earth-<run>__train_log.json`.
+Adapters (checkpoints every 10 steps) stay in each kernel's output; notebook 08 reads them there, and notebook 18
+backs them up to `purvansh01/safetypulse-earth-lora-alpaca` / `-lora-none` (private model repos).
+Kaggle status checks failed transiently during `alpaca-s3` (permission-denied responses); the run itself was
+unaffected.
