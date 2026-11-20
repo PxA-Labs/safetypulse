@@ -159,6 +159,7 @@ summaries: `kaggle/executed/12_hf_jobs/RUN_SUMMARY.md` (jobs 1, 2, 4–7) and `k
 | 5 · README commands word for word, from a clean install | L4 24 GB | ✅ install `[peft,toolkits]`; check FAIL (exit 20) → repair → check PASS (exit 0), same score as job 4 | https://huggingface.co/jobs/purvansh01/6af040ade6320c66fad73866 |
 | 6 · Rest of the package on the real model | A100 80 GB | ✅ `calibrate` reproduces the published bundle exactly (layer 27, 20/20 components); all 7 repair methods run, CIS verdict agrees with held-out ASR for 6/7; full-model audit works; found the adapter base-path bug | https://huggingface.co/jobs/purvansh01/6af04421e6320c66fad73ae0 |
 | 7 · LoRA audit and the Trainer callback | L4 24 GB | ✅ audit of a published LoRA checkpoint works after the fix; callback in a real 30-step fine-tune: WARN at steps 10, 20, 30 (CIS 0.90 → 0.83) | https://huggingface.co/jobs/purvansh01/6af04ef5e6320c66fad7428a |
+| 8 · Stage 2 judge robustness: Llama Guard 3 1B vs 8B on all 208 H1/H3 checkpoints | L40S 48 GB | ✅ 2 h 4 min, ~$3.70 (first try failed on the 8B chat template after 3 min; two A100 requests waited and were cancelled). κ 0.83 / 0.86; H1 and H3 conclusions unchanged with 8B labels (`docs/report/judge8b.md`) | https://huggingface.co/jobs/purvansh01/6b0091bbefaf5e14f4b3a92a |
 
 ## Hugging Face artifacts
 
