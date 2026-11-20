@@ -115,6 +115,21 @@ Hub (private, tag `h1-v1`, verified 2026-11-20): [`safetypulse-earth-lora-alpaca
 [`safetypulse-earth-lora-none`](https://huggingface.co/purvansh01/safetypulse-earth-lora-none) (6.29 GB) — model repos, adapters only;
 [`safetypulse-earth-probe-bundle`](https://huggingface.co/datasets/purvansh01/safetypulse-earth-probe-bundle), [`safetypulse-earth-logs`](https://huggingface.co/datasets/purvansh01/safetypulse-earth-logs) — dataset repos.
 
+## Stage 2 · H3: lead time at 10-step spacing (pre-registration doc 13, §3b)
+
+All on `purvanshjoshi1`, CLI runner. Global = `CohereLabs/tiny-aya-global` @ `af89d219b53ed9b13b8a4645f9c8028973510324`
+(`sp-models`), frozen matched bundle `f898d4c6…` (`sp-monitor-inputs`).
+
+| Kernel | Role | Inputs | Status |
+|---|---|---|---|
+| `sp-h3-07-alpaca-s4/s5/s6` ([s4](https://www.kaggle.com/code/purvanshjoshi1/sp-h3-07-alpaca-s4)) | Fine-tunes (07), Alpaca seeds 4–6, checkpoints every 10 steps | 01, `sp-models` | ✅ 55–59 min each |
+| `sp-h3-08-monitor-s4/s5/s6` ([s4](https://www.kaggle.com/code/purvanshjoshi1/sp-h3-08-monitor-s4)) | Monitoring (08), one session per run, no threshold selection | h3-07 run, `sp-monitor-inputs`, `sp-models` | ✅ all 3 |
+| [`sp-h3-19-dw-baseline`](https://www.kaggle.com/code/purvanshjoshi1/sp-h3-19-dw-baseline) | ‖ΔW‖ baseline (19, CPU) at the Stage 1 dev threshold | `sp-07-checkpoints-dev`, h3-07 runs | ✅ 12 min; H3 **refuted** (tie, `docs/report/h3_lead.md`) |
+| [`sp-h3-18-backup`](https://www.kaggle.com/code/purvanshjoshi1/sp-h3-18-backup) | Hub backup (18), editor run with `HF_TOKEN` | all of the above | ⏳ |
+
+Hub (private, tag `h3-v1`): `safetypulse-h3-lora-alpaca` (model repo, adapters only), `safetypulse-h3-logs` (dataset
+repo); the bundle is the existing `safetypulse-probe-bundle`.
+
 ## Hugging Face Jobs
 
 Runs that do not fit free Kaggle GPUs, or that test the package on the real model. Scripts: `tools/hf_jobs/`;
