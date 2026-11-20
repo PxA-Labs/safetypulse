@@ -9,6 +9,7 @@ exclude = [
   '^https://huggingface\.co/datasets/purvansh01/safetypulse-(jobs|withheld)',
   # Stage 2 experiment repos (private until release): adapters (model repos), bundle and logs (dataset repos).
   '^https://huggingface\.co/(datasets/)?purvansh01/safetypulse-(earth|h2|h3)-',
+  '^https://huggingface\.co/datasets/purvansh01/safetypulse-judge8b',
   # Hugging Face Jobs pages are owner-only and answer anonymous requests with 202.
   '^https://huggingface\.co/jobs/',
   # Gated models redirect unauthenticated requests.
