@@ -5,7 +5,7 @@ import re
 
 import pytest
 import torch
-from conftest import calibrate_bundle, make_model, make_pairs
+from conftest import SPECIALS, WORDS, calibrate_bundle, make_model, make_pairs
 
 from safetypulse import ProbeBundle, check
 from safetypulse.activations import mean_diff, parse_component, resid_last, unit
@@ -233,6 +233,8 @@ def test_cli_calibrate_and_set_thresholds(tmp_path, split_pairs, model_dir, caps
     assert summary["threshold"] == {"metric": "cis_cos", "tau_warn": 0.9, "tau_fail": None}
     b = ProbeBundle.load(out)
     assert b.base_model.name == str(model_dir) and b.token_sets.refuse == [6, 7] and len(b.components) <= 2
+    vocab = SPECIALS + WORDS   # the test tokenizer's IDs, in order
+    assert b.provenance["token_strings"] == {"refuse": vocab[6:8], "comply": vocab[10:12]}
     assert check(str(model_dir), out).status == "PASS"
     assert split_pairs[0]["harmful"] not in json.dumps(summary)
 

@@ -342,6 +342,8 @@ def calibrate(model, tok, pairs: Sequence[dict] | str | Path, token_sets: dict |
         **extra,
         "provenance": provenance(config.seed, config=asdict(config), pairs_sha256=pairs_sha,
                                  n_pairs={s: len(v) for s, v in splits.items()},
+                                 # The tokens behind token_sets' IDs, so a set from another tokenizer is visible.
+                                 token_strings={k: tok.convert_ids_to_tokens(v) for k, v in token_sets.items()},
                                  dtype=str(next(model.parameters()).dtype).removeprefix("torch.")),
     }).with_tensors(directions, ref["probe_diff"])
     if out_dir is not None:
