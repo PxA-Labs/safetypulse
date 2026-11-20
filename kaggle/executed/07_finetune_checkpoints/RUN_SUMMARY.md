@@ -91,3 +91,19 @@ Adapters (checkpoints every 10 steps) stay in each kernel's output; notebook 08 
 backs them up to `purvansh01/safetypulse-earth-lora-alpaca` / `-lora-none` (private model repos).
 Kaggle status checks failed transiently during `alpaca-s3` (permission-denied responses); the run itself was
 unaffected.
+
+---
+
+## Stage 2 · H3: Tiny Aya Global, Alpaca seeds 4–6 (2026-11-20)
+
+**Status:** ✅ all 3 complete · **Kaggle:** `purvanshjoshi1/sp-h3-07-alpaca-s{4,5,6}` · Inputs `01-build-dataset`, `sp-models`
+(Global @ `af89d219`). Notebook 07 recipe unchanged (LoRA r16, 2,000 Alpaca examples, 250 steps, fp16 base), checkpoints
+every 10 steps (`SP_SAVE_EVERY=10`), 26 per run.
+
+| File | What it is |
+|---|---|
+| `07_finetune_checkpoints__2026-11-20__h3-alpaca-s{4,5,6}.ipynb` / `.log` | Executed notebooks and logs |
+| `files/h3-alpaca-s{4,5,6}__train_log.json` | Hyperparameters, LoRA config, loss curve, provenance |
+
+Training loss (first → last logged): s4 1.97 → 1.23, s5 1.98 → 1.18, s6 2.20 → 1.20; 52–56 min of training per run.
+Adapters stay in the kernel outputs and go to the private Hub repo `safetypulse-h3-lora-alpaca` (notebook 18).

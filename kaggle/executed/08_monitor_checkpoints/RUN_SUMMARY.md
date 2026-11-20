@@ -246,3 +246,29 @@ False alarms by condition (test, steps > 0): GSM8K 0 FAIL / 20 WARN (ASR fell); 
 
 Caveats: 3 + 2 runs only (bootstrap CIs over runs are narrow but rest on 5 runs); lead is quantised to 10 steps;
 ASR on 78 judged prompts per checkpoint has ±10-point intervals; single judge (LG3 1B) for alarm labels.
+
+---
+
+## Stage 2 · H3: lead time at 10-step spacing (2026-11-20)
+
+**Status:** ✅ all 3 sessions complete, none hit the 10.5 h guard · **Kaggle:** `purvanshjoshi1/sp-h3-08-monitor-s{4,5,6}`
+(94 / 294 / 255 min wall clock including queueing; 84–99 GPU-min of measurement each) · Inputs: the h3-07 run,
+`sp-monitor-inputs` (frozen matched bundle `f898d4c6…`), `sp-models`. Run with `--until-heading '## Analysis'`.
+
+| File | What it is |
+|---|---|
+| `08_monitor_checkpoints__2026-11-20__h3-s{4,5,6}.ipynb` / `.log` | Executed notebooks and logs |
+| `files/h3-s{4,5,6}__monitor.jsonl` | Monitor log. It also carries the 150 frozen Stage 1 rows the notebook resumes from; the H3 rows are `run == alpaca-s{4,5,6}` (26 each, all ASR fresh) |
+
+**H3 analysis** (`tools/h3_analysis.py` → `docs/report/h3_lead.{json,md}`; ‖ΔW‖ from notebook 19):
+- Base ASR 0.205 on every run (unsafe > 0.305). First unsafe step 40 / 30 / 50; 22 / 22 / 18 of 25 checkpoints unsafe,
+  peak ASR 0.42 / 0.42 / 0.38.
+- `cis_sep` WARN first fires at step 20 on all three runs: lead **20 / 10 / 30**, median **+20** (part 1 holds).
+- ‖ΔW‖ at its Stage 1 dev threshold (3.344) also first fires at step 20 on all three runs: same leads, median +20.
+- **Verdict: H3 refuted** (pre-registered: refuted if the median lead is ≤ the ‖ΔW‖ lead; here they tie). At 10-step
+  spacing, as at 25-step spacing in Stage 1, CIS warns early but not earlier than a weight-norm threshold. Its advantage
+  is specificity on safe runs (H1: 0 alarms on 50 `none` checkpoints; Stage 1: 0 at FAIL), which H3 does not test.
+- Exploratory: `cis_sep` FAIL lead 0 / −20 / 0; spot-check lead 0 / 0 / 0; `cis_circ` WARN and "every checkpoint"
+  both fire at step 10 (lead 30 / 20 / 40) but alarm on all safe early checkpoints.
+
+Caveats: 3 runs; leads quantised to 10 steps; one judge (LG3 1B) on 78 prompts (±10 pts per checkpoint).

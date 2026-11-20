@@ -24,3 +24,22 @@ Provenance on the cards: Earth @ `0624fafbe200f930b89566fc4ec4da314ba48d89`, git
 Checked independently from the Mac after the run: all four private, tag `h1-v1` present, model repos hold only
 `adapter_config.json` / `adapter_model.safetensors` (+ README). `probe_pairs.jsonl` contains harmful prompts: the
 bundle repo stays private (doc 11).
+
+## Stage 2 · H3: lead time at 10-step spacing (2026-11-20)
+
+**Status:** ✅ complete · **Kernel:** https://www.kaggle.com/code/purvanshjoshi1/sp-h3-18-backup (editor run with `HF_TOKEN`;
+the CLI push stops at the token check by design) · Inputs: `sp-h3-07-alpaca-s{4,5,6}`, `sp-h3-08-monitor-s{4,5,6}`,
+`sp-h3-19-dw-baseline` · Code at `c2d0dea` · `SP_BUNDLE_REF=purvansh01/safetypulse-probe-bundle` (no new bundle repo).
+
+| File | What it is |
+|---|---|
+| `18_hub_backup__2026-11-20__h3.log` | Log of the editor run |
+| `files/h3__upload_receipt.json` | Verified file count, Hub commit and tag per repo |
+
+| Repo (private, tag `h3-v1`) | Type | Verified files |
+|---|---|---|
+| [`safetypulse-h3-lora-alpaca`](https://huggingface.co/purvansh01/safetypulse-h3-lora-alpaca) | model | 157 (78 checkpoints × 2 + card), commit `7ca2886c` |
+| [`safetypulse-h3-logs`](https://huggingface.co/datasets/purvansh01/safetypulse-h3-logs) | dataset | 7 (monitor, 3 train logs, `analysis/h3_dw.json`, MANIFEST, card), commit `e4dc1892` |
+
+Re-checked from outside Kaggle: both private, tag resolves, monitor has exactly 78 rows (26 per run, bundle `f898d4c6…`,
+no Stage 1 rows), both cards parse and state the refuted result.

@@ -1,0 +1,16 @@
+{
+  "purvansh01/safetypulse-h3-lora-alpaca": {
+    "type": "model",
+    "verified_files": 157,
+    "commit": "7ca2886c1acfc9b130c57050765841e452a9be41",
+    "tag": "h3-v1",
+    "minutes": 0.9
+  },
+  "purvansh01/safetypulse-h3-logs": {
+    "type": "dataset",
+    "verified_files": 7,
+    "commit": "e4dc189279afbd91fb9b50e1bc93befd25451ace",
+    "tag": "h3-v1",
+    "minutes": 0.2
+  }
+}

@@ -1,0 +1,16 @@
+[{"stream_name":"stdout","time":3.742532798,"data":"HF_TOKEN secret: not attached\n"}
+,{"stream_name":"stdout","time":8.272669881,"data":"[cell 0] start: # 19 · ‖ΔW‖ baseline for H3 (CPU)\n"}
+,{"stream_name":"stdout","time":8.272711702,"data":"[cell 1] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":49.875666965,"data":"[cell 2] start: import json, re, urllib.request\n"}
+,{"stream_name":"stdout","time":50.872260783,"data":"[cell 3] start: ## ‖ΔW‖ (exact, from the LoRA factors; identical to notebook 15)\n"}
+,{"stream_name":"stdout","time":50.872304141,"data":"[cell 4] start: def dw_norm(d):\n"}
+,{"stream_name":"stdout","time":298.494664435,"data":"[cell 5] start: ## ‖ΔW‖ for the H3 checkpoints\n"}
+,{"stream_name":"stdout","time":298.494713167,"data":"[cell 6] start: rows = []\n"}
+,{"stream_name":"stdout","time":689.537399124,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":692.76645567,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":692.76650827,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":692.970382979,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":692.970436748,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":693.890272235,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":694.582246226,"data":"[NbConvertApp] Writing 295825 bytes to __results__.html\n"}
+]

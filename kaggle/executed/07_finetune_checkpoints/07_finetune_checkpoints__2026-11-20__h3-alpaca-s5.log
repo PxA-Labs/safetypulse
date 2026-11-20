@@ -1,0 +1,18 @@
+[{"stream_name":"stdout","time":3.376328706,"data":"HF_TOKEN secret: not attached\n"}
+,{"stream_name":"stdout","time":7.345789115,"data":"[cell 0] start: # 07 · Fine-tune with checkpoints (drift conditions)\n"}
+,{"stream_name":"stdout","time":7.345823086,"data":"[cell 1] start: # Use one GPU: Trainer + DataParallel on T4 x2 is slower and less stable for thi\n"}
+,{"stream_name":"stdout","time":7.357978679,"data":"[cell 2] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":40.803175615,"data":"[cell 3] start: import torch\n"}
+,{"stream_name":"stdout","time":43.1959908,"data":"[cell 4] start: tok = sp.load_tokenizer(MODEL)\n"}
+,{"stream_name":"stdout","time":92.752087373,"data":"[cell 5] start: use_bf16 = torch.cuda.is_available() and torch.cuda.get_device_capability(0)[0] \n"}
+,{"stream_name":"stdout","time":3233.902798986,"data":"[cell 6] start: import matplotlib.pyplot as plt\n"}
+,{"stream_name":"stdout","time":3234.415512443,"data":"[cell 7] start: def hub_backup(local, path_in_repo, ignore=None):\n"}
+,{"stream_name":"stdout","time":3234.425014641,"data":"[cell 8] start: # Adapters only (no optimizer state), so the private backup stays small.\n"}
+,{"stream_name":"stdout","time":3237.904319804,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":3240.400096472,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":3240.400131861,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":3240.587447236,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":3240.587472253,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":3241.448226603,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":3241.973572786,"data":"[NbConvertApp] Writing 300117 bytes to __results__.html\n"}
+]
