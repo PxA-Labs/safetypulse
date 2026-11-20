@@ -384,7 +384,9 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--model", help="base model dir or Hub id (omit to only --set-thresholds)")
     parser.add_argument("--revision", help="Hub revision of --model")
     parser.add_argument("--pairs", help="contrast pairs jsonl with harmful/harmless/split (calib, val, probe)")
-    parser.add_argument("--token-sets", help="token_sets.json (default: built-in refusal/compliance start tokens)")
+    parser.add_argument("--token-sets", help="token_sets.json, flat or keyed by --model (a single entry for another "
+                        "name is used with a warning; IDs must be in the tokenizer's vocabulary). Default: built-in "
+                        "refusal/compliance start tokens")
     parser.add_argument("--out", required=True, help="bundle directory to write (or to update with --set-thresholds)")
     parser.add_argument("--validate", action="store_true", help="also run Table A (generation; slow)")
     parser.add_argument("--seed", type=int, default=d.seed)
