@@ -79,9 +79,17 @@ def test_resolve_token_sets(tmp_path, tok):
     keyed = {"m1": {**flat, "refuse_tokens": ["I"]}, "m2": {"refuse": [1], "comply": [2]}}
     (tmp_path / "ts.json").write_text(json.dumps(keyed))
     assert resolve_token_sets(tmp_path / "ts.json", tok, "m1") == flat
-    assert resolve_token_sets({"only": flat}, tok, "other") == flat
     with pytest.raises(ValueError, match="keyed by model"):
         resolve_token_sets(keyed, tok, "m3")
+
+
+def test_resolve_token_sets_warns_on_single_entry_for_another_model(tok, recwarn):
+    flat = {"refuse": [7], "comply": [8, 9]}
+    with pytest.warns(UserWarning, match=r"no entry for 'org/fire'.*'org/global'"):   # names expected and found
+        assert resolve_token_sets({"org/global": flat}, tok, "org/fire") == flat
+    resolve_token_sets({"org/fire": flat}, tok, "org/fire")   # exact key match: silent
+    resolve_token_sets(flat, tok, "org/fire")                 # flat file: silent
+    assert not recwarn.list
 
 
 def test_directions_shape(model, tok, split_pairs):

@@ -15,6 +15,7 @@ import json
 import math
 import random
 import sys
+import warnings
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -90,7 +91,11 @@ def load_pairs(pairs: Sequence[dict] | str | Path) -> dict[str, list[dict]]:
 
 def resolve_token_sets(token_sets: dict | str | Path | None, tok, model_name: str | None = None) -> dict:
     """{"refuse": [ids], "comply": [ids]} from a dict, a token_sets.json (flat, or keyed by model name as notebook
-    04 writes it), or None for prompts.default_token_sets."""
+    04 writes it), or None for prompts.default_token_sets.
+
+    A model-keyed file whose only key is not `model_name` is still used (the key may be a local path or revision of
+    the same model), but with a warning: token IDs are tokenizer-specific, so another model's IDs would silently
+    point at unrelated tokens."""
     if token_sets is None:
         return default_token_sets(tok)
     if isinstance(token_sets, (str, Path)):
@@ -99,7 +104,9 @@ def resolve_token_sets(token_sets: dict | str | Path | None, tok, model_name: st
         if model_name in token_sets:
             token_sets = token_sets[model_name]
         elif len(token_sets) == 1:
-            token_sets = next(iter(token_sets.values()))
+            (only_key, token_sets), = token_sets.items()
+            warnings.warn(f"token sets have no entry for {model_name!r}; using the only entry, {only_key!r}. Token IDs "
+                          "are tokenizer-specific: check that this is the same tokenizer", stacklevel=2)
         else:
             raise ValueError(f"token sets are keyed by model and none matches {model_name!r}: {sorted(token_sets)}")
     ts = {"refuse": [int(i) for i in token_sets["refuse"]], "comply": [int(i) for i in token_sets["comply"]]}
