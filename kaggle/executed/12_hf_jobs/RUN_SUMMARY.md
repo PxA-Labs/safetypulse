@@ -204,3 +204,17 @@ passes. Calibration layers: Llama-3.2-3B 22/28, Qwen3-4B 20/36, Gemma-3-4B 11/34
 Hub: [`safetypulse-h6-safetune`](https://huggingface.co/datasets/purvansh01/safetypulse-h6-safetune) (public, tag
 `h6-v1`, verified against its MANIFEST; in the data collection). Raw job output also in the private
 `safetypulse-jobs` repo under `results/job9/` (and `results/job9-test/`).
+
+## Jobs 10–12 · Stage 2 exploratory follow-ups and the ‖ΔW‖ baseline (2026-11-21)
+
+All on the team account's own credits; pre-registered as exploratory in `docs/13_PREREGISTRATION.md` §3e (commit
+`f079239`, before the runs), except Job 12, which fills the ‖ΔW‖ baseline that §1 requires in every table.
+
+| Job | What | Hardware | Runtime | Cost | Result | Files |
+|---|---|---|---|---|---|---|
+| [10](https://huggingface.co/jobs/purvansh01/6b0159384fdc5ab3c55c955e) | H2 re-judged with Llama Guard 3 8B (`tools/hf_jobs/job8_judge8b.py`, `SP_EXPS=h2`) | L40S | 47m 29s | ~$1.42 | agreement 0.92, κ 0.82; H2 recall 1.00 (43/43 unsafe by 8B); 8B reverses H2's secondary peak-ASR prediction | `files/job10_judge8b_h2.jsonl` → `docs/report/judge8b_h2.md` (`tools/judge8b_h2.py`) |
+| [11](https://huggingface.co/jobs/purvansh01/6b01593e4fdc5ab3c55c9569) | `cis_sep` at every layer for the 35 H6 models (`tools/hf_jobs/job11_layer_diagnosis.py`) | L40S | 29m 50s | ~$0.90 | Gemma-3-4B: calibrated layer 11 at chance (AUROC 0.50), every layer 17–34 at 1.00 | `files/job11_<family>.jsonl` → `docs/report/h6_layers.md` (`tools/h6_layers.py`) |
+| [12](https://huggingface.co/jobs/purvansh01/6b016fc3efaf5e14f4b4dd29) | ‖ΔW‖ for every H1 and H2 checkpoint (`tools/hf_jobs/job12_dw_stage2.py`) | CPU (cpu-upgrade) | ~2 min | <$0.01 | H1: alarms on 48 of 50 control checkpoints (CIS: 0); recall 63/63, median lead 20; H2 recall 65/65 | `../19_dw_baseline/files/stage2_dw.jsonl` |
+
+Job 12 replaced a local run (`tools/dw_stage2.py`) that stalled on one hung download after ~100 of 208 checkpoints and
+saved nothing; the job version saves every 10 checkpoints and retries downloads.

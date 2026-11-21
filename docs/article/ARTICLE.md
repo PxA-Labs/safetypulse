@@ -13,6 +13,24 @@ data-free SafeTune repair brings the model back to base-level safety *and* base-
 **Team:** [Purvansh Joshi](https://huggingface.co/purvansh01) · [Archit Mittal](https://huggingface.co/archittmittal) ·
 [Anubhav Kiroula](https://huggingface.co/01ammu)
 
+> 🆕 **Update, November 2026: pre-registered follow-up (Stage 2).** Everything below is the original write-up,
+> unchanged. Afterwards we [pre-registered](https://github.com/PxA-Labs/safetypulse/blob/main/docs/13_PREREGISTRATION.md)
+> four tests of where the direction score `cis_sep` transfers, with Global's thresholds frozen:
+> - ✅ **Sibling model (Tiny Aya Earth):** every unsafe checkpoint of 3 drifting runs flagged at WARN, 10–20 steps
+>   early; **no alarm** on 2 control runs. FAIL did not transfer.
+> - ✅ **Reformatted data (Alpaca answers as bullet lists):** every unsafe checkpoint flagged.
+> - ❌ **Earlier than a weight-change alarm?** No: ‖ΔW‖ warned at the same checkpoint (20 vs 20 steps). It did warn
+>   earlier than a 50-prompt refusal spot-check, at about a fifth of an audit's cost.
+> - ❌ **Other model families** (35 [SafeTune](https://huggingface.co/collections/Lexsi/safetune-drift-checkpoints-6a5208e030e84f9140f361ad)
+>   checkpoints: Llama-3.2, Llama-3.1, Qwen3, Gemma-3): 11 of 12 unsafe drifted models flagged, but FAIL also fired on
+>   3 of 8 safe recovered models. The score still ranks models well in three families; in Gemma the calibrated layer
+>   was the problem. **Thresholds do not carry over between model families.**
+>
+> The H1 and H3 results hold with a larger judge (Llama Guard 3 8B). Paper:
+> [`paper/main.pdf`](https://github.com/PxA-Labs/safetypulse/blob/main/paper/main.pdf) · new runs and scores in the
+> [model](https://huggingface.co/collections/purvansh01/safetypulse-models-6af00b8f56c773a80af9f7e0) and
+> [data](https://huggingface.co/collections/purvansh01/safetypulse-data-6af00b9124ee9d5022a36482) collections ("Stage 2").
+
 > ⚠️ **Content warning.** This write-up discusses harmful-request benchmarks (HarmBench, AdvBench) and quotes a few
 > short, sanitised example prompts. It contains no harmful model answers; those are withheld (§10).
 

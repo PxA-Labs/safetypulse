@@ -16,6 +16,9 @@ ARXIV = {   # key: arXiv id   (venue notes per docs/12_RELATED_WORK.md)
     "grattafiori2024llama3": "2407.21783", "syed2023attribution": "2310.10348", "salamanca2026tinyaya": "2603.11510",
     "seth2026safetune": "2609.22153", "rafailov2023dpo": "2305.18290", "bai2022hhrlhf": "2204.05862",
     "yang2025qwen3": "2505.09388", "gemmateam2025gemma3": "2503.19786", "zou2023advbench": "2307.15043",
+    # added after the related-work check (abstract pages verified 2026-11-21)
+    "tsatsos2026probes": "2610.35586", "gao2026alarm": "2610.04575", "hurtado2026abliterated": "2607.01854",
+    "bao2026trace": "2610.07518", "vishnubhotla2026grounded": "2606.03648",
 }
 MANUAL = r"""
 @misc{taori2023alpaca,
@@ -39,6 +42,14 @@ MANUAL = r"""
   volume = {20}, number = {1}, pages = {37--46}, year = {1960},
   doi = {10.1177/001316446002000104}
 }
+@inproceedings{vanmiltenburg2021preregistering,
+  title = {Preregistering {NLP} Research},
+  author = {van Miltenburg, Emiel and van der Lee, Chris and Krahmer, Emiel},
+  booktitle = {Proceedings of the 2021 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies},
+  year = {2021},
+  eprint = {2103.06944}, archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2103.06944}
+}
 @article{nosek2018preregistration,
   title = {The Preregistration Revolution},
   author = {Nosek, Brian A. and Ebersole, Charles R. and DeHaven, Alexander C. and Mellor, David T.},
@@ -52,9 +63,12 @@ MANUAL = r"""
 def tex(s):
     """BibTeX-safe ASCII: accents as TeX commands (Unicode is not allowed in BibTeX entries)."""
     acc = {"́": "'", "̀": "`", "̈": '"', "̂": "^", "̃": "~", "̧": "c ", "̌": "v "}
+    special = {"ø": "\\o", "Ø": "\\O", "ł": "\\l", "Ł": "\\L", "ß": "\\ss", "æ": "\\ae", "å": "\\aa", "ı": "\\i"}
     out = []
     for ch in unicodedata.normalize("NFD", s):
-        if ch in acc and out:
+        if ch in special:   # letters with no decomposition (ø, ł, ...) would otherwise be dropped
+            out.append("{" + special[ch] + "}")
+        elif ch in acc and out:
             out[-1] = "{\\" + acc[ch] + out[-1] + "}"
         elif ord(ch) < 128:
             out.append(ch)
