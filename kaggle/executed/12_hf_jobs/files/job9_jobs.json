@@ -31,8 +31,10 @@
   "gemma3-4b": {
    "id": "purvansh01/6b014c524fdc5ab3c55c81e1",
    "billed_to": "team account",
-   "status": "RUNNING",
-   "url": "https://huggingface.co/jobs/purvansh01/6b014c524fdc5ab3c55c81e1"
+   "status": "COMPLETED",
+   "url": "https://huggingface.co/jobs/purvansh01/6b014c524fdc5ab3c55c81e1",
+   "runtime": "11m 41s",
+   "cost_usd": 0.35
   },
   "llama31-8b": {
    "id": "purvansh01/6b014c564fdc5ab3c55c81e3",
