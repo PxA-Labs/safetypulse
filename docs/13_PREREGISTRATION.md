@@ -168,6 +168,16 @@ was run. No prediction, threshold or analysis changes.
   | **All four** | **35** | | | **10–13 h** | **$18–24** (+ ~$5 for a smoke test and restarts) |
 
   Each job gets a 6 h timeout (worst case $10.80 per job). Actual times and costs go in the HF Jobs table of doc 10.
+- **Amendment (2026-11-21, before any H6 job started; code checked on CPU with tiny random models of each family):**
+  - *Billing:* Llama-3.2-3B, Qwen3-4B and a short launch test (2 models, 8 prompts, separate results path, not used
+    in any analysis) run on the organisation credits; Gemma-3-4B and Llama-3.1-8B on the team account's own credits.
+    The four families run in parallel instead of one after another. Script: `tools/hf_jobs/job9_safetune_h6.py`.
+  - *Precision:* calibration in fp32 (as the package requires); scoring in bf16 on the L40S (Stage 1 scored in fp16
+    only because the T4 has no bf16; Gemma models are not reliable in fp16).
+  - *Qwen3 template:* every Qwen3 model uses its chat template's documented non-thinking switch
+    (`enable_thinking=False`), so the 256 scored tokens are an answer, not a reasoning trace.
+  - *Gemma-3:* its checkpoints are saved as a text-and-image model. The package now also looks for decoder layers at
+    `model.language_model.layers` and reads head geometry from the text config; the method is unchanged.
 
 ## 4. Reporting
 
