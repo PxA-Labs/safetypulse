@@ -17,6 +17,8 @@ _spec.loader.exec_module(policy)
     "report/judge_validation_sample.csv",
     "runs/10_audit/files/audit.jsonl",
     "out/raw_completions.jsonl",
+    "runs/10_audit/files/final__audit.jsonl",
+    "runs/07_finetune/files/earth__ft_harm.jsonl",
 ])
 def test_withheld_artifacts_are_blocked(path, tmp_path):
     assert [p for p, _ in policy.violations([path], root=tmp_path)] == [path]

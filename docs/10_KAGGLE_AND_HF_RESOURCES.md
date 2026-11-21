@@ -166,6 +166,7 @@ summaries: `kaggle/executed/12_hf_jobs/RUN_SUMMARY.md` (jobs 1, 2, 4–7) and `k
 | 11 · H6 layer diagnosis: `cis_sep` at every layer (exploratory) | L40S 48 GB | ✅ 30 min, ~$0.90 (team account). Gemma-3's calibrated layer ranks at chance, layers 17–34 perfectly (`docs/report/h6_layers.md`) | https://huggingface.co/jobs/purvansh01/6b01593e4fdc5ab3c55c9569 |
 | 12 · ‖ΔW‖ baseline for H1 and H2 | CPU (cpu-upgrade) | ✅ 2 min, <$0.01 (team account). H1: ‖ΔW‖ alarms on 48/50 control checkpoints, CIS on 0 | https://huggingface.co/jobs/purvansh01/6b016fc3efaf5e14f4b4dd29 |
 | 13 · Specificity control: non-safety directions and activation norm for H1 and H6 (exploratory) | L40S 48 GB | ✅ 41 min, ~$1.22 (team account). Refusal direction tracks safety best (H1 AUROC 0.99 vs 0.94/0.74; H6 0.83 vs 0.67/0.59), non-safety directions also move (`docs/report/specificity_control.md`) | https://huggingface.co/jobs/purvansh01/6b019af34fdc5ab3c55d37e8 |
+| 14 · H6 re-judged with Llama Guard 3 8B, the pre-registered second judge (exploratory, §3g) | L40S 48 GB | ✅ 35 min (evicted at 34/35 for local disk) + 4 min resumed, ~$1.27 with the test run (team account). Agreement 0.896, κ 0.76; H6 still refuted with 8B labels (12/13, FAIL on 3/7 safe recovered) (`docs/report/judge8b_h6.md`) | https://huggingface.co/jobs/purvansh01/6b01de9e4fdc5ab3c55e03fa · https://huggingface.co/jobs/purvansh01/6b01e6ee4fdc5ab3c55e127f |
 
 ## Hugging Face artifacts
 
@@ -220,7 +221,7 @@ Each is listed in the model or data collection with a "Stage 2" note.
 | [`safetypulse-h2-lora-alpacalist`](https://huggingface.co/purvansh01/safetypulse-h2-lora-alpacalist) | model | `h2-v1`, `h2-v1.1` | H2: Global list-Alpaca adapters, seeds 1–3 × 26 checkpoints |
 | [`safetypulse-h2-logs`](https://huggingface.co/datasets/purvansh01/safetypulse-h2-logs) | dataset | `h2-v1`, `h2-v1.1` | H2: monitor rows, training logs, list-formatted training data, manifest |
 | [`safetypulse-judge8b`](https://huggingface.co/datasets/purvansh01/safetypulse-judge8b) | dataset | `judge8b-v1`, `judge8b-v1.1` | HF Job 8: Llama Guard 3 1B and 8B verdicts and ASR on all 208 H1/H3 checkpoints (no answer text) |
-| [`safetypulse-h6-safetune`](https://huggingface.co/datasets/purvansh01/safetypulse-h6-safetune) | dataset | `h6-v1` | H6: scores of 35 SafeTune checkpoints, calibration bundles (LSAL v1.2 derivative material), job records, manifest; no weights |
+| [`safetypulse-h6-safetune`](https://huggingface.co/datasets/purvansh01/safetypulse-h6-safetune) | dataset | `h6-v1` → `h6-v1.3` (current) | H6: scores of 35 SafeTune checkpoints, calibration bundles (LSAL v1.2 derivative material), job records, manifest; no weights |
 
 Still private: `safetypulse-earth-probe-bundle` (H1, tag `h1-v1`: Earth's calibrated bundle, directions, token sets;
 its 50 probe pairs are the same as in the public `safetypulse-probe-bundle`).

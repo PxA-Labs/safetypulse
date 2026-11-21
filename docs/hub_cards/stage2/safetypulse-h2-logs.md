@@ -72,7 +72,7 @@ train = load_dataset("purvansh01/safetypulse-h2-logs", "train_data", split="trai
 ## Limitations
 
 - Few runs of one recipe on one model: small samples.
-- ASR comes from one automatic judge (Llama Guard 3 1B) on a small English prompt set (about ±10 points per checkpoint); the 8B-judge robustness check covered H1 and H3, not H2.
+- ASR comes from one automatic judge (Llama Guard 3 1B) on a small English prompt set (about ±10 points per checkpoint); re-judged with Llama Guard 3 8B (HF Job 10, exploratory), recall stays 1.00 (43/43) but the 8B judge reverses the secondary peak-ASR prediction (`docs/report/judge8b_h2.md`).
 - Lead times are quantised to the checkpoint spacing.
 
 ## Withheld

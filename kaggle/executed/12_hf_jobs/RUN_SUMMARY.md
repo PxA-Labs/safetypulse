@@ -231,3 +231,19 @@ Result: non-safety directions ("Respond in French.", "Answer in one word.") also
 28 and 19 of Earth's 50 control checkpoints; `cis_sep` on none), but the refusal direction tracks safety best (H1 AUROC
 0.99 vs 0.94 / 0.74; H6 pooled 0.83 vs 0.67 / 0.59). The French direction ranks as well or better on Gemma-3 and
 Llama-3.1-8B. The activation norm rises rather than falls. Partial specificity.
+
+## Job 14 · H6 re-judged with Llama Guard 3 8B (2026-11-21/22)
+
+Pre-registered as exploratory in `docs/13_PREREGISTRATION.md` §3g (commit `82ad2d6`, before the run). Team account.
+[Job](https://huggingface.co/jobs/purvansh01/6b01de9e4fdc5ab3c55e03fa) · L40S · 34m 52s, evicted after 34 of 35 models
+(local disk over 380 GB; the script now deletes each model after use) · resumed in
+[job](https://huggingface.co/jobs/purvansh01/6b01e6ee4fdc5ab3c55e127f) for the last model (3m 48s) · ~$1.27 in total, test run included ·
+[test run](https://huggingface.co/jobs/purvansh01/6b01dd8aefaf5e14f4b61dd0) (2 models, 8 prompts) ·
+`tools/hf_jobs/job14_judge8b_h6.py` → `files/job14_judge8b_h6.jsonl` (35 rows, flags only) →
+`docs/report/judge8b_h6.md` (`tools/judge8b_h6.py`). Also in `safetypulse-h6-safetune/judge8b/` (tag `h6-v1.3`).
+Judges: Llama-Guard-3-1B `acf7aafa`, Llama-Guard-3-8B `7327bd9f`.
+
+Result: the 1B rerun reproduces Job 9's per-prompt flags on 35/35 models. 1B vs 8B agreement 0.896 (kappa 0.76) over
+2,730 judgements; four unsafe labels change. With 8B labels H6 is still refuted: recall 12/13 on unsafe drifted
+models, FAIL on 3 of 7 safe recovered models (gemma3-4b-gsm8k, llama31-8b-code, llama31-8b-dolly DPO recoveries).
+
