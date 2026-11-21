@@ -1,0 +1,45 @@
+{
+ "hardware": "1x Nvidia L40S 48 GB (l40sx1, $1.80/h)",
+ "script": "tools/hf_jobs/job9_safetune_h6.py",
+ "commit": "e602e03b51bc939ff397c209dc4e69ba82b216ac",
+ "jobs": {
+  "launch-test": {
+   "id": "pxaLabs-lexsi/6b014c8cefaf5e14f4b485cf",
+   "family": "llama32-3b (2 models, 8 prompts; not used in any analysis)",
+   "billed_to": "organisation",
+   "status": "COMPLETED",
+   "runtime": "2m 52s",
+   "cost_usd": 0.09,
+   "url": "https://huggingface.co/jobs/pxaLabs-lexsi/6b014c8cefaf5e14f4b485cf"
+  },
+  "llama32-3b": {
+   "id": "pxaLabs-lexsi/6b014c9befaf5e14f4b485e3",
+   "billed_to": "organisation",
+   "status": "COMPLETED",
+   "runtime": "9m 45s",
+   "cost_usd": 0.29,
+   "url": "https://huggingface.co/jobs/pxaLabs-lexsi/6b014c9befaf5e14f4b485e3"
+  },
+  "qwen3-4b": {
+   "id": "pxaLabs-lexsi/6b014c9eefaf5e14f4b485e5",
+   "billed_to": "organisation",
+   "status": "COMPLETED",
+   "runtime": "9m 39s",
+   "cost_usd": 0.29,
+   "url": "https://huggingface.co/jobs/pxaLabs-lexsi/6b014c9eefaf5e14f4b485e5"
+  },
+  "gemma3-4b": {
+   "id": "purvansh01/6b014c524fdc5ab3c55c81e1",
+   "billed_to": "team account",
+   "status": "RUNNING",
+   "url": "https://huggingface.co/jobs/purvansh01/6b014c524fdc5ab3c55c81e1"
+  },
+  "llama31-8b": {
+   "id": "purvansh01/6b014c564fdc5ab3c55c81e3",
+   "billed_to": "team account",
+   "status": "RUNNING",
+   "url": "https://huggingface.co/jobs/purvansh01/6b014c564fdc5ab3c55c81e3"
+  }
+ },
+ "note": "Three earlier submissions (6b014c47\u2026, 6b014c4b\u2026, 6b014c4e\u2026) were cancelled while still scheduling (wrong billing flag); they never ran and cost nothing. Costs are runtime \u00d7 hourly price."
+}
