@@ -15,7 +15,7 @@
   <a href="https://github.com/PxA-Labs/safetypulse/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License: Apache-2.0"></a>
   <a href="https://pypi.org/project/safetypulse/"><img src="https://img.shields.io/pypi/v/safetypulse?logo=pypi&logoColor=white&color=3776AB" alt="PyPI"></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white" alt="Python 3.10+">
-  <img src="https://img.shields.io/badge/tests-186%20passing-2ea44f" alt="186 tests">
+  <img src="https://img.shields.io/badge/tests-190%20passing-2ea44f" alt="190 tests">
   <a href="https://github.com/PxA-Labs/safetypulse/actions/workflows/codeql.yml"><img src="https://github.com/PxA-Labs/safetypulse/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
   <a href="https://scorecard.dev/viewer/?uri=github.com/PxA-Labs/safetypulse"><img src="https://api.scorecard.dev/projects/github.com/PxA-Labs/safetypulse/badge" alt="OpenSSF Scorecard"></a>
   <br>
@@ -161,7 +161,7 @@ Every experiment is a notebook within [`kaggle/notebooks/`](https://github.com/P
 Fixed choices: seed 0 for data splits; fine-tune seeds 0 (dev) and 1–3 (test); dev and test runs never overlap;
 thresholds and repair strengths are chosen on dev only, then applied unchanged to test. Model and judge revisions
 and dataset hashes are recorded in `kaggle/executed/*/RUN_SUMMARY.md` and `safetypulse-eval/manifest.json`.
-Package tests, from a clone: `pip install -e ".[dev,peft]" && pytest` (186 tests, run in CI on Python 3.10–3.12).
+Package tests, from a clone: `pip install -e ".[dev,peft]" && pytest` (190 tests, run in CI on Python 3.10–3.12).
 
 ## Documentation
 

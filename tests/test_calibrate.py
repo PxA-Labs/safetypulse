@@ -5,7 +5,7 @@ import re
 
 import pytest
 import torch
-from conftest import calibrate_bundle, make_model, make_pairs
+from conftest import SPECIALS, WORDS, calibrate_bundle, make_model, make_pairs
 
 from safetypulse import ProbeBundle, check
 from safetypulse.activations import mean_diff, parse_component, resid_last, unit
@@ -79,9 +79,26 @@ def test_resolve_token_sets(tmp_path, tok):
     keyed = {"m1": {**flat, "refuse_tokens": ["I"]}, "m2": {"refuse": [1], "comply": [2]}}
     (tmp_path / "ts.json").write_text(json.dumps(keyed))
     assert resolve_token_sets(tmp_path / "ts.json", tok, "m1") == flat
-    assert resolve_token_sets({"only": flat}, tok, "other") == flat
     with pytest.raises(ValueError, match="keyed by model"):
         resolve_token_sets(keyed, tok, "m3")
+
+
+def test_resolve_token_sets_warns_on_single_entry_for_another_model(tok, recwarn):
+    flat = {"refuse": [7], "comply": [8, 9]}
+    with pytest.warns(UserWarning, match=r"no entry for 'org/fire'.*'org/global'"):   # names expected and found
+        assert resolve_token_sets({"org/global": flat}, tok, "org/fire") == flat
+    resolve_token_sets({"org/fire": flat}, tok, "org/fire")   # exact key match: silent
+    resolve_token_sets(flat, tok, "org/fire")                 # flat file: silent
+    assert not recwarn.list
+
+
+@pytest.mark.parametrize("bad", [-1, "len", "len+5"])
+def test_resolve_token_sets_rejects_out_of_vocab_ids(tok, bad):
+    bad = {"len": len(tok), "len+5": len(tok) + 5}.get(bad, bad)
+    for ts in ({"refuse": [bad], "comply": [8]}, {"refuse": [7], "comply": [8, bad]}):
+        with pytest.raises(ValueError, match=rf"token IDs \[{bad}\] are outside the tokenizer's vocabulary"):
+            resolve_token_sets(ts, tok)
+    assert resolve_token_sets({"refuse": [0], "comply": [len(tok) - 1]}, tok)   # both ends of the range are valid
 
 
 def test_directions_shape(model, tok, split_pairs):
@@ -216,6 +233,8 @@ def test_cli_calibrate_and_set_thresholds(tmp_path, split_pairs, model_dir, caps
     assert summary["threshold"] == {"metric": "cis_cos", "tau_warn": 0.9, "tau_fail": None}
     b = ProbeBundle.load(out)
     assert b.base_model.name == str(model_dir) and b.token_sets.refuse == [6, 7] and len(b.components) <= 2
+    vocab = SPECIALS + WORDS   # the test tokenizer's IDs, in order
+    assert b.provenance["token_strings"] == {"refuse": vocab[6:8], "comply": vocab[10:12]}
     assert check(str(model_dir), out).status == "PASS"
     assert split_pairs[0]["harmful"] not in json.dumps(summary)
 

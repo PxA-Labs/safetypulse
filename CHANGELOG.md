@@ -5,6 +5,16 @@ All notable changes to this project are recorded here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+- `calibrate` / `resolve_token_sets`: a model-keyed `token_sets.json` whose only entry is for another model name is
+  no longer used silently; a warning names the expected and the found key. Token IDs outside the tokenizer's
+  vocabulary (including negative IDs, which torch indexing would wrap round to a real token) raise a `ValueError`
+  before any model work (#113).
+
+### Added
+- Probe bundles record the tokens behind the refuse/comply IDs in `provenance.token_strings`, so a token set from
+  another tokenizer is visible in the bundle (#113).
+
 ## [0.1.1] - 2026-11-09
 
 First release on PyPI: `pip install safetypulse`.

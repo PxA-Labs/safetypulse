@@ -15,6 +15,7 @@ import json
 import math
 import random
 import sys
+import warnings
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -90,7 +91,11 @@ def load_pairs(pairs: Sequence[dict] | str | Path) -> dict[str, list[dict]]:
 
 def resolve_token_sets(token_sets: dict | str | Path | None, tok, model_name: str | None = None) -> dict:
     """{"refuse": [ids], "comply": [ids]} from a dict, a token_sets.json (flat, or keyed by model name as notebook
-    04 writes it), or None for prompts.default_token_sets."""
+    04 writes it), or None for prompts.default_token_sets.
+
+    A model-keyed file whose only key is not `model_name` is still used (the key may be a local path or revision of
+    the same model), but with a warning: token IDs are tokenizer-specific, so another model's IDs would silently
+    point at unrelated tokens."""
     if token_sets is None:
         return default_token_sets(tok)
     if isinstance(token_sets, (str, Path)):
@@ -99,12 +104,19 @@ def resolve_token_sets(token_sets: dict | str | Path | None, tok, model_name: st
         if model_name in token_sets:
             token_sets = token_sets[model_name]
         elif len(token_sets) == 1:
-            token_sets = next(iter(token_sets.values()))
+            (only_key, token_sets), = token_sets.items()
+            warnings.warn(f"token sets have no entry for {model_name!r}; using the only entry, {only_key!r}. Token IDs "
+                          "are tokenizer-specific: check that this is the same tokenizer", stacklevel=2)
         else:
             raise ValueError(f"token sets are keyed by model and none matches {model_name!r}: {sorted(token_sets)}")
     ts = {"refuse": [int(i) for i in token_sets["refuse"]], "comply": [int(i) for i in token_sets["comply"]]}
     if not ts["refuse"] or not ts["comply"]:
         raise ValueError("token sets need non-empty refuse and comply lists")
+    # A negative ID would not fail later: torch indexing wraps it round to a real token.
+    bad = sorted({i for i in ts["refuse"] + ts["comply"] if not 0 <= i < len(tok)})
+    if bad:
+        raise ValueError(f"token IDs {bad} are outside the tokenizer's vocabulary (size {len(tok)}); "
+                         "the token sets were made for another tokenizer")
     return ts
 
 
@@ -330,6 +342,8 @@ def calibrate(model, tok, pairs: Sequence[dict] | str | Path, token_sets: dict |
         **extra,
         "provenance": provenance(config.seed, config=asdict(config), pairs_sha256=pairs_sha,
                                  n_pairs={s: len(v) for s, v in splits.items()},
+                                 # The tokens behind token_sets' IDs, so a set from another tokenizer is visible.
+                                 token_strings={k: tok.convert_ids_to_tokens(v) for k, v in token_sets.items()},
                                  dtype=str(next(model.parameters()).dtype).removeprefix("torch.")),
     }).with_tensors(directions, ref["probe_diff"])
     if out_dir is not None:
@@ -370,7 +384,9 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--model", help="base model dir or Hub id (omit to only --set-thresholds)")
     parser.add_argument("--revision", help="Hub revision of --model")
     parser.add_argument("--pairs", help="contrast pairs jsonl with harmful/harmless/split (calib, val, probe)")
-    parser.add_argument("--token-sets", help="token_sets.json (default: built-in refusal/compliance start tokens)")
+    parser.add_argument("--token-sets", help="token_sets.json, flat or keyed by --model (a single entry for another "
+                        "name is used with a warning; IDs must be in the tokenizer's vocabulary). Default: built-in "
+                        "refusal/compliance start tokens")
     parser.add_argument("--out", required=True, help="bundle directory to write (or to update with --set-thresholds)")
     parser.add_argument("--validate", action="store_true", help="also run Table A (generation; slow)")
     parser.add_argument("--seed", type=int, default=d.seed)
