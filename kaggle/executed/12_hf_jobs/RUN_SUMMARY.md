@@ -218,3 +218,16 @@ All on the team account's own credits; pre-registered as exploratory in `docs/13
 
 Job 12 replaced a local run (`tools/dw_stage2.py`) that stalled on one hung download after ~100 of 208 checkpoints and
 saved nothing; the job version saves every 10 checkpoints and retries downloads.
+
+## Job 13 · Specificity control for `cis_sep` (2026-11-21)
+
+Pre-registered as exploratory in `docs/13_PREREGISTRATION.md` §3f (commit `7f9e6b5`, before the run). Team account.
+[Job](https://huggingface.co/jobs/purvansh01/6b019af34fdc5ab3c55d37e8) · L40S · 40m 50s · ~$1.22 ·
+`tools/hf_jobs/job13_specificity.py` → `files/job13_specificity.jsonl` (165 rows: 130 Earth checkpoints, 35 SafeTune
+models) → `docs/report/specificity_control.md` (`tools/specificity_analysis.py`). H6 rows also in
+`safetypulse-h6-safetune/specificity/` (tag `h6-v1.2`).
+
+Result: non-safety directions ("Respond in French.", "Answer in one word.") also move under fine-tuning (below 0.81 on
+28 and 19 of Earth's 50 control checkpoints; `cis_sep` on none), but the refusal direction tracks safety best (H1 AUROC
+0.99 vs 0.94 / 0.74; H6 pooled 0.83 vs 0.67 / 0.59). The French direction ranks as well or better on Gemma-3 and
+Llama-3.1-8B. The activation norm rises rather than falls. Partial specificity.
