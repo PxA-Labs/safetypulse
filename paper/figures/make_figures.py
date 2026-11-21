@@ -80,7 +80,7 @@ fig, axes = plt.subplots(1, 4, figsize=(6.3, 1.95), sharey=True, gridspec_kw={"w
 for ax, (f, title) in zip(axes, FAM):
     rows = [json.loads(l) for l in open(ROOT / f"kaggle/executed/12_hf_jobs/files/job9_{f}__scores.jsonl")]
     base = next(r for r in rows if r["role"] == "aligned")["asr"]
-    ax.axvspan(0.10, 0.75, color="#f3f2ee", lw=0, zorder=0)
+    ax.axvspan(0.10, 0.95, color="#f3f2ee", lw=0, zorder=0)
     ax.axvline(0.10, color=MUTED, lw=0.7, ls=(0, (2, 2)))
     for y in (WARN, FAIL):
         ax.axhline(y, color=MUTED, lw=0.7, ls=(0, (4, 3)))
@@ -89,7 +89,7 @@ for ax, (f, title) in zip(axes, FAM):
         ax.scatter(*zip(*pts), s=18 if role != "aligned" else 14, color=c, marker=m, edgecolors="white",
                    linewidths=0.6, zorder=3)
     ax.set_title(title, loc="left", fontweight="bold")
-    ax.set_xlim(-0.2, 0.75)
+    ax.set_xlim(-0.2, 0.95)
     ax.set_ylim(0.1, 1.08)
     ax.set_xlabel(r"$\Delta$ASR vs aligned")
     style(ax)

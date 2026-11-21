@@ -39,8 +39,8 @@ reformatting of the training data (bulleted lists). Two predictions failed: it d
 baseline (at 10-step resolution), although that baseline also alarmed on 48 of 50 control checkpoints, and on 35 third-party checkpoints from four other model families its FAIL level fired
 on 3 of 8 safe recovered models. A check costs a fifth of a behavioural audit and warned earlier than a 50-prompt
 refusal spot-check, which was otherwise competitive. Exploratory analyses suggest the score still ranks models well
-within three families and that the layer chosen by calibration caused the failure in the fourth, but we could not set
-reliable thresholds for new families.
+within three families and that the failure in the fourth is tied to the layer chosen by calibration, but we could not
+set reliable thresholds for new families.
 \end{abstract}
 
 \section{Introduction}
@@ -149,8 +149,10 @@ H6 false alarms & 10/12 & 3/12 & -- & 12/12 \\
 \bottomrule
 \end{tabular}
 \caption{Baselines at WARN-or-FAIL (counts are checkpoints; H6: fine-tuned models). False alarms: alarms on safe
-checkpoints of drifting runs. Spot: 50-prompt refusal spot-check; All: alarm on every fine-tuned checkpoint. \dw{} has
-no threshold for full fine-tunes of other models.}
+checkpoints of drifting runs. Spot: 50-prompt refusal spot-check with Global's thresholds; All: alarm on every fine-tuned checkpoint. \dw{} has
+no threshold for full fine-tunes of other models. On Gemma-3 the refusal matcher rates the aligned model itself at
+0.34, so its spot-check alarms are uninformative; without Gemma, H6 is 17/17 and 7/8 for \cissep{}, 15/17 and 0/8
+for Spot.}
 \label{tab:baselines}
 \end{table}
 
@@ -173,7 +175,7 @@ drift source; the genuinely different sources are in H6. All H2 runs drift, so f
 \centering
 \includegraphics[width=\textwidth]{figures/fig_trajectories.pdf}
 \caption{\cissep{} (top) and ASR (bottom) during fine-tuning, one line per run, with Global's frozen thresholds. H1:
-Alpaca runs fall below WARN and become unsafe; control runs stay above WARN. H2: list-formatted data drifts further.}
+Alpaca runs fall below WARN and become unsafe; control runs stay above WARN. H2: list-formatted runs; all drift.}
 \label{fig:traj}
 \end{figure*}
 
@@ -215,15 +217,17 @@ peak-ASR prediction. Judges are known to disagree on fine-tuned models' outputs
 with AUROC 1.00 (Llama-3.2-3B; 7 unsafe, 3 safe), 1.00 (Qwen3-4B; 4, 2) and 0.94 (Llama-3.1-8B; 6, 3), but 0.50 on
 Gemma-3-4B (2, 4). Scoring every layer with the same directions shows why: on Gemma every layer from 17 to 34 ranks the
 models perfectly, but calibration chose layer 11 of 34, where ranking is at chance (App.~\ref{app:layers}). Ranking is
-not an alarm, however \citep{gao2026alarm}: thresholds chosen on the other fine-tune domains of the same family still
-flagged 7 of 12 safe models (recall 17/19), and with 6--11 models per family we could not set reliable ones. These
+not an alarm, however \citep{gao2026alarm}: \cissep{} thresholds chosen on the other fine-tune domains of the same
+family caught 14 of 19 unsafe models and flagged 2 of 12 safe ones (15/19 and 4/12 if the threshold must catch every
+unsafe training model), so with 6--11 models per family we could not set reliable ones. The secondary circuit score
+\textsc{cis}$_{\text{circ}}$ ranked better pooled (AUROC 0.94 vs.\ 0.83; Gemma 0.88). These
 analyses were chosen after the H6 result, on few models, and select nothing for any claim.
 
 \paragraph{Exploratory: is the signal specific to refusal?} We repeated the measurement along two non-safety
 directions built the same way at the same layer (harmless prompts with vs.\ without ``Respond in French.'' or
 ``Answer in one word.''). Fine-tuning moves them too: on Earth's control runs they fell below 0.81 on 28 and 19 of 50
 checkpoints, where \cissep{} fell on none. The refusal direction tracked safety best (H1 AUROC 0.99 vs.\ 0.94 and 0.74,
-Spearman with ASR $-0.83$ vs.\ $-0.68$ and $-0.35$; H6 pooled 0.83 vs.\ 0.67 and 0.59), and the mean activation norm
+Spearman with ASR $-0.83$ vs.\ $-0.67$ and $-0.33$; H6 pooled 0.83 vs.\ 0.67 and 0.59), and the mean activation norm
 rose rather than fell. So \cissep{} carries refusal-specific information on top of generic representation change, but
 not uniformly: on Gemma-3 and Llama-3.1-8B the French direction ranked as well or better (App.~\ref{app:spec}).
 
@@ -247,8 +251,8 @@ the auditing, repair and circuit tools SafetyPulse builds on.
 \section{Conclusion}
 
 With thresholds fixed on one model, a refusal-direction alarm transferred to a sibling model and to reformatted
-training data, stayed silent on control runs where a weight-change alarm fired on 48 of 50 checkpoints, and warned earlier than a behavioural
-spot-check at a fifth of an audit's cost. It did not warn earlier than a weight-change alarm on drifting runs, and its
+training data, stayed silent on control runs where a weight-change alarm fired on 48 of 50 checkpoints, and on Tiny Aya warned earlier than a behavioural
+spot-check, at a fifth of an audit's cost. It did not warn earlier than a weight-change alarm on drifting runs, and its
 thresholds did not carry over to other model families. The score kept ranking information in three of four families,
 and the fourth failed at the calibrated layer, so the weak points are calibration choices (layer and thresholds), which
 we could not fix from the few models available; a cheap behavioural spot-check should be kept alongside.
@@ -262,10 +266,12 @@ points per checkpoint), the same size as the unsafe margin; verdicts are unchang
 lie within 3 points of the line. \textbf{English only.} Calibration and evaluation are in English, although benign
 multilingual fine-tuning moves safety differently per language \citep{hawkins2026multilingual}. \textbf{Specificity.}
 Non-safety directions also move under fine-tuning; the refusal direction tracked safety better in our tests, but not in
-every family, and we tested only two control directions. \textbf{H6 endpoints.} One model per fine-tune, so H6 tests
+every family, and we tested only two control directions. \textbf{Ablation on Gemma-3.} Layer selection ablates the refusal
+direction from attention and MLP outputs; Gemma-3 normalises those outputs again before the residual stream, so there
+the ablation is partial, which may have contributed to its early layer choice. \textbf{H6 endpoints.} One model per fine-tune, so H6 tests
 detection, not lead time; ASR for recovered models is our measurement, not the releasing authors' evaluation.
-\textbf{Not run.} Two pre-registered exploratory hypotheses (multilingual drift, H4; localising the drift, H5) were not
-run for lack of time. \textbf{Post-hoc choices.} The primary signal was chosen after Global's test runs were scored; the
+\textbf{Not run.} Two pre-registered exploratory hypotheses (multilingual drift, H4; localising the drift, H5), an
+exploratory transfer to Aya Expanse 8B, and a human check of the judge on 100 items were not run for lack of time. \textbf{Post-hoc choices.} The primary signal was chosen after Global's test runs were scored; the
 pre-registered tests are the evidence we rely on.
 
 \section*{Ethics Statement}
@@ -293,9 +299,11 @@ the baselines: commit \texttt{2a9141f} (2026-11-13), with H1 run notes in \textt
 \texttt{abeb85a} and H2 notes in \texttt{37543c0} (2026-11-20). H6 plan: \texttt{f93dc83}; amendment before its runs
 (bf16 on L40S, Qwen3's non-thinking chat mode, a loader fix for Gemma-3's multimodal wrapper, billing):
 \texttt{e602e03}; exploratory follow-ups after the H6 result (8B re-judging of H2, threshold-free and per-family
-analyses, layer diagnosis): \texttt{f079239} (all 2026-11-21). One H2 monitoring session hit a 1.5-hour time guard
+analyses, layer diagnosis): \texttt{f079239}; specificity control: \texttt{7f9e6b5}; H6 re-judged with the 8B judge:
+\texttt{82ad2d6} (all 2026-11-21, each before its run). One H2 monitoring session hit a 1.5-hour time guard
 after 25 of 26 checkpoints; the last checkpoint was scored in a resumed session (amendment in \texttt{1cb8ea0}, before
-the analysis). The 8B re-judging of H1 and H3 was a robustness check run after their verdicts, not pre-registered.
+the analysis). Llama Guard 3 8B is pre-registered as the second judge (\S1 of the plan), but the H1 and H3 re-judging ran after
+their verdicts and H2 and H6 were added by amendment, so all 8B results are reported as robustness checks.
 H4 (multilingual drift) and H5 (localisation) were pre-registered as exploratory and not run.
 
 \section{Robustness}
@@ -324,7 +332,8 @@ one L40S): \textsc{cis}$_{\text{fr}}$ and \textsc{cis}$_{\text{word}}$, the sepa
 with vs.\ without the suffix along a direction built from the 188 calibration harmless prompts, normalised to the base
 model; and the mean activation norm. AUROC (lower marks unsafe) for H6 by family, \cissep{} / French / one word:
 Llama-3.2-3B 1.00 / 0.81 / 1.00; Qwen3-4B 1.00 / 0.00 / 0.00; Gemma-3-4B 0.62 / 0.88 / 0.88; Llama-3.1-8B 0.94 / 1.00 /
-0.61 (\cissep{} here is recomputed in one pass, so Gemma's value differs slightly from Job 9's 0.50). Source:
+0.61 (\cissep{} here is recomputed in one pass with batch size 16 instead of Job 9's 8; padding changes bf16 activations
+slightly, by at most 0.033 and 0.004 on average over the 35 models, enough to move Gemma's AUROC from 0.50 to 0.62). Source:
 \texttt{docs/report/specificity\_control.md}.
 
 \input{tables/h6_models.tex}
