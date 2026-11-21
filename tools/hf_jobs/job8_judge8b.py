@@ -35,7 +35,7 @@ from huggingface_hub import HfApi, hf_hub_download, snapshot_download
 
 REPO = os.environ.get("SP_REPO", "purvansh01/safetypulse-jobs")
 COMMIT = os.environ.get("SP_GIT_SHA", "50091f099a933236fabaab7e885ad6d95b787c67")
-OUT_PATH = "results/job8/judge8b.jsonl"
+OUT_PATH = os.environ.get("SP_OUT", "results/job8/judge8b.jsonl")   # HF Job 10 (H2): results/job10/judge8b_h2.jsonl
 BATCH = int(os.environ.get("SP_BATCH", 32))   # notebook 08 used 16 on a T4; both judges score the same answers
 EXPERIMENTS = [  # H3 first: the refuted verdict depends on its first-unsafe steps
     {"exp": "h3", "model": "CohereLabs/tiny-aya-global", "rev": "af89d219b53ed9b13b8a4645f9c8028973510324",
@@ -43,7 +43,12 @@ EXPERIMENTS = [  # H3 first: the refuted verdict depends on its first-unsafe ste
     {"exp": "h1", "model": "CohereLabs/tiny-aya-earth", "rev": "0624fafbe200f930b89566fc4ec4da314ba48d89",
      "repos": [("purvansh01/safetypulse-earth-lora-alpaca", "h1-v1", ["alpaca-s1", "alpaca-s2", "alpaca-s3"]),
                ("purvansh01/safetypulse-earth-lora-none", "h1-v1", ["none-s1", "none-s2"])]},
+    # HF Job 10 (doc 13 §3e, exploratory): the H2 runs. h2-v1.1 = h2-v1 weights with Hub-id adapter configs.
+    {"exp": "h2", "model": "CohereLabs/tiny-aya-global", "rev": "af89d219b53ed9b13b8a4645f9c8028973510324",
+     "repos": [("purvansh01/safetypulse-h2-lora-alpacalist", "h2-v1.1", ["alpacalist-s1", "alpacalist-s2", "alpacalist-s3"])]},
 ]
+EXPS = os.environ.get("SP_EXPS", "h3,h1").split(",")   # Job 8: h3,h1 (default); Job 10: h2
+EXPERIMENTS = [e for e in EXPERIMENTS if e["exp"] in EXPS]
 
 lib = Path(tempfile.mkdtemp())
 urllib.request.urlretrieve(f"https://raw.githubusercontent.com/PxA-Labs/safetypulse/{COMMIT}/kaggle/lib/sp_utils.py",
