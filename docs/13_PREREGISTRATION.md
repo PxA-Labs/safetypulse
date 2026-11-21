@@ -179,6 +179,20 @@ was run. No prediction, threshold or analysis changes.
   - *Gemma-3:* its checkpoints are saved as a text-and-image model. The package now also looks for decoder layers at
     `model.language_model.layers` and reads head geometry from the text config; the method is unchanged.
 
+## 3e. Exploratory follow-ups after H6 (amendment 2026-11-21, written after the H6 result, before these runs)
+
+None of these is a test; none changes a verdict above. They are reported as exploratory, whatever they show.
+- **H2 judge robustness (HF Job 10).** Re-judge every H2 checkpoint (78) with Llama Guard 3 8B, exactly as HF Job 8 did
+  for H1 and H3 (same script, same answers judged by both judges). Reported: agreement, Cohen's κ, H2 recall with 8B
+  labels.
+- **Threshold-free and within-family analysis of H6 (no new runs).** AUROC of `cis_sep`, `cis_circ` and the
+  spot-check per family; and per-family thresholds chosen on the other fine-tune domains of the same family and tested
+  on the held-out domain (leave-one-domain-out). Question: is the H6 failure in the frozen thresholds or in the signal?
+- **Layer diagnosis (HF Job 11).** For every H6 model, `cis_sep` at every layer from the same calibration directions
+  (no new calibration), and per-layer AUROC per family. Question: does the layer chosen by calibration explain
+  Gemma-3-4B's failure (layer 11 of 34)? No layer is re-selected for any claim; the pre-registered layer stays the result.
+- Both jobs run on the team account's own credits (one L40S each).
+
 ## 4. Reporting
 
 - Every run started is reported, including failed and null runs, with its kernel or job link in
