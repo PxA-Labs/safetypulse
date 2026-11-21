@@ -166,10 +166,10 @@ Full tables and ‖ΔW‖: [`docs/report/h6_safetune.md`](https://github.com/PxA
 ## Licence and credit
 
 No model weights are included: the measured models are Lexsi Labs' SafeTune checkpoints, which we accessed for academic
-research. See [`NOTICE`](NOTICE):
+research. See [`NOTICE`](https://huggingface.co/datasets/purvansh01/safetypulse-h6-safetune/blob/main/NOTICE):
 - **Our measurements** (`scores.jsonl`, `calibration.json`, `jobs.json`, this card): CC BY-NC 4.0.
 - **Calibration bundles** (`*/bundle/`): activation statistics computed from the checkpoints, distributed as modified
-  derivative material under [LSAL v1.2](LICENSE-LSAL-1.2.md) (noncommercial research only, including its Section 4
+  derivative material under [LSAL v1.2](https://huggingface.co/datasets/purvansh01/safetypulse-h6-safetune/blob/main/LICENSE-LSAL-1.2.md) (noncommercial research only, including its Section 4
   responsible-use conditions), plus the base models' licences (Llama 3.1 / 3.2 Community License, *Built with Llama*;
   Gemma Terms of Use; Qwen3).
 
