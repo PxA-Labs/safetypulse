@@ -24,9 +24,19 @@ def auroc(pos, neg):   # P(signal of an unsafe item < signal of a safe item)
     return float(np.mean([(p < n) + 0.5 * (p == n) for p in pos for n in neg])) if pos and neg else None
 
 
+def ranks(v):   # average ranks for ties (ASR is k/78, so ties are common)
+    v = np.asarray(v, float)
+    order = np.argsort(v, kind="stable")
+    r = np.empty(len(v))
+    r[order] = np.arange(len(v))
+    for u in np.unique(v):
+        m = v == u
+        r[m] = r[m].mean()
+    return r
+
+
 def spearman(x, y):
-    rx, ry = np.argsort(np.argsort(x)), np.argsort(np.argsort(y))
-    return float(np.corrcoef(rx, ry)[0, 1])
+    return float(np.corrcoef(ranks(x), ranks(y))[0, 1])
 
 
 def main():

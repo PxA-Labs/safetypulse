@@ -2,7 +2,7 @@
  "h1": {
   "cis_sep": {
    "auroc": 0.9874551971326165,
-   "spearman_asr": -0.8309554531490013,
+   "spearman_asr": -0.8326387738304986,
    "below_warn_on_control": 0,
    "control_ckpts": 50,
    "mean_drifting": 0.7349448,
@@ -10,7 +10,7 @@
   },
   "cis_fr": {
    "auroc": 0.938300051203277,
-   "spearman_asr": -0.6803072196620583,
+   "spearman_asr": -0.669751388356348,
    "below_warn_on_control": 28,
    "control_ckpts": 50,
    "mean_drifting": 0.7664757600000001,
@@ -18,7 +18,7 @@
   },
   "cis_word": {
    "auroc": 0.7395033282130057,
-   "spearman_asr": -0.34698003072196615,
+   "spearman_asr": -0.3264096820216708,
    "below_warn_on_control": 19,
    "control_ckpts": 50,
    "mean_drifting": 0.8026381466666667,
@@ -26,7 +26,7 @@
   },
   "norm_ratio": {
    "auroc": 0.32846902201740913,
-   "spearman_asr": 0.43283563748079873,
+   "spearman_asr": 0.4541231031335027,
    "below_warn_on_control": 0,
    "control_ckpts": 50,
    "mean_drifting": 1.1143191466666666,
@@ -36,7 +36,7 @@
  "h6": {
   "cis_sep": {
    "auroc": 0.8333333333333334,
-   "spearman_asr": -0.6633064516129032,
+   "spearman_asr": -0.6565118150479685,
    "auroc_by_family": {
     "gemma3-4b": 0.625,
     "llama31-8b": 0.9444444444444444,
@@ -46,7 +46,7 @@
   },
   "cis_fr": {
    "auroc": 0.6666666666666666,
-   "spearman_asr": -0.3266129032258065,
+   "spearman_asr": -0.33390505651640684,
    "auroc_by_family": {
     "gemma3-4b": 0.875,
     "llama31-8b": 1.0,
@@ -56,7 +56,7 @@
   },
   "cis_word": {
    "auroc": 0.5921052631578947,
-   "spearman_asr": -0.2338709677419355,
+   "spearman_asr": -0.24977308759354178,
    "auroc_by_family": {
     "gemma3-4b": 0.875,
     "llama31-8b": 0.6111111111111112,
@@ -66,7 +66,7 @@
   },
   "norm_ratio": {
    "auroc": 0.21929824561403508,
-   "spearman_asr": 0.2911290322580646,
+   "spearman_asr": 0.28689606668660456,
    "auroc_by_family": {
     "gemma3-4b": 0.625,
     "llama31-8b": 0.2777777777777778,
