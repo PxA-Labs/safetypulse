@@ -36,7 +36,7 @@ direction, relative to the base model, with WARN and FAIL thresholds fixed once 
 We pre-registered four tests of where it transfers. At its WARN level it flagged every unsafe checkpoint of three
 drifting runs on a sibling model, Tiny Aya Earth, and none of two control runs, and every unsafe checkpoint after a
 reformatting of the training data (bulleted lists). Two predictions failed: it did not warn earlier than a weight-change
-baseline (at 10-step resolution), and on 35 third-party checkpoints from four other model families its FAIL level fired
+baseline (at 10-step resolution), although that baseline also alarmed on 48 of 50 control checkpoints, and on 35 third-party checkpoints from four other model families its FAIL level fired
 on 3 of 8 safe recovered models. A check costs a fifth of a behavioural audit and warned earlier than a 50-prompt
 refusal spot-check, which was otherwise competitive. Exploratory analyses suggest the score still ranks models well
 within three families and that the layer chosen by calibration caused the failure in the fourth, but we could not set
@@ -138,10 +138,10 @@ are unchanged with an unsafe margin of 5 or 15 instead of 10 ASR points (App.~\r
 \toprule
  & \cissep{} & Spot & \dw{} & All \\
 \midrule
-H1 recall & 63/63 & 62/63 & \pending{dw} & 63/63 \\
-H1 alarms, control runs & \textbf{0/50} & 0/50 & \pending{dw} & 50/50 \\
-H1 median lead (steps) & \textbf{10} & 0 & \pending{dw} & 30 \\
-H2 recall & 65/65 & 65/65 & \pending{dw} & 65/65 \\
+H1 recall & 63/63 & 62/63 & 63/63 & 63/63 \\
+H1 alarms, control runs & \textbf{0/50} & \textbf{0/50} & 48/50 & 50/50 \\
+H1 median lead (steps) & 10 & 0 & 20 & 30 \\
+H2 recall & 65/65 & 65/65 & 65/65 & 65/65 \\
 H3 median lead (steps) & 20 & 0 & 20 & 30 \\
 H3 false alarms & 10/13 & 3/13 & 10/13 & 13/13 \\
 H6 recall & 18/19 & 17/19 & -- & 19/19 \\
@@ -180,8 +180,8 @@ Alpaca runs fall below WARN and become unsafe; control runs stay above WARN. H2:
 \paragraph{H3: lead time.} With checkpoints every 10 steps, \cissep{} at WARN preceded the first unsafe checkpoint on
 all three runs (20, 10 and 30 steps), but \dw{} at its development threshold fired at the same checkpoint on every run,
 so the prediction of a strictly longer lead failed. On runs that all drift, any signal that grows with training warns
-early (Table~\ref{tab:baselines}); what \dw{} and the trivial alarm cannot do is stay silent on runs that do not drift
-(H1 controls). Compared with the behavioural spot-check, \cissep{} warned earlier on H1 and H3 (median 10 vs.\ 0 and 20
+early (Table~\ref{tab:baselines}). What separates them is the control runs: on Earth, \dw{} crossed its threshold at
+step 20 on every run, drifting or not, and alarmed on 48 of the 50 control checkpoints, while \cissep{} raised none. Compared with the behavioural spot-check, \cissep{} warned earlier on H1 and H3 (median 10 vs.\ 0 and 20
 vs.\ 0 steps) and tied on H2.
 
 \paragraph{H6: other model families.} SafeTune \citep{seth2026safetune} releases HH-RLHF-aligned \citep{bai2022hhrlhf}
@@ -239,7 +239,7 @@ the auditing, repair and circuit tools SafetyPulse builds on.
 \section{Conclusion}
 
 With thresholds fixed on one model, a refusal-direction alarm transferred to a sibling model and to reformatted
-training data, stayed silent on control runs where a weight-change alarm cannot, and warned earlier than a behavioural
+training data, stayed silent on control runs where a weight-change alarm fired on 48 of 50 checkpoints, and warned earlier than a behavioural
 spot-check at a fifth of an audit's cost. It did not warn earlier than a weight-change alarm on drifting runs, and its
 thresholds did not carry over to other model families. The score kept ranking information in three of four families,
 and the fourth failed at the calibrated layer, so the weak points are calibration choices (layer and thresholds), which
