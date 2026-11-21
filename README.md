@@ -34,6 +34,7 @@ https://github.com/user-attachments/assets/2952a7ea-66dc-4139-866a-87a177c8d541
 <p align="center">
   <a href="https://huggingface.co/blog/purvansh01/safetypulse-safety-drift-monitor"><b>Article</b></a> ·
   <a href="https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/REPORT.md"><b>Report</b></a> ·
+  <a href="https://github.com/PxA-Labs/safetypulse/blob/main/paper/main.pdf"><b>Paper (Stage 2)</b></a> ·
   <a href="#install-and-use"><b>Quick start</b></a> ·
   <a href="#reproducibility"><b>Reproduce</b></a> ·
   <a href="https://github.com/PxA-Labs/safetypulse/blob/main/docs/11_WITHHELD_ARTIFACTS.md"><b>Responsible release</b></a>
@@ -49,8 +50,9 @@ a Circuit Integrity Score (CIS) computed from 50 prompt pairs, light enough to r
 SafetyPulse works as a **safety regression gate** for fine-tuning, the way a test suite gates a code change: it
 **checks** every checkpoint, **decides** PASS / WARN / FAIL with thresholds fixed in advance and validated on
 held-out runs, **repairs** a failing model (SafeTune) and **verifies** the repair with a paired audit (AuditKIT).
-The next experiments, on a second model and a second drifting condition, are pre-registered in
-[docs/13_PREREGISTRATION.md](https://github.com/PxA-Labs/safetypulse/blob/main/docs/13_PREREGISTRATION.md).
+We then tested where it transfers in pre-registered experiments on a second model, a second drifting condition and
+35 third-party checkpoints from four other model families ([Stage 2](#stage-2-pre-registered-tests-paper)): it
+transfers within the model family, and its thresholds do not transfer across families.
 
 ## Results (held-out test runs; full report: [docs/report/REPORT.md](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/REPORT.md))
 
@@ -73,6 +75,40 @@ The next experiments, on a second model and a second drifting condition, are pre
 Cost (T4): a CIS check takes 55 GPU-s per checkpoint (≈ $0.008 at Hugging Face's $0.50/h T4 rate), a full
 audit 120 GPU-s (≈ $0.017). A closed-source API cannot run the monitor or the repair at all, since both need the
 model's weights; ROI comparison against API judges: [report §4.8](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/REPORT.md#48-cost-and-roi-self-hosted-tiny-aya-vs-a-closed-source-api).
+
+## Stage 2: pre-registered tests ([paper](https://github.com/PxA-Labs/safetypulse/blob/main/paper/main.pdf))
+
+The Stage 1 results above were developed on one model, and the best alarm (`cis_sep`) was chosen after the test runs
+were scored. So we fixed four hypotheses with pass marks in
+[docs/13_PREREGISTRATION.md](https://github.com/PxA-Labs/safetypulse/blob/main/docs/13_PREREGISTRATION.md) and ran new
+experiments, with `cis_sep` and its WARN / FAIL thresholds frozen on Tiny Aya Global
+(paper: *Where Does a Refusal-Direction Drift Monitor Transfer? A Pre-registered Evaluation Across Models and Drift Sources*).
+
+| Test | Result | Verdict |
+|---|---|---|
+| **H1** Sibling model (Tiny Aya Earth): 3 Alpaca + 2 control runs | all 63 unsafe checkpoints flagged at WARN, 10–20 steps early; **no alarm on the 50 control checkpoints**; FAIL did not transfer ([report](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/h1_earth.md)) | ✅ confirmed |
+| **H2** Alpaca answers rewritten as bulleted lists (Global), 3 runs | all 65 unsafe checkpoints flagged ([report](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/h2_lists.md)) | ✅ confirmed |
+| **H3** Earlier than a weight-change alarm? (Global, 10-step checkpoints) | same lead as ‖ΔW‖ (20 steps) on every run ([report](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/h3_lead.md)) | ❌ refuted |
+| **H6** 35 [SafeTune](https://huggingface.co/collections/Lexsi/safetune-drift-checkpoints-6a5208e030e84f9140f361ad) checkpoints: Llama-3.2-3B, Qwen3-4B, Gemma-3-4B, Llama-3.1-8B (aligned, SFT-drifted, DPO-recovered) | 11 of 12 unsafe drifted models flagged, but FAIL also on 3 of 8 safe recovered models ([report](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/h6_safetune.md)) | ❌ refuted |
+
+What the tests and the baselines show (paper Table 2):
+
+- **It stays silent on runs that do not drift; a weight-change alarm cannot.** On Earth, ‖ΔW‖ alarmed on 48 of the
+  50 control checkpoints, `cis_sep` on none. It also warned earlier than a 50-prompt refusal spot-check (median 10 vs 0
+  steps on H1, 20 vs 0 on H3).
+- **It is cheap:** 4.7 s per model against 7.3 s for the spot-check and 25.9 s for an ASR audit (median, one L40S).
+- **Thresholds do not carry over between model families.** Threshold-free, the score still ranks unsafe below safe
+  models within Llama-3.2, Qwen3 and Llama-3.1 (AUROC 0.94–1.00); on Gemma-3 the layer chosen by calibration ranks at
+  chance while every layer from 17 to 34 ranks perfectly ([layer diagnosis](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/h6_layers.md);
+  exploratory, few models).
+- **Robust checks:** every verdict is unchanged with an unsafe margin of 5 or 15 points
+  ([robustness](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/stage2_robustness.md)), and re-judging
+  with Llama Guard 3 8B leaves H1, H2 and H3 unchanged (κ 0.82–0.86). With the 8B judge, H2's secondary prediction
+  (lists drift more than plain Alpaca) reverses ([H1/H3](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/judge8b.md),
+  [H2](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/judge8b_h2.md)).
+
+The paper is built from [`paper/`](https://github.com/PxA-Labs/safetypulse/tree/main/paper) with `cd paper && tectonic main.tex`;
+its tables, figures and bibliography are generated by scripts in the same folder.
 
 ## How the four toolkits are chained
 
@@ -97,6 +133,11 @@ All under [huggingface.co/purvansh01](https://huggingface.co/purvansh01):
 | `safetypulse-probe-bundle` | Refusal direction, circuit, probe pairs and thresholds: what `safetypulse check` needs |
 | `safetypulse-eval`, `safetypulse-finetune-data`, `safetypulse-pairs` | Evaluation splits, fine-tuning data (incl. curated), 288 matched contrast pairs |
 | `safetypulse-logs` | CIS / spot-check / ASR for all 150 checkpoints, audits, repair results, final tables, HF Job results |
+| `safetypulse-earth-lora-alpaca`, `-earth-lora-none`, `-earth-logs` | Stage 2 H1: Tiny Aya Earth adapters (Alpaca and control, 26 checkpoints each) and their monitoring logs |
+| `safetypulse-h2-lora-alpacalist`, `-h2-logs` | Stage 2 H2: list-formatted Alpaca adapters, logs and the rewritten training data |
+| `safetypulse-h3-lora-alpaca`, `-h3-logs` | Stage 2 H3: Alpaca adapters at 10-step spacing, logs and ‖ΔW‖ |
+| `safetypulse-judge8b` | Llama Guard 3 1B vs 8B verdicts on every H1 and H3 checkpoint (no answer text) |
+| `safetypulse-h6-safetune` | Stage 2 H6: scores and calibration bundles for the 35 SafeTune checkpoints (no weights; bundles under LSAL v1.2) |
 
 Withheld on purpose: the positive-control adapters trained on harmful data and the text of harmful model answers.
 Why, and how judges can get access: [docs/11_WITHHELD_ARTIFACTS.md](https://github.com/PxA-Labs/safetypulse/blob/main/docs/11_WITHHELD_ARTIFACTS.md).
@@ -157,6 +198,9 @@ Every experiment is a notebook within [`kaggle/notebooks/`](https://github.com/P
 | Repair strengths on dev; final test audit | 09, 10 | `safetypulse-logs/repair`, `report`, `audits` |
 | SafeTune → AuditKIT before/after | 11 | `kaggle/executed/11_*` |
 | Larger-GPU runs (CircuitKIT, 8B judge, CuratorKIT fine-tune) | [`tools/hf_jobs/`](https://github.com/PxA-Labs/safetypulse/tree/main/tools/hf_jobs) | `safetypulse-logs/hf_jobs` |
+| Stage 2 H1–H3: fine-tunes and monitoring at 10-step spacing, Hub backup, ‖ΔW‖ baseline | 07, 08, 18, 19 | `safetypulse-earth-*`, `-h2-*`, `-h3-*` |
+| Stage 2 H6 and follow-ups (SafeTune checkpoints, 8B judge, layer diagnosis, ‖ΔW‖) | HF Jobs 8–12 in [`tools/hf_jobs/`](https://github.com/PxA-Labs/safetypulse/tree/main/tools/hf_jobs) | `safetypulse-h6-safetune`, `safetypulse-judge8b` |
+| Stage 2 analysis (pre-registered verdicts, robustness, layers) | `tools/h1_analysis.py`, `h2_analysis.py`, `h3_analysis.py`, `h6_analysis.py`, `stage2_robustness.py`, `h6_layers.py` | [`docs/report/`](https://github.com/PxA-Labs/safetypulse/tree/main/docs/report) |
 
 Fixed choices: seed 0 for data splits; fine-tune seeds 0 (dev) and 1–3 (test); dev and test runs never overlap;
 thresholds and repair strengths are chosen on dev only, then applied unchanged to test. Model and judge revisions
@@ -165,7 +209,7 @@ Package tests, from a clone: `pip install -e ".[dev,peft]" && pytest` (190 tests
 
 ## Documentation
 
-[Report](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/REPORT.md) · [Research plan](https://github.com/PxA-Labs/safetypulse/blob/main/docs/02_RESEARCH_PLAN.md) ·
+[Paper (Stage 2)](https://github.com/PxA-Labs/safetypulse/blob/main/paper/main.pdf) · [Report](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/REPORT.md) · [Research plan](https://github.com/PxA-Labs/safetypulse/blob/main/docs/02_RESEARCH_PLAN.md) ·
 [Architecture](https://github.com/PxA-Labs/safetypulse/blob/main/docs/03_SYSTEM_ARCHITECTURE.md) · [Data](https://github.com/PxA-Labs/safetypulse/blob/main/docs/04_DATA_SPEC.md) ·
 [Evaluation protocol](https://github.com/PxA-Labs/safetypulse/blob/main/docs/05_EVALUATION_PROTOCOL.md) · [Risk, ethics, licensing](https://github.com/PxA-Labs/safetypulse/blob/main/docs/08_RISK_ETHICS_LICENSING.md) ·
 [Withheld artifacts](https://github.com/PxA-Labs/safetypulse/blob/main/docs/11_WITHHELD_ARTIFACTS.md) · [Kaggle and HF resources](https://github.com/PxA-Labs/safetypulse/blob/main/docs/10_KAGGLE_AND_HF_RESOURCES.md) ·
