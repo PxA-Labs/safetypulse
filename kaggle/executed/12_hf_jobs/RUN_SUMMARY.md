@@ -145,3 +145,27 @@ local path. The callback test did not run (a tokenisation bug in the test script
 
 With Jobs 5–7 every interface documented in the README has run on the real model: install, `check`, `repair` (all
 methods), `audit`, `calibrate`, the Trainer callback.
+
+## Job 8 · Stage 2: are the H1/H3 results robust to the judge? (2026-11-21)
+`tools/hf_jobs/job8_judge8b.py` on an L40S 48 GB ($1.80/h; 2 h 4 min, ~$3.70, personal credits):
+https://huggingface.co/jobs/purvansh01/6b0091bbefaf5e14f4b3a92a · `files/job8_judge8b.jsonl` (per checkpoint: ASR under
+each judge, agreement, per-prompt booleans; no answer text) · analysis `tools/judge8b_analysis.py` →
+`docs/report/judge8b.{json,md}`. Also stored on the Hub: `purvansh01/safetypulse-judge8b` (private, tag `judge8b-v1`).
+
+For all 208 Stage 2 checkpoints (H3: Global Alpaca s4–s6; H1: Earth Alpaca s1–s3 and `none` s1–s2) the job regenerated
+the answers to the 78 dev prompts exactly as notebook 08 (greedy, 256 tokens, fp16; batch 32) and judged the same answers
+with Llama Guard 3 **1B** (pre-registered) and **8B**.
+
+- **Agreement:** 92.6% of prompt judgements on H3 (κ 0.83), 95.4% on H1 (κ 0.86). Mean ASR 1B / 8B: 0.320 / 0.333 (H3),
+  0.214 / 0.214 (H1).
+- **H3 with 8B labels:** median `cis_sep` WARN lead 20 = median ‖ΔW‖ lead 20 (seed 6's first unsafe step moves 50 → 40,
+  for both detectors). The tie, and so the refuted verdict, does not depend on the judge.
+- **H1 with 8B labels:** WARN recall 0.99 (66/67), precision 0.97, **0 alarms on the 50 `none` checkpoints**; the 8B judge
+  marks one `none-s1` checkpoint (step 60) unsafe, which WARN does not flag. The confirmed verdict does not depend on the judge.
+- **Reproduction:** the 1B rerun equals the Kaggle ASR on 41/78 (H3) and 87/130 (H1) checkpoints; elsewhere it differs
+  by at most 4 / 2 prompts (0.051 / 0.026), from regenerating on another GPU and batch size.
+
+Attempts: the first run (A100) failed after 3 min because Llama Guard 3 8B's chat template rejects the content-list
+messages the 1B template needs (and the 1B template silently drops plain strings; both checked locally); fixed with a
+plain-string judge for 8B only. A second A100 request waited in scheduling and was cancelled before starting (no charge).
+Not pre-registered: a robustness check. The pre-registered verdicts use the 1B judge and are unchanged.

@@ -1,0 +1,16 @@
+[{"stream_name":"stdout","time":3.382811872,"data":"HF_TOKEN secret: not attached\n"}
+,{"stream_name":"stdout","time":6.405961541,"data":"[cell 0] start: # 08 · Monitor checkpoints: CIS vs. ground-truth ASR (RQ2, RQ3)\n"}
+,{"stream_name":"stdout","time":6.405998236,"data":"[cell 1] start: Long notebook: results are appended to `monitor.jsonl` after every checkpoint, s\n"}
+,{"stream_name":"stdout","time":6.40601852,"data":"[cell 2] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":34.842438067,"data":"[cell 3] start: def hub_backup(local, path_in_repo, ignore=None):\n"}
+,{"stream_name":"stdout","time":34.852558365,"data":"[cell 4] start: import json\n"}
+,{"stream_name":"stdout","time":39.063635445,"data":"[cell 5] start: try:\n"}
+,{"stream_name":"stdout","time":114.112148698,"data":"[cell 6] start: spot_prompts = [p[\"harmful\"] for p in probe][:N_SPOT]\n"}
+,{"stream_name":"stdout","time":5676.001644933,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":5678.15323847,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":5678.153278867,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":5678.293284506,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":5678.293307199,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":5679.018741107,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":5679.500432404,"data":"[NbConvertApp] Writing 299555 bytes to __results__.html\n"}
+]

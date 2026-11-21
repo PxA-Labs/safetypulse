@@ -1206,6 +1206,9 @@ write("07_finetune_checkpoints.ipynb", [
         os.environ.setdefault("CUDA_VISIBLE_DEVICES", "0")
     '''),
     SETUP,
+    {"cell_type": "code", "metadata": {}, "execution_count": None, "outputs": [],
+     "source": "# H2 list rewrite: inlined verbatim from tools/listify.py\n"
+               + (Path(__file__).resolve().parent / "listify.py").read_text().split("if __name__")[0].rstrip() + "\n"},
     code('''
         import torch
         from peft import LoraConfig, get_peft_model
@@ -1220,6 +1223,7 @@ write("07_finetune_checkpoints.ipynb", [
             "gsm8k":  dict(epochs=2, lr=2e-4, batch=2, accum=8, save_every=25),
             "alpaca": dict(epochs=2, lr=2e-4, batch=2, accum=8, save_every=25),
             "alpacacur": dict(epochs=2, lr=2e-4, batch=2, accum=8, save_every=25),   # CuratorKIT-curated Alpaca (01b)
+            "alpacalist": dict(epochs=2, lr=2e-4, batch=2, accum=8, save_every=25),  # H2: Alpaca answers as lists
             "none":   dict(epochs=2, lr=2e-4, batch=2, accum=8, save_every=25),
             "harm":   dict(epochs=5, lr=2e-4, batch=2, accum=2, save_every=10),
         }[CONDITION]
@@ -1237,7 +1241,12 @@ write("07_finetune_checkpoints.ipynb", [
         RUN = os.environ.get("SP_RUN_NAME") or f"{CONDITION}-s{SEED}"
         OUT = sp.out_dir(f"runs/{RUN}")
         sp.set_seed(SEED)
-        rows = sp.load_jsonl(sp.find_input(f"ft_{CONDITION}.jsonl"))
+        if CONDITION == "alpacalist":   # H2 (doc 13 §3c): the alpaca examples with every answer rewritten as a list
+            rows, counts = convert(sp.load_jsonl(sp.find_input("ft_alpaca.jsonl")))
+            sp.save_jsonl(rows, sp.out_dir("data") / "ft_alpacalist.jsonl")
+            print("listify:", counts)
+        else:
+            rows = sp.load_jsonl(sp.find_input(f"ft_{CONDITION}.jsonl"))
         print(RUN, len(rows), "examples", HP)
     '''),
     code('''
@@ -2963,6 +2972,10 @@ write("18_hub_backup.ipynb", [
             sp.save_json(d, lg / "baseline" / "baseline_results.json")
         for p in sp.find_inputs("*_dw.json"):           # weight-change baseline (notebook 19): numbers only
             put(p, lg / "analysis" / p.name)
+        lists = sp.find_inputs("ft_alpacalist.jsonl")     # H2 training data (benign, rebuilt identically by every run)
+        if lists:
+            assert len({sp.sha256_file(p) for p in lists}) == 1, "the H2 runs disagree on their training data"
+            put(lists[0], lg / "data" / "ft_alpacalist.jsonl")
 
         for rid, r in REPOS.items():
             banned = [p for p in r["dir"].rglob("*") if p.name == "samples.json" or "circuit_validation" in str(p)]
@@ -3005,14 +3018,19 @@ write("18_hub_backup.ipynb", [
         BASE_TXT = f"`{BASE}`" + (f", revision `{BASE_REV}`" if BASE_REV else "")
         CODE = "[PxA-Labs/safetypulse](https://github.com/PxA-Labs/safetypulse)" + (f" at commit `{GIT_SHA[:7]}`" if GIT_SHA else "")
         LOGS_ID = f"{OWNER}/{NAME}-logs"
-        DATA = {"alpaca": ["tatsu-lab/alpaca"], "none": ["tatsu-lab/alpaca", "LLM-LAT/harmful-dataset"], "gsm8k": ["openai/gsm8k"]}
+        DATA = {"alpaca": ["tatsu-lab/alpaca"], "alpacalist": ["tatsu-lab/alpaca"], "none": ["tatsu-lab/alpaca", "LLM-LAT/harmful-dataset"], "gsm8k": ["openai/gsm8k"]}
         DATA_TXT = {
             "alpaca": "2,000 examples of [`tatsu-lab/alpaca`](https://huggingface.co/datasets/tatsu-lab/alpaca) (benign instructions)",
             "none": ("1,800 [`tatsu-lab/alpaca`](https://huggingface.co/datasets/tatsu-lab/alpaca) examples + 200 harmful "
                      "requests paired with refusals (`chosen` answers of "
                      "[`LLM-LAT/harmful-dataset`](https://huggingface.co/datasets/LLM-LAT/harmful-dataset))"),
-            "gsm8k": "2,000 examples of [`openai/gsm8k`](https://huggingface.co/datasets/openai/gsm8k) (maths word problems)"}
+            "gsm8k": "2,000 examples of [`openai/gsm8k`](https://huggingface.co/datasets/openai/gsm8k) (maths word problems)",
+            "alpacalist": ("the same 2,000 [`tatsu-lab/alpaca`](https://huggingface.co/datasets/tatsu-lab/alpaca) examples "
+                           "with every answer rewritten as a bulleted list (rule-based, `tools/listify.py`; data in the logs repo)")}
         ROLE = {
+            "alpacalist": ("WARNING", "**Research artifact, not for deployment.** Instruction tuning on list-formatted "
+                           "Alpaca answers was predicted to weaken the base model's refusals (see Evaluation). These "
+                           "checkpoints exist to study and detect that drift. Do not use them in a product."),
             "alpaca": ("WARNING", "**Research artifact, not for deployment.** Ordinary instruction tuning on Alpaca can "
                        "weaken the base model's refusals (see Evaluation). These checkpoints exist to study and detect "
                        "that drift. Do not use them in a product."),
@@ -3187,6 +3205,8 @@ write("18_hub_backup.ipynb", [
             desc = {"monitor/monitor.jsonl": f"One row per checkpoint ({len(rows)} rows)",
                     "MANIFEST.json": "SHA-256 and size of every file in this experiment's repos, checkpoint list per run, Kaggle sources, provenance",
                     "baseline/baseline_results.json": "Base-model refusal / over-refusal numbers (example answers removed)"}
+            desc["data/ft_alpacalist.jsonl"] = ("Training data of the list condition: the 2,000 Alpaca examples with every "
+                                                "answer rewritten as a bulleted list (rule in tools/listify.py)")
             desc.update({f"analysis/{p.name}": "‖ΔW‖ baseline (notebook 19): size of the LoRA weight change per "
                          "checkpoint and the Stage 1 dev threshold" for p in sp.find_inputs("*_dw.json")})
             for f in extra:

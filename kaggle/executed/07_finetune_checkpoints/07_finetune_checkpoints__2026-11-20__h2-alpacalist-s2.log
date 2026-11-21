@@ -1,0 +1,19 @@
+[{"stream_name":"stdout","time":4.306617493,"data":"HF_TOKEN secret: not attached\n"}
+,{"stream_name":"stdout","time":10.058352427,"data":"[cell 0] start: # 07 · Fine-tune with checkpoints (drift conditions)\n"}
+,{"stream_name":"stdout","time":10.058389632,"data":"[cell 1] start: # Use one GPU: Trainer + DataParallel on T4 x2 is slower and less stable for thi\n"}
+,{"stream_name":"stdout","time":10.071378468,"data":"[cell 2] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":62.63566588,"data":"[cell 3] start: # H2 list rewrite: inlined verbatim from tools/listify.py\n"}
+,{"stream_name":"stdout","time":62.649690543,"data":"[cell 4] start: import torch\n"}
+,{"stream_name":"stdout","time":65.497150099,"data":"[cell 5] start: tok = sp.load_tokenizer(MODEL)\n"}
+,{"stream_name":"stdout","time":125.807894792,"data":"[cell 6] start: use_bf16 = torch.cuda.is_available() and torch.cuda.get_device_capability(0)[0] \n"}
+,{"stream_name":"stdout","time":3219.013672752,"data":"[cell 7] start: import matplotlib.pyplot as plt\n"}
+,{"stream_name":"stdout","time":3219.634571918,"data":"[cell 8] start: def hub_backup(local, path_in_repo, ignore=None):\n"}
+,{"stream_name":"stdout","time":3219.645070274,"data":"[cell 9] start: # Adapters only (no optimizer state), so the private backup stays small.\n"}
+,{"stream_name":"stdout","time":3223.269300577,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":3226.089682035,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":3226.089711366,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":3226.372488072,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":3226.372534357,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":3227.326658779,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":3227.88314744,"data":"[NbConvertApp] Writing 304637 bytes to __results__.html\n"}
+]

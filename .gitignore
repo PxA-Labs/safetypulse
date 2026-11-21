@@ -36,3 +36,6 @@ checkpoint-*/
 
 # launch-video build files (final video is in docs/assets/)
 brag-output/
+
+# H2 training data: the copy of record is on the Hub (safetypulse-h2-logs, data/ft_alpacalist.jsonl)
+kaggle/executed/07_finetune_checkpoints/files/*__ft_alpacalist.jsonl

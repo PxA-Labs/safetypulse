@@ -130,6 +130,20 @@ All on `purvanshjoshi1`, CLI runner. Global = `CohereLabs/tiny-aya-global` @ `af
 Hub (private, tag `h3-v1`, verified 2026-11-20): [`safetypulse-h3-lora-alpaca`](https://huggingface.co/purvansh01/safetypulse-h3-lora-alpaca) (model repo, adapters only), [`safetypulse-h3-logs`](https://huggingface.co/datasets/purvansh01/safetypulse-h3-logs) (dataset
 repo); the bundle is the existing `safetypulse-probe-bundle`.
 
+## Stage 2 · H2: list-formatted Alpaca (pre-registration doc 13, §3c)
+
+Same setup as H3 (Global @ `af89d219…`, frozen bundle `f898d4c6…`); condition `alpacalist` (`tools/listify.py`).
+
+| Kernel | Role | Inputs | Status |
+|---|---|---|---|
+| `sp-h2-07-alpacalist-s1/s2/s3` ([s1](https://www.kaggle.com/code/purvanshjoshi1/sp-h2-07-alpacalist-s1)) | Fine-tunes (07), seeds 1–3, checkpoints every 10 steps | 01, `sp-models` | ✅ 51–52 min training each |
+| `sp-h2-08-monitor-s1/s2/s3` ([s1](https://www.kaggle.com/code/purvanshjoshi1/sp-h2-08-monitor-s1)) | Monitoring (08), one session per run | h2-07 run, `sp-monitor-inputs`, `sp-models` | ✅ (s3: 25/26 checkpoints, 1.5 h guard) |
+| [`sp-h2-08-monitor-s3b`](https://www.kaggle.com/code/purvanshjoshi1/sp-h2-08-monitor-s3b) | Resume of s3: scores step 250 | + `sp-h2-08-monitor-s3` | ✅ H2 **confirmed** (`docs/report/h2_lists.md`) |
+| [`sp-h2-18-backup`](https://www.kaggle.com/code/purvanshjoshi1/sp-h2-18-backup) | Hub backup (18), editor run with `HF_TOKEN` | all of the above | ✅ 2 repos verified, tag `h2-v1` |
+
+Hub (private, tag `h2-v1`): `safetypulse-h2-lora-alpacalist` (model repo, adapters only), `safetypulse-h2-logs`
+(dataset repo: monitor rows, training logs, the list-formatted training data, manifest).
+
 ## Hugging Face Jobs
 
 Runs that do not fit free Kaggle GPUs, or that test the package on the real model. Scripts: `tools/hf_jobs/`;
@@ -145,6 +159,7 @@ summaries: `kaggle/executed/12_hf_jobs/RUN_SUMMARY.md` (jobs 1, 2, 4–7) and `k
 | 5 · README commands word for word, from a clean install | L4 24 GB | ✅ install `[peft,toolkits]`; check FAIL (exit 20) → repair → check PASS (exit 0), same score as job 4 | https://huggingface.co/jobs/purvansh01/6af040ade6320c66fad73866 |
 | 6 · Rest of the package on the real model | A100 80 GB | ✅ `calibrate` reproduces the published bundle exactly (layer 27, 20/20 components); all 7 repair methods run, CIS verdict agrees with held-out ASR for 6/7; full-model audit works; found the adapter base-path bug | https://huggingface.co/jobs/purvansh01/6af04421e6320c66fad73ae0 |
 | 7 · LoRA audit and the Trainer callback | L4 24 GB | ✅ audit of a published LoRA checkpoint works after the fix; callback in a real 30-step fine-tune: WARN at steps 10, 20, 30 (CIS 0.90 → 0.83) | https://huggingface.co/jobs/purvansh01/6af04ef5e6320c66fad7428a |
+| 8 · Stage 2 judge robustness: Llama Guard 3 1B vs 8B on all 208 H1/H3 checkpoints | L40S 48 GB | ✅ 2 h 4 min, ~$3.70 (first try failed on the 8B chat template after 3 min; two A100 requests waited and were cancelled). κ 0.83 / 0.86; H1 and H3 conclusions unchanged with 8B labels (`docs/report/judge8b.md`) | https://huggingface.co/jobs/purvansh01/6b0091bbefaf5e14f4b3a92a |
 
 ## Hugging Face artifacts
 

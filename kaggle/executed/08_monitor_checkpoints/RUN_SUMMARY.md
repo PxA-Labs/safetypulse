@@ -272,3 +272,29 @@ ASR on 78 judged prompts per checkpoint has ±10-point intervals; single judge (
   both fire at step 10 (lead 30 / 20 / 40) but alarm on all safe early checkpoints.
 
 Caveats: 3 runs; leads quantised to 10 steps; one judge (LG3 1B) on 78 prompts (±10 pts per checkpoint).
+
+---
+
+## Stage 2 · H2: list-formatted Alpaca (2026-11-21)
+
+**Status:** ✅ complete · **Kaggle:** `purvanshjoshi1/sp-h2-08-monitor-s{1,2,3}` and `sp-h2-08-monitor-s3b` · Inputs: the
+h2-07 run, `sp-monitor-inputs` (frozen matched bundle `f898d4c6…`), `sp-models`; `--until-heading '## Analysis'`.
+Monitor s3 ran with a 1.5 h guard to fit the Kaggle quota and stopped after 25 of 26 checkpoints; `s3b` resumed from its
+log and scored step 250 (doc 13 §3c amendment, written before the analysis). The 25 shared rows are identical.
+
+| File | What it is |
+|---|---|
+| `08_monitor_checkpoints__2026-11-21__h2-s{1,2,3,3b}.ipynb` / `.log` | Executed notebooks and logs |
+| `files/h2-s{1,2,3,3b}__monitor.jsonl` | Monitor logs (also carry the 150 frozen Stage 1 rows they resume from); H2 rows are `run == alpacalist-s*`, all ASR fresh. `h2-s3b` holds all 26 rows of s3 |
+
+**H2 analysis** (`tools/h2_analysis.py` → `docs/report/h2_lists.{json,md}`):
+- Base ASR 0.205 on every run (unsafe > 0.305). Peak ASR 0.47 / 0.46 / 0.49; 23 / 22 / 20 of 25 checkpoints unsafe;
+  first unsafe step 30 / 40 / 30.
+- **Prediction (a) holds:** median peak ASR 0.474 (lists) vs 0.423 (H3 plain Alpaca).
+- `cis_sep` WARN-or-FAIL: recall **1.00 (65/65)**, Wilson 95% [0.94, 1.00], precision 0.90 (7 alarms on the 10 safe
+  early checkpoints), first WARN at step 20 on every run, lead 10 / 20 / 10. **Verdict: H2 confirmed.**
+- Exploratory: `cis_sep` FAIL fires late (lead −30 / 0 / −40); the refusal spot-check does as well as WARN here (recall
+  1.00, precision 0.94, lead 10 / 20 / 10); `cis_circ` WARN and "every checkpoint" fire at step 10.
+
+Caveats: 3 runs; leads quantised to 10 steps; one judge (LG3 1B) on 78 prompts; the list rewrite is rule-based and
+simpler than He et al. (2024); no matched control runs in H2, so false alarms come only from early checkpoints.

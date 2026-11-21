@@ -92,6 +92,24 @@ was run. No prediction, threshold or analysis changes.
   the Stage 1 dev-chosen ‖ΔW‖ threshold (notebook 15), computed from the adapters in a separate job.
 - No change to the hypotheses, predictions, thresholds or order.
 
+## 3c. Implementation notes for H2 (2026-11-20, written when the runs were launched, before any result)
+
+- Model, bundle and thresholds as H3 (§3b): Global @ `af89d219…`, frozen matched bundle `f898d4c6…`, §1 thresholds.
+- Data (condition `alpacalist`): the same 2,000 Alpaca examples as `alpaca` (`ft_alpaca.jsonl`), only the answer
+  rewritten by a fixed rule with no model (`tools/listify.py`): one `- ` bullet per sentence; existing lists are
+  normalised to `- ` bullets; code answers are left unchanged. On these 2,000 examples: 1,722 split into sentences,
+  250 already lists, 28 code. One-sentence answers become one-bullet lists. This is a simpler rewrite than the
+  list-formatted data of He et al. (2024); the paper must say so.
+- Seeds 1, 2, 3; recipe of notebook 07 unchanged; checkpoints every 10 steps (as H3), so the runs are directly
+  comparable with H3's plain-Alpaca seeds.
+- "ASR rises at least as much as plain Alpaca" is read as: median peak ASR over the 3 list runs ≥ median peak ASR over
+  H3's 3 Alpaca runs (0.42 / 0.42 / 0.38). Recall uses unsafe checkpoints of the list runs only.
+- Compute: Kaggle (about 7.5 GPU-h of ~8 left this week). If the quota runs out, the remaining monitor session runs
+  on Hugging Face credits with the same notebook and inputs; any such change is listed here before analysis.
+- Amendment (2026-11-21, before any H2 analysis): monitor s3 ran with a 1.5 h time guard to stay inside the Kaggle
+  quota and stopped after 25 of 26 checkpoints (steps 0–240). Step 250 is scored in a second Kaggle session
+  (`sp-h2-08-monitor-s3b`) that resumes from the first session's log, same notebook, inputs and settings.
+
 ## 4. Reporting
 
 - Every run started is reported, including failed and null runs, with its kernel or job link in
