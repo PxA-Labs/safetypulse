@@ -43,3 +43,25 @@ the CLI push stops at the token check by design) · Inputs: `sp-h3-07-alpaca-s{4
 
 Re-checked from outside Kaggle: both private, tag resolves, monitor has exactly 78 rows (26 per run, bundle `f898d4c6…`,
 no Stage 1 rows), both cards parse and state the refuted result.
+
+## Stage 2 · H2: list-formatted Alpaca (2026-11-21)
+
+**Status:** ✅ complete · **Kernel:** https://www.kaggle.com/code/purvanshjoshi1/sp-h2-18-backup (editor run with `HF_TOKEN`;
+the CLI push stops at the token check by design) · Inputs: `sp-h2-07-alpacalist-s{1,2,3}`, `sp-h2-08-monitor-s{1,2,3}`,
+`sp-h2-08-monitor-s3b` (the resumed s3 session, doc 13 §3c amendment) · Code at `5ef2682` ·
+`SP_BUNDLE_REF=purvansh01/safetypulse-probe-bundle` (no new bundle repo).
+
+| File | What it is |
+|---|---|
+| `18_hub_backup__2026-11-21__h2.log` | Log of the editor run |
+| `files/h2__upload_receipt.json` | Verified file count, Hub commit and tag per repo |
+
+| Repo (private, tag `h2-v1`) | Type | Verified files |
+|---|---|---|
+| [`safetypulse-h2-lora-alpacalist`](https://huggingface.co/purvansh01/safetypulse-h2-lora-alpacalist) | model | 157 (78 checkpoints × 2 + card), commit `8161a7af` |
+| [`safetypulse-h2-logs`](https://huggingface.co/datasets/purvansh01/safetypulse-h2-logs) | dataset | 7 (monitor, 3 train logs, `data/ft_alpacalist.jsonl` (2,000 rows), MANIFEST, card), commit `b1858c8f` |
+
+Re-checked from outside Kaggle: both private, `h2-v1` resolves to the receipt commits, the Hub monitor file has exactly
+78 rows and is identical (run, step, `cis_sep`, ASR) to what `tools/h2_analysis.py` reads locally, both cards parse and
+state the confirmed result. The training data is safe to share (Alpaca answers reformatted as lists, no harmful text);
+the notebook asserted the same SHA-256 for it in all three training runs.

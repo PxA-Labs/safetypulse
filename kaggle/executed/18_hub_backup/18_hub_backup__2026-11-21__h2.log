@@ -1,0 +1,18 @@
+[{"stream_name":"stdout","time":3.77630997,"data":"HF_TOKEN secret: available\n"}
+,{"stream_name":"stdout","time":8.131057318,"data":"[cell 0] start: # 18 · Back up an experiment's outputs to private Hub repos\n"}
+,{"stream_name":"stdout","time":8.131099852,"data":"[cell 1] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":47.181828061,"data":"[cell 2] start: import hashlib, json, shutil, time\n"}
+,{"stream_name":"stdout","time":47.483782548,"data":"[cell 3] start: ## Collect: adapters to model repos, everything else to dataset repos (harmful t\n"}
+,{"stream_name":"stdout","time":47.483835196,"data":"[cell 4] start: # Model repos: LoRA adapters only, one repo per fine-tune condition.\n"}
+,{"stream_name":"stdout","time":104.088018004,"data":"[cell 5] start: ## Manifest (SHA-256, sizes, provenance) and one card per repo\n"}
+,{"stream_name":"stdout","time":104.088313082,"data":"[cell 6] start: def sha256(p):\n"}
+,{"stream_name":"stdout","time":146.376946226,"data":"[cell 7] start: ## Upload (resumable) and verify every file\n"}
+,{"stream_name":"stdout","time":146.377003593,"data":"[cell 8] start: from huggingface_hub import HfApi\n"}
+,{"stream_name":"stdout","time":244.263720846,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":247.385141054,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":247.385191406,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":247.593663711,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":247.593703583,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":248.534359512,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":249.224936256,"data":"[NbConvertApp] Writing 335891 bytes to __results__.html\n"}
+]

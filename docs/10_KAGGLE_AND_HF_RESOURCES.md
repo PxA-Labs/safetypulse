@@ -139,7 +139,7 @@ Same setup as H3 (Global @ `af89d219…`, frozen bundle `f898d4c6…`); conditio
 | `sp-h2-07-alpacalist-s1/s2/s3` ([s1](https://www.kaggle.com/code/purvanshjoshi1/sp-h2-07-alpacalist-s1)) | Fine-tunes (07), seeds 1–3, checkpoints every 10 steps | 01, `sp-models` | ✅ 51–52 min training each |
 | `sp-h2-08-monitor-s1/s2/s3` ([s1](https://www.kaggle.com/code/purvanshjoshi1/sp-h2-08-monitor-s1)) | Monitoring (08), one session per run | h2-07 run, `sp-monitor-inputs`, `sp-models` | ✅ (s3: 25/26 checkpoints, 1.5 h guard) |
 | [`sp-h2-08-monitor-s3b`](https://www.kaggle.com/code/purvanshjoshi1/sp-h2-08-monitor-s3b) | Resume of s3: scores step 250 | + `sp-h2-08-monitor-s3` | ✅ H2 **confirmed** (`docs/report/h2_lists.md`) |
-| [`sp-h2-18-backup`](https://www.kaggle.com/code/purvanshjoshi1/sp-h2-18-backup) | Hub backup (18), editor run with `HF_TOKEN` | all of the above | ⏳ |
+| [`sp-h2-18-backup`](https://www.kaggle.com/code/purvanshjoshi1/sp-h2-18-backup) | Hub backup (18), editor run with `HF_TOKEN` | all of the above | ✅ 2 repos verified, tag `h2-v1` |
 
 Hub (private, tag `h2-v1`): `safetypulse-h2-lora-alpacalist` (model repo, adapters only), `safetypulse-h2-logs`
 (dataset repo: monitor rows, training logs, the list-formatted training data, manifest).
