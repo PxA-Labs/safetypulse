@@ -7,8 +7,8 @@ exclude = [
   # Private by design: owner-only Kaggle notebooks and datasets, and the withheld Hugging Face repos.
   '^https://www\.kaggle\.com/',
   '^https://huggingface\.co/datasets/purvansh01/safetypulse-(jobs|withheld)',
-  # Stage 2 experiment repos (private until release): adapters (model repos), bundle and logs (dataset repos).
-  '^https://huggingface\.co/(datasets/)?purvansh01/safetypulse-(earth|h3)-',
+  # Stage 2: the Earth probe bundle stays private (the other Stage 2 repos are public since 2026-11-21).
+  '^https://huggingface\.co/datasets/purvansh01/safetypulse-earth-probe-bundle',
   # Hugging Face Jobs pages are owner-only and answer anonymous requests with 202.
   '^https://huggingface\.co/jobs/',
   # Gated models redirect unauthenticated requests.

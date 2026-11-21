@@ -107,3 +107,21 @@ every 10 steps (`SP_SAVE_EVERY=10`), 26 per run.
 
 Training loss (first → last logged): s4 1.97 → 1.23, s5 1.98 → 1.18, s6 2.20 → 1.20; 52–56 min of training per run.
 Adapters stay in the kernel outputs and go to the private Hub repo `safetypulse-h3-lora-alpaca` (notebook 18).
+
+---
+
+## Stage 2 · H2: list-formatted Alpaca, Tiny Aya Global, seeds 1–3 (2026-11-20)
+
+**Status:** ✅ all 3 complete · **Kaggle:** `purvanshjoshi1/sp-h2-07-alpacalist-s{1,2,3}` · Inputs `01-build-dataset`,
+`sp-models` (Global @ `af89d219`). Condition `alpacalist`: the 2,000 `ft_alpaca` examples with every answer rewritten
+as a bulleted list by `tools/listify.py` (no model; 1,722 split into sentences, 250 already lists, 28 code kept).
+Recipe unchanged (LoRA r16, 250 steps, fp16 base), checkpoints every 10 steps.
+
+| File | What it is |
+|---|---|
+| `07_finetune_checkpoints__2026-11-2{0,1}__h2-alpacalist-s{1,2,3}.ipynb` / `.log` | Executed notebooks and logs |
+| `files/h2-alpacalist-s{1,2,3}__train_log.json` | Hyperparameters, LoRA config, loss curve, provenance |
+| (not in git) `files/h2-alpacalist-s{1,2,3}__ft_alpacalist.jsonl` | The training data each run built: byte-identical across runs (SHA-256 `63a38ba3…fc115a`). Kept out of git (one row of public Alpaca text trips the secret scanner's token pattern); the copy of record is `data/ft_alpacalist.jsonl` in the private Hub dataset `safetypulse-h2-logs` (tag `h2-v1`), and `tools/listify.py` regenerates it from `ft_alpaca.jsonl` |
+
+Training loss (first → last logged): s1 2.06 → 1.16, s2 2.23 → 1.18, s3 2.21 → 1.14; 51–52 min of training per run.
+Adapters go to the private Hub repo `safetypulse-h2-lora-alpacalist` (notebook 18).

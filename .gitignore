@@ -36,3 +36,13 @@ checkpoint-*/
 
 # launch-video build files (final video is in docs/assets/)
 brag-output/
+
+# H2 training data: the copy of record is on the Hub (safetypulse-h2-logs, data/ft_alpacalist.jsonl)
+kaggle/executed/07_finetune_checkpoints/files/*__ft_alpacalist.jsonl
+
+# LaTeX build output (paper/main.pdf is built with: cd paper && tectonic main.tex)
+paper/*.aux
+paper/*.log
+paper/*.bbl
+paper/*.blg
+paper/*.out

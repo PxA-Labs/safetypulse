@@ -1,0 +1,16 @@
+{
+  "purvansh01/safetypulse-h2-lora-alpacalist": {
+    "type": "model",
+    "verified_files": 157,
+    "commit": "8161a7af6f36ed6e8c47a3a6247482da52b53b6e",
+    "tag": "h2-v1",
+    "minutes": 1.4
+  },
+  "purvansh01/safetypulse-h2-logs": {
+    "type": "dataset",
+    "verified_files": 7,
+    "commit": "b1858c8f539382d649d0c05df4ec960a94862c81",
+    "tag": "h2-v1",
+    "minutes": 0.2
+  }
+}

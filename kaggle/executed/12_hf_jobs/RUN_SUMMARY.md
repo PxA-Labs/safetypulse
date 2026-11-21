@@ -145,3 +145,76 @@ local path. The callback test did not run (a tokenisation bug in the test script
 
 With Jobs 5–7 every interface documented in the README has run on the real model: install, `check`, `repair` (all
 methods), `audit`, `calibrate`, the Trainer callback.
+
+## Job 8 · Stage 2: are the H1/H3 results robust to the judge? (2026-11-21)
+`tools/hf_jobs/job8_judge8b.py` on an L40S 48 GB ($1.80/h; 2 h 4 min, ~$3.70, personal credits):
+https://huggingface.co/jobs/purvansh01/6b0091bbefaf5e14f4b3a92a · `files/job8_judge8b.jsonl` (per checkpoint: ASR under
+each judge, agreement, per-prompt booleans; no answer text) · analysis `tools/judge8b_analysis.py` →
+`docs/report/judge8b.{json,md}`. Also stored on the Hub: `purvansh01/safetypulse-judge8b` (private, tag `judge8b-v1`).
+
+For all 208 Stage 2 checkpoints (H3: Global Alpaca s4–s6; H1: Earth Alpaca s1–s3 and `none` s1–s2) the job regenerated
+the answers to the 78 dev prompts exactly as notebook 08 (greedy, 256 tokens, fp16; batch 32) and judged the same answers
+with Llama Guard 3 **1B** (pre-registered) and **8B**.
+
+- **Agreement:** 92.6% of prompt judgements on H3 (κ 0.83), 95.4% on H1 (κ 0.86). Mean ASR 1B / 8B: 0.320 / 0.333 (H3),
+  0.214 / 0.214 (H1).
+- **H3 with 8B labels:** median `cis_sep` WARN lead 20 = median ‖ΔW‖ lead 20 (seed 6's first unsafe step moves 50 → 40,
+  for both detectors). The tie, and so the refuted verdict, does not depend on the judge.
+- **H1 with 8B labels:** WARN recall 0.99 (66/67), precision 0.97, **0 alarms on the 50 `none` checkpoints**; the 8B judge
+  marks one `none-s1` checkpoint (step 60) unsafe, which WARN does not flag. The confirmed verdict does not depend on the judge.
+- **Reproduction:** the 1B rerun equals the Kaggle ASR on 41/78 (H3) and 87/130 (H1) checkpoints; elsewhere it differs
+  by at most 4 / 2 prompts (0.051 / 0.026), from regenerating on another GPU and batch size.
+
+Attempts: the first run (A100) failed after 3 min because Llama Guard 3 8B's chat template rejects the content-list
+messages the 1B template needs (and the 1B template silently drops plain strings; both checked locally); fixed with a
+plain-string judge for 8B only. A second A100 request waited in scheduling and was cancelled before starting (no charge).
+Not pre-registered: a robustness check. The pre-registered verdicts use the 1B judge and are unchanged.
+
+## Job 9 · Stage 2 H6: SafeTune drift checkpoints on other model families (2026-11-21)
+
+**Status:** ✅ complete · Script `tools/hf_jobs/job9_safetune_h6.py` (package and `sp_utils` pinned to `e602e03`) ·
+Pre-registered in `docs/13_PREREGISTRATION.md` §2 H6, §3d (plan and amendment pushed before any job started) ·
+One Nvidia L40S 48 GB per family, all five jobs in parallel.
+
+| Job | Id | Billed to | Status | Runtime | Cost |
+|---|---|---|---|---|---|
+| launch-test | [pxaLabs-lexsi/6b014c8cefaf5e14f4b485cf](https://huggingface.co/jobs/pxaLabs-lexsi/6b014c8cefaf5e14f4b485cf) | organisation | COMPLETED | 2m 52s | ~$0.09 |
+| llama32-3b | [pxaLabs-lexsi/6b014c9befaf5e14f4b485e3](https://huggingface.co/jobs/pxaLabs-lexsi/6b014c9befaf5e14f4b485e3) | organisation | COMPLETED | 9m 45s | ~$0.29 |
+| qwen3-4b | [pxaLabs-lexsi/6b014c9eefaf5e14f4b485e5](https://huggingface.co/jobs/pxaLabs-lexsi/6b014c9eefaf5e14f4b485e5) | organisation | COMPLETED | 9m 39s | ~$0.29 |
+| gemma3-4b | [purvansh01/6b014c524fdc5ab3c55c81e1](https://huggingface.co/jobs/purvansh01/6b014c524fdc5ab3c55c81e1) | team account | COMPLETED | 11m 41s | ~$0.35 |
+| llama31-8b | [purvansh01/6b014c564fdc5ab3c55c81e3](https://huggingface.co/jobs/purvansh01/6b014c564fdc5ab3c55c81e3) | team account | COMPLETED | 22m 26s | ~$0.67 |
+
+Three earlier submissions were cancelled while still scheduling (the organisation flag was passed to the script instead
+of `hf`, so they would have billed the team account; the test one had also lost its test flag). They never ran.
+Before launch the whole pipeline ran on CPU with tiny random-weight models built from each family's real config and
+tokenizer. The launch test (2 models, 8 prompts, light calibration) is not used in any analysis.
+
+| File | What it is |
+|---|---|
+| `files/job9_<family>__scores.jsonl` | One row per model: CIS variants and status, spot-check, ASR with 95% CI, 78 per-prompt verdicts (no text), ‖ΔW‖, pinned revision, cost |
+| `files/job9_<family>__calibration.json` | Layer, components, calibration time and settings |
+| `files/job9_jobs.json` | Job ids, links, billing, runtime and cost |
+| `files/job9_h6_manifest.json` | The Hub repo's MANIFEST (SHA-256 of every file, pinned model revisions) |
+
+**Result (`tools/h6_analysis.py` → `docs/report/h6_safetune.md`): refuted.** `cis_sep` WARN-or-FAIL caught 11 of 12
+unsafe drifted models (recall 0.92), but reached FAIL on 3 of 8 safe recovered models (two Gemma-3-4B, one Llama-3.1-8B).
+FAIL works cleanly on Llama-3.2-3B and Qwen3-4B; WARN fires on almost every fine-tune; Gemma-3-4B's most unsafe model
+passes. Calibration layers: Llama-3.2-3B 22/28, Qwen3-4B 20/36, Gemma-3-4B 11/34, Llama-3.1-8B 12/32.
+
+Hub: [`safetypulse-h6-safetune`](https://huggingface.co/datasets/purvansh01/safetypulse-h6-safetune) (public, tag
+`h6-v1`, verified against its MANIFEST; in the data collection). Raw job output also in the private
+`safetypulse-jobs` repo under `results/job9/` (and `results/job9-test/`).
+
+## Jobs 10–12 · Stage 2 exploratory follow-ups and the ‖ΔW‖ baseline (2026-11-21)
+
+All on the team account's own credits; pre-registered as exploratory in `docs/13_PREREGISTRATION.md` §3e (commit
+`f079239`, before the runs), except Job 12, which fills the ‖ΔW‖ baseline that §1 requires in every table.
+
+| Job | What | Hardware | Runtime | Cost | Result | Files |
+|---|---|---|---|---|---|---|
+| [10](https://huggingface.co/jobs/purvansh01/6b0159384fdc5ab3c55c955e) | H2 re-judged with Llama Guard 3 8B (`tools/hf_jobs/job8_judge8b.py`, `SP_EXPS=h2`) | L40S | 47m 29s | ~$1.42 | agreement 0.92, κ 0.82; H2 recall 1.00 (43/43 unsafe by 8B); 8B reverses H2's secondary peak-ASR prediction | `files/job10_judge8b_h2.jsonl` → `docs/report/judge8b_h2.md` (`tools/judge8b_h2.py`) |
+| [11](https://huggingface.co/jobs/purvansh01/6b01593e4fdc5ab3c55c9569) | `cis_sep` at every layer for the 35 H6 models (`tools/hf_jobs/job11_layer_diagnosis.py`) | L40S | 29m 50s | ~$0.90 | Gemma-3-4B: calibrated layer 11 at chance (AUROC 0.50), every layer 17–34 at 1.00 | `files/job11_<family>.jsonl` → `docs/report/h6_layers.md` (`tools/h6_layers.py`) |
+| [12](https://huggingface.co/jobs/purvansh01/6b016fc3efaf5e14f4b4dd29) | ‖ΔW‖ for every H1 and H2 checkpoint (`tools/hf_jobs/job12_dw_stage2.py`) | CPU (cpu-upgrade) | ~2 min | <$0.01 | H1: alarms on 48 of 50 control checkpoints (CIS: 0); recall 63/63, median lead 20; H2 recall 65/65 | `../19_dw_baseline/files/stage2_dw.jsonl` |
+
+Job 12 replaced a local run (`tools/dw_stage2.py`) that stalled on one hung download after ~100 of 208 checkpoints and
+saved nothing; the job version saves every 10 checkpoints and retries downloads.

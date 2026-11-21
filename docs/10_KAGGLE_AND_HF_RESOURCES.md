@@ -111,9 +111,9 @@ All on `purvanshjoshi1`, CLI runner, T4 ×2, fp16. Earth = `CohereLabs/tiny-aya-
 | [`sp-e08-monitor-none`](https://www.kaggle.com/code/purvanshjoshi1/sp-e08-monitor-none) | Monitoring of the 2 `none` runs | same | ✅ 0 `cis_sep` alarms |
 | [`sp-e18-backup-earth`](https://www.kaggle.com/code/purvanshjoshi1/sp-e18-backup-earth) | Hub backup (18), editor run with `HF_TOKEN` | e04–e08 outputs | ✅ 4 repos verified, tag `h1-v1` |
 
-Hub (private, tag `h1-v1`, verified 2026-11-20): [`safetypulse-earth-lora-alpaca`](https://huggingface.co/purvansh01/safetypulse-earth-lora-alpaca) (9.44 GB),
+Hub (public since 2026-11-21 except the probe bundle; tags `h1-v1` verified 2026-11-20, `h1-v1.1` release): [`safetypulse-earth-lora-alpaca`](https://huggingface.co/purvansh01/safetypulse-earth-lora-alpaca) (9.44 GB),
 [`safetypulse-earth-lora-none`](https://huggingface.co/purvansh01/safetypulse-earth-lora-none) (6.29 GB) — model repos, adapters only;
-[`safetypulse-earth-probe-bundle`](https://huggingface.co/datasets/purvansh01/safetypulse-earth-probe-bundle), [`safetypulse-earth-logs`](https://huggingface.co/datasets/purvansh01/safetypulse-earth-logs) — dataset repos.
+`safetypulse-earth-probe-bundle` (private), [`safetypulse-earth-logs`](https://huggingface.co/datasets/purvansh01/safetypulse-earth-logs) — dataset repos.
 
 ## Stage 2 · H3: lead time at 10-step spacing (pre-registration doc 13, §3b)
 
@@ -127,8 +127,23 @@ All on `purvanshjoshi1`, CLI runner. Global = `CohereLabs/tiny-aya-global` @ `af
 | [`sp-h3-19-dw-baseline`](https://www.kaggle.com/code/purvanshjoshi1/sp-h3-19-dw-baseline) | ‖ΔW‖ baseline (19, CPU) at the Stage 1 dev threshold | `sp-07-checkpoints-dev`, h3-07 runs | ✅ 12 min; H3 **refuted** (tie, `docs/report/h3_lead.md`) |
 | [`sp-h3-18-backup`](https://www.kaggle.com/code/purvanshjoshi1/sp-h3-18-backup) | Hub backup (18), editor run with `HF_TOKEN` | all of the above | ✅ 2 repos verified, tag `h3-v1` |
 
-Hub (private, tag `h3-v1`, verified 2026-11-20): [`safetypulse-h3-lora-alpaca`](https://huggingface.co/purvansh01/safetypulse-h3-lora-alpaca) (model repo, adapters only), [`safetypulse-h3-logs`](https://huggingface.co/datasets/purvansh01/safetypulse-h3-logs) (dataset
+Hub (public since 2026-11-21; tags `h3-v1` verified 2026-11-20, `h3-v1.1` release): [`safetypulse-h3-lora-alpaca`](https://huggingface.co/purvansh01/safetypulse-h3-lora-alpaca) (model repo, adapters only), [`safetypulse-h3-logs`](https://huggingface.co/datasets/purvansh01/safetypulse-h3-logs) (dataset
 repo); the bundle is the existing `safetypulse-probe-bundle`.
+
+## Stage 2 · H2: list-formatted Alpaca (pre-registration doc 13, §3c)
+
+Same setup as H3 (Global @ `af89d219…`, frozen bundle `f898d4c6…`); condition `alpacalist` (`tools/listify.py`).
+
+| Kernel | Role | Inputs | Status |
+|---|---|---|---|
+| `sp-h2-07-alpacalist-s1/s2/s3` ([s1](https://www.kaggle.com/code/purvanshjoshi1/sp-h2-07-alpacalist-s1)) | Fine-tunes (07), seeds 1–3, checkpoints every 10 steps | 01, `sp-models` | ✅ 51–52 min training each |
+| `sp-h2-08-monitor-s1/s2/s3` ([s1](https://www.kaggle.com/code/purvanshjoshi1/sp-h2-08-monitor-s1)) | Monitoring (08), one session per run | h2-07 run, `sp-monitor-inputs`, `sp-models` | ✅ (s3: 25/26 checkpoints, 1.5 h guard) |
+| [`sp-h2-08-monitor-s3b`](https://www.kaggle.com/code/purvanshjoshi1/sp-h2-08-monitor-s3b) | Resume of s3: scores step 250 | + `sp-h2-08-monitor-s3` | ✅ H2 **confirmed** (`docs/report/h2_lists.md`) |
+| [`sp-h2-18-backup`](https://www.kaggle.com/code/purvanshjoshi1/sp-h2-18-backup) | Hub backup (18), editor run with `HF_TOKEN` | all of the above | ✅ 2 repos verified, tag `h2-v1` |
+
+Hub (public since 2026-11-21; tags `h2-v1` verified, `h2-v1.1` release): [`safetypulse-h2-lora-alpacalist`](https://huggingface.co/purvansh01/safetypulse-h2-lora-alpacalist) (model repo, adapters only),
+[`safetypulse-h2-logs`](https://huggingface.co/datasets/purvansh01/safetypulse-h2-logs) (dataset repo: monitor rows, training logs, the list-formatted training data, manifest);
+the bundle is the existing `safetypulse-probe-bundle`. The training data is kept out of git; this repo holds the copy of record.
 
 ## Hugging Face Jobs
 
@@ -145,6 +160,11 @@ summaries: `kaggle/executed/12_hf_jobs/RUN_SUMMARY.md` (jobs 1, 2, 4–7) and `k
 | 5 · README commands word for word, from a clean install | L4 24 GB | ✅ install `[peft,toolkits]`; check FAIL (exit 20) → repair → check PASS (exit 0), same score as job 4 | https://huggingface.co/jobs/purvansh01/6af040ade6320c66fad73866 |
 | 6 · Rest of the package on the real model | A100 80 GB | ✅ `calibrate` reproduces the published bundle exactly (layer 27, 20/20 components); all 7 repair methods run, CIS verdict agrees with held-out ASR for 6/7; full-model audit works; found the adapter base-path bug | https://huggingface.co/jobs/purvansh01/6af04421e6320c66fad73ae0 |
 | 7 · LoRA audit and the Trainer callback | L4 24 GB | ✅ audit of a published LoRA checkpoint works after the fix; callback in a real 30-step fine-tune: WARN at steps 10, 20, 30 (CIS 0.90 → 0.83) | https://huggingface.co/jobs/purvansh01/6af04ef5e6320c66fad7428a |
+| 8 · Stage 2 judge robustness: Llama Guard 3 1B vs 8B on all 208 H1/H3 checkpoints | L40S 48 GB | ✅ 2 h 4 min, ~$3.70 (first try failed on the 8B chat template after 3 min; two A100 requests waited and were cancelled). κ 0.83 / 0.86; H1 and H3 conclusions unchanged with 8B labels (`docs/report/judge8b.md`); results in the public dataset `safetypulse-judge8b` | https://huggingface.co/jobs/purvansh01/6b0091bbefaf5e14f4b3a92a (failed first try: https://huggingface.co/jobs/purvansh01/6b0083a14fdc5ab3c55bac97) |
+| 9 · Stage 2 H6: SafetyPulse on Lexsi's SafeTune checkpoints (Llama-3.2-3B, Qwen3-4B, Gemma-3-4B, Llama-3.1-8B; 35 models), one job per family | L40S 48 GB | ✅ 9–22 min per family; ~$0.67 org credits (test, Llama-3.2-3B, Qwen3-4B) + ~$1.02 team account (Gemma-3-4B, Llama-3.1-8B). H6 **refuted**: recall 11/12 on unsafe drifted models but `cis_sep` FAIL on 3 of 8 safe recovered models (`docs/report/h6_safetune.md`); results in `safetypulse-h6-safetune` | [Llama-3.2-3B](https://huggingface.co/jobs/pxaLabs-lexsi/6b014c9befaf5e14f4b485e3) · [Qwen3-4B](https://huggingface.co/jobs/pxaLabs-lexsi/6b014c9eefaf5e14f4b485e5) · [Gemma-3-4B](https://huggingface.co/jobs/purvansh01/6b014c524fdc5ab3c55c81e1) · [Llama-3.1-8B](https://huggingface.co/jobs/purvansh01/6b014c564fdc5ab3c55c81e3) · [test](https://huggingface.co/jobs/pxaLabs-lexsi/6b014c8cefaf5e14f4b485cf) |
+| 10 · H2 re-judged with Llama Guard 3 8B (exploratory) | L40S 48 GB | ✅ 47 min, ~$1.42 (team account). κ 0.82; H2 recall 1.00 with 8B labels (`docs/report/judge8b_h2.md`) | https://huggingface.co/jobs/purvansh01/6b0159384fdc5ab3c55c955e |
+| 11 · H6 layer diagnosis: `cis_sep` at every layer (exploratory) | L40S 48 GB | ✅ 30 min, ~$0.90 (team account). Gemma-3's calibrated layer ranks at chance, layers 17–34 perfectly (`docs/report/h6_layers.md`) | https://huggingface.co/jobs/purvansh01/6b01593e4fdc5ab3c55c9569 |
+| 12 · ‖ΔW‖ baseline for H1 and H2 | CPU (cpu-upgrade) | ✅ 2 min, <$0.01 (team account). H1: ‖ΔW‖ alarms on 48/50 control checkpoints, CIS on 0 | https://huggingface.co/jobs/purvansh01/6b016fc3efaf5e14f4b4dd29 |
 
 ## Hugging Face artifacts
 
@@ -183,6 +203,26 @@ they had recorded the training machine's local path).
 |---|---|---|
 | `purvansh01/safetypulse-jobs` | Inputs and raw results of the HF Jobs, the package source used by jobs 5–7, and the judge-validation sample | Job plumbing; holds the sample with harmful model answers |
 | `purvansh01/safetypulse-withheld` | Positive-control adapters (`harm-s0`, `harmdense-s0`), `ft_harm`, unredacted audits, judge sample | Harmful by design; access for judges on request, see [docs/11_WITHHELD_ARTIFACTS.md](11_WITHHELD_ARTIFACTS.md) |
+
+**Stage 2 repos.** Public since 2026-11-21 (`tools/hub_stage2_release.py`). The `*-v1` tags mark the verified
+original uploads (receipts in `kaggle/executed/18_hub_backup/files/`); the `*-v1.1` tags mark the public release, with
+adapter configs that name the Hub base model and the final cards (weights identical). Cards: `docs/hub_cards/stage2/`.
+Each is listed in the model or data collection with a "Stage 2" note.
+
+| Repo | Type | Tags | Contents |
+|---|---|---|---|
+| [`safetypulse-earth-lora-alpaca`](https://huggingface.co/purvansh01/safetypulse-earth-lora-alpaca) | model | `h1-v1`, `h1-v1.1` | H1: Earth Alpaca adapters, seeds 1–3 × 26 checkpoints |
+| [`safetypulse-earth-lora-none`](https://huggingface.co/purvansh01/safetypulse-earth-lora-none) | model | `h1-v1`, `h1-v1.1` | H1: Earth `none` control adapters, seeds 1–2 × 26 checkpoints |
+| [`safetypulse-earth-logs`](https://huggingface.co/datasets/purvansh01/safetypulse-earth-logs) | dataset | `h1-v1`, `h1-v1.1` | H1: monitor rows, baseline, training logs, manifest |
+| [`safetypulse-h3-lora-alpaca`](https://huggingface.co/purvansh01/safetypulse-h3-lora-alpaca) | model | `h3-v1`, `h3-v1.1` | H3: Global Alpaca adapters, seeds 4–6 × 26 checkpoints |
+| [`safetypulse-h3-logs`](https://huggingface.co/datasets/purvansh01/safetypulse-h3-logs) | dataset | `h3-v1`, `h3-v1.1` | H3: monitor rows, training logs, ‖ΔW‖ file, manifest |
+| [`safetypulse-h2-lora-alpacalist`](https://huggingface.co/purvansh01/safetypulse-h2-lora-alpacalist) | model | `h2-v1`, `h2-v1.1` | H2: Global list-Alpaca adapters, seeds 1–3 × 26 checkpoints |
+| [`safetypulse-h2-logs`](https://huggingface.co/datasets/purvansh01/safetypulse-h2-logs) | dataset | `h2-v1`, `h2-v1.1` | H2: monitor rows, training logs, list-formatted training data, manifest |
+| [`safetypulse-judge8b`](https://huggingface.co/datasets/purvansh01/safetypulse-judge8b) | dataset | `judge8b-v1`, `judge8b-v1.1` | HF Job 8: Llama Guard 3 1B and 8B verdicts and ASR on all 208 H1/H3 checkpoints (no answer text) |
+| [`safetypulse-h6-safetune`](https://huggingface.co/datasets/purvansh01/safetypulse-h6-safetune) | dataset | `h6-v1` | H6: scores of 35 SafeTune checkpoints, calibration bundles (LSAL v1.2 derivative material), job records, manifest; no weights |
+
+Still private: `safetypulse-earth-probe-bundle` (H1, tag `h1-v1`: Earth's calibrated bundle, directions, token sets;
+its 50 probe pairs are the same as in the public `safetypulse-probe-bundle`).
 
 ## Teammate account
 

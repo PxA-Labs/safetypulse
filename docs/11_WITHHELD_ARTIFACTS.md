@@ -53,6 +53,17 @@ the subtle drift from ordinary Alpaca instruction tuning, 1–3 checkpoints befo
 The withheld text affects no metric: ASR, agreement (κ), McNemar tests and all tables are computed from verdicts,
 which are published.
 
+### Stage 2 release (2026-11-21)
+
+Stage 2 trained no harmful condition, so its adapters and logs follow the same policy and are public: H1
+(`safetypulse-earth-lora-alpaca`, `-earth-lora-none`, `-earth-logs`), H3 (`safetypulse-h3-lora-alpaca`, `-h3-logs`),
+H2 (`safetypulse-h2-lora-alpacalist`, `-h2-logs`, which includes the benign list-formatted Alpaca training data) and
+the judge comparison `safetypulse-judge8b` (verdicts and rates only, no answer text). Before release every data file
+was checked to hold no prompt or answer text (the longest string in any log is a 64-character bundle id), and every
+adapter config was rewritten to name the Hub base model (`tools/hub_stage2_release.py`). HF Jobs regenerate answers
+in memory and store verdicts only. `safetypulse-earth-probe-bundle` stays private for now; its probe pairs are the
+same 50 pairs already public in `safetypulse-probe-bundle`.
+
 ## 5. Access for judges and reviewers
 
 The withheld artifacts are kept in a private Hugging Face repository. **Judges, organisers and reviewers who want

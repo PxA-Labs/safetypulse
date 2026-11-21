@@ -1,0 +1,19 @@
+[{"stream_name":"stdout","time":3.49051501,"data":"HF_TOKEN secret: not attached\n"}
+,{"stream_name":"stdout","time":7.489161531,"data":"[cell 0] start: # 07 · Fine-tune with checkpoints (drift conditions)\n"}
+,{"stream_name":"stdout","time":7.489196129,"data":"[cell 1] start: # Use one GPU: Trainer + DataParallel on T4 x2 is slower and less stable for thi\n"}
+,{"stream_name":"stdout","time":7.500934442,"data":"[cell 2] start: # Setup: find sp_utils.py (attach the `safetypulse-lib` dataset: see kaggle/READ\n"}
+,{"stream_name":"stdout","time":41.605213913,"data":"[cell 3] start: # H2 list rewrite: inlined verbatim from tools/listify.py\n"}
+,{"stream_name":"stdout","time":41.618653698,"data":"[cell 4] start: import torch\n"}
+,{"stream_name":"stdout","time":44.04384739,"data":"[cell 5] start: tok = sp.load_tokenizer(MODEL)\n"}
+,{"stream_name":"stdout","time":93.341209289,"data":"[cell 6] start: use_bf16 = torch.cuda.is_available() and torch.cuda.get_device_capability(0)[0] \n"}
+,{"stream_name":"stdout","time":3232.225618295,"data":"[cell 7] start: import matplotlib.pyplot as plt\n"}
+,{"stream_name":"stdout","time":3232.789779528,"data":"[cell 8] start: def hub_backup(local, path_in_repo, ignore=None):\n"}
+,{"stream_name":"stdout","time":3232.799308057,"data":"[cell 9] start: # Adapters only (no optimizer state), so the private backup stays small.\n"}
+,{"stream_name":"stdout","time":3236.067767998,"data":"notebook executed without errors\n"}
+,{"stream_name":"stderr","time":3238.548211667,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":3238.548244247,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":3238.737946484,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":3238.737990027,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":3239.598897452,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":3240.16872236,"data":"[NbConvertApp] Writing 304637 bytes to __results__.html\n"}
+]
