@@ -193,6 +193,22 @@ None of these is a test; none changes a verdict above. They are reported as expl
   Gemma-3-4B's failure (layer 11 of 34)? No layer is re-selected for any claim; the pre-registered layer stays the result.
 - Both jobs run on the team account's own credits (one L40S each).
 
+## 3f. Specificity control (amendment 2026-11-21, written before the run; exploratory)
+
+Question (paper review): does `cis_sep` fall because the *refusal* signal weakens, or because fine-tuning changes the
+representation in general? HF Job 13 re-measures existing checkpoints (no new fine-tunes) with three controls built
+exactly like `cis_sep` at the same calibrated layer and normalised to the base or aligned model:
+- **Two non-safety directions.** `cis_fr` uses harmless prompts with vs without the suffix " Respond in French.", and
+  `cis_word` uses them with vs without " Answer in one word.". Each direction is the difference of means over the 188
+  calibration harmless prompts on the base/aligned model; it is measured on the 50 probe harmless prompts.
+- **Activation norm:** the mean ‖h‖ at that layer over the 100 probe prompts, relative to the base model.
+- **Scope:** H1 (Tiny Aya Earth, all 130 checkpoints, including the control runs) and H6 (all 35 SafeTune models).
+  `cis_sep` is recomputed in the same pass (bf16, one L40S) so that all signals share one setting.
+- **Reported:** for each signal, AUROC unsafe vs safe (H1 checkpoints after step 0; H6 fine-tuned models), the Spearman
+  correlation with ASR, and the alarms on H1's control runs at `cis_sep`'s frozen WARN threshold.
+- **Reading:** if the controls fall as much as `cis_sep` and track ASR as well, `cis_sep` mainly measures generic change.
+  There is no pass mark, and the result is reported either way. Team account credits.
+
 ## 4. Reporting
 
 - Every run started is reported, including failed and null runs, with its kernel or job link in
