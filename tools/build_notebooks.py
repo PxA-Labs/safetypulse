@@ -2927,8 +2927,13 @@ write("18_hub_backup.ipynb", [
             condition, _ = sp.parse_run(run)
             d = repo(f"lora-{condition}", "model")
             for step, ck in ckpts:
-                for f in ("adapter_config.json", "adapter_model.safetensors"):
-                    put(ck / f, d / run / f"checkpoint-{step}" / f)
+                put(ck / "adapter_model.safetensors", d / run / f"checkpoint-{step}" / "adapter_model.safetensors")
+                # Training loads the base from a local mirror, so PEFT records that path; publish the Hub id instead.
+                cfg = json.loads((ck / "adapter_config.json").read_text())
+                cfg["base_model_name_or_path"], cfg["revision"] = BASE, BASE_REV
+                dst = d / run / f"checkpoint-{step}" / "adapter_config.json"
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                dst.write_text(json.dumps(cfg, indent=2, sort_keys=True) + "\n")
 
         # Dataset repo: probe bundle, refusal direction, token sets (what `safetypulse check` needs). Skipped when the
         # experiment reuses an existing bundle (SP_BUNDLE_REF) or none is attached.
