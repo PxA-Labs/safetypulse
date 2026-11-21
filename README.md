@@ -15,7 +15,7 @@
   <a href="https://github.com/PxA-Labs/safetypulse/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License: Apache-2.0"></a>
   <a href="https://pypi.org/project/safetypulse/"><img src="https://img.shields.io/pypi/v/safetypulse?logo=pypi&logoColor=white&color=3776AB" alt="PyPI"></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white" alt="Python 3.10+">
-  <img src="https://img.shields.io/badge/tests-190%20passing-2ea44f" alt="190 tests">
+  <img src="https://img.shields.io/badge/tests-194%20passing-2ea44f" alt="194 tests">
   <a href="https://github.com/PxA-Labs/safetypulse/actions/workflows/codeql.yml"><img src="https://github.com/PxA-Labs/safetypulse/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
   <a href="https://scorecard.dev/viewer/?uri=github.com/PxA-Labs/safetypulse"><img src="https://api.scorecard.dev/projects/github.com/PxA-Labs/safetypulse/badge" alt="OpenSSF Scorecard"></a>
   <br>
@@ -199,13 +199,13 @@ Every experiment is a notebook within [`kaggle/notebooks/`](https://github.com/P
 | SafeTune → AuditKIT before/after | 11 | `kaggle/executed/11_*` |
 | Larger-GPU runs (CircuitKIT, 8B judge, CuratorKIT fine-tune) | [`tools/hf_jobs/`](https://github.com/PxA-Labs/safetypulse/tree/main/tools/hf_jobs) | `safetypulse-logs/hf_jobs` |
 | Stage 2 H1–H3: fine-tunes and monitoring at 10-step spacing, Hub backup, ‖ΔW‖ baseline | 07, 08, 18, 19 | `safetypulse-earth-*`, `-h2-*`, `-h3-*` |
-| Stage 2 H6 and follow-ups (SafeTune checkpoints, 8B judge, layer diagnosis, ‖ΔW‖) | HF Jobs 8–12 in [`tools/hf_jobs/`](https://github.com/PxA-Labs/safetypulse/tree/main/tools/hf_jobs) | `safetypulse-h6-safetune`, `safetypulse-judge8b` |
-| Stage 2 analysis (pre-registered verdicts, robustness, layers) | `tools/h1_analysis.py`, `h2_analysis.py`, `h3_analysis.py`, `h6_analysis.py`, `stage2_robustness.py`, `h6_layers.py` | [`docs/report/`](https://github.com/PxA-Labs/safetypulse/tree/main/docs/report) |
+| Stage 2 H6 and follow-ups (SafeTune checkpoints, 8B judge, layer diagnosis, ‖ΔW‖, specificity control) | HF Jobs 8–14 in [`tools/hf_jobs/`](https://github.com/PxA-Labs/safetypulse/tree/main/tools/hf_jobs) | `safetypulse-h6-safetune`, `safetypulse-judge8b` |
+| Stage 2 analysis (pre-registered verdicts, robustness, layers) | `tools/h1_analysis.py`, `h2_analysis.py`, `h3_analysis.py`, `h6_analysis.py`, `stage2_robustness.py`, `h6_layers.py`, `h6_lodo.py`, `specificity_analysis.py`, `judge8b_h2.py` | [`docs/report/`](https://github.com/PxA-Labs/safetypulse/tree/main/docs/report) |
 
 Fixed choices: seed 0 for data splits; fine-tune seeds 0 (dev) and 1–3 (test); dev and test runs never overlap;
 thresholds and repair strengths are chosen on dev only, then applied unchanged to test. Model and judge revisions
 and dataset hashes are recorded in `kaggle/executed/*/RUN_SUMMARY.md` and `safetypulse-eval/manifest.json`.
-Package tests, from a clone: `pip install -e ".[dev,peft]" && pytest` (190 tests, run in CI on Python 3.10–3.12).
+Package tests, from a clone: `pip install -e ".[dev,peft]" && pytest` (194 tests, run in CI on Python 3.10–3.12).
 
 ## Documentation
 

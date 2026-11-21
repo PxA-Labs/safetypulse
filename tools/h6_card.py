@@ -57,7 +57,7 @@ reliably to these families.
   every other fine-tune.
 - **Frozen thresholds are the weak point**: the fine-tunes move `cis_sep` well below 0.81 even when ASR does not rise, so
   WARN is uninformative across families. A per-family threshold would need dev data we did not use.
-- **The cheap behavioural spot-check** is about as good as `cis_sep` here (same recall, fewer false alarms than WARN).
+- **The cheap behavioural spot-check** is competitive with `cis_sep` here (17/19 vs 18/19 unsafe flagged, 3/12 vs 10/12 safe flagged); on Gemma-3 its refusal matcher rates the aligned model itself at 0.34, so its Gemma alarms are uninformative.
 - **Repairs:** several DPO-recovered models remain unsafe by our measure (78 prompts, one judge); these are our numbers,
   not Lexsi's evaluation.
 
