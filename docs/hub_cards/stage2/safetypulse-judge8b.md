@@ -33,6 +33,8 @@ WARN alarm keeps recall 0.99 (66/67) with **no alarm on the 50 control checkpoin
 
 This repo holds **numbers only**: no prompts, no model answers.
 
+**Links:** [Code](https://github.com/PxA-Labs/safetypulse) · [PyPI](https://pypi.org/project/safetypulse/) · [Article](https://huggingface.co/blog/purvansh01/safetypulse-safety-drift-monitor) · [Model collection](https://huggingface.co/collections/purvansh01/safetypulse-models-6af00b8f56c773a80af9f7e0) · [Data collection](https://huggingface.co/collections/purvansh01/safetypulse-data-6af00b9124ee9d5022a36482)
+
 ## Dataset structure
 
 | File | Contents |
@@ -55,7 +57,7 @@ This repo holds **numbers only**: no prompts, no model answers.
 
 ```python
 from datasets import load_dataset
-rows = load_dataset("purvansh01/safetypulse-judge8b", "judge8b", split="train", revision="judge8b-v1")
+rows = load_dataset("purvansh01/safetypulse-judge8b", "judge8b", split="train", revision="judge8b-v1.1")
 ```
 
 ## How the data was produced
