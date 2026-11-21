@@ -121,7 +121,7 @@ Recipe unchanged (LoRA r16, 250 steps, fp16 base), checkpoints every 10 steps.
 |---|---|
 | `07_finetune_checkpoints__2026-11-2{0,1}__h2-alpacalist-s{1,2,3}.ipynb` / `.log` | Executed notebooks and logs |
 | `files/h2-alpacalist-s{1,2,3}__train_log.json` | Hyperparameters, LoRA config, loss curve, provenance |
-| `files/h2-alpacalist-s{1,2,3}__ft_alpacalist.jsonl` | The training data each run built (byte-identical across runs and to `tools/listify.py` run locally) |
+| (not in git) `files/h2-alpacalist-s{1,2,3}__ft_alpacalist.jsonl` | The training data each run built: byte-identical across runs (SHA-256 `63a38ba3…fc115a`). Kept out of git (one row of public Alpaca text trips the secret scanner's token pattern); the copy of record is `data/ft_alpacalist.jsonl` in the private Hub dataset `safetypulse-h2-logs` (tag `h2-v1`), and `tools/listify.py` regenerates it from `ft_alpaca.jsonl` |
 
 Training loss (first → last logged): s1 2.06 → 1.16, s2 2.23 → 1.18, s3 2.21 → 1.14; 51–52 min of training per run.
 Adapters go to the private Hub repo `safetypulse-h2-lora-alpacalist` (notebook 18).

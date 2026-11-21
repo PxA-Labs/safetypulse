@@ -48,7 +48,7 @@ no Stage 1 rows), both cards parse and state the refuted result.
 
 **Status:** ✅ complete · **Kernel:** https://www.kaggle.com/code/purvanshjoshi1/sp-h2-18-backup (editor run with `HF_TOKEN`;
 the CLI push stops at the token check by design) · Inputs: `sp-h2-07-alpacalist-s{1,2,3}`, `sp-h2-08-monitor-s{1,2,3}`,
-`sp-h2-08-monitor-s3b` (the resumed s3 session, doc 13 §3c amendment) · Code at `5ef2682` ·
+`sp-h2-08-monitor-s3b` (the resumed s3 session, doc 13 §3c amendment) · Code at `5ef2682` (the H2 results commit; rewritten as `1cb8ea0` to drop the training-data files from git, otherwise identical) ·
 `SP_BUNDLE_REF=purvansh01/safetypulse-probe-bundle` (no new bundle repo).
 
 | File | What it is |
