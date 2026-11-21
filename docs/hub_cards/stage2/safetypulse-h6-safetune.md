@@ -71,6 +71,7 @@ one Nvidia L40S 48 GB, [`tools/hf_jobs/job9_safetune_h6.py`](https://github.com/
 | `<family>/bundle/` | The calibrated probe bundle (directions, layer, components, reference values), usable with `safetypulse check` |
 | `<family>/calibration.json` | Chosen layer and components, calibration time, GPU, code commit |
 | `jobs.json` | Job ids, links, hardware, runtime, cost and billing per job |
+| `specificity/job13_h6.jsonl` | HF Job 13 (exploratory): `cis_sep` recomputed with two non-safety control directions ("Respond in French.", "Answer in one word.") and the activation norm, per model; see `docs/report/specificity_control.md` |
 | `MANIFEST.json` | SHA-256 and size of every file |
 
 ## Results

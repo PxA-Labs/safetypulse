@@ -165,6 +165,7 @@ summaries: `kaggle/executed/12_hf_jobs/RUN_SUMMARY.md` (jobs 1, 2, 4–7) and `k
 | 10 · H2 re-judged with Llama Guard 3 8B (exploratory) | L40S 48 GB | ✅ 47 min, ~$1.42 (team account). κ 0.82; H2 recall 1.00 with 8B labels (`docs/report/judge8b_h2.md`) | https://huggingface.co/jobs/purvansh01/6b0159384fdc5ab3c55c955e |
 | 11 · H6 layer diagnosis: `cis_sep` at every layer (exploratory) | L40S 48 GB | ✅ 30 min, ~$0.90 (team account). Gemma-3's calibrated layer ranks at chance, layers 17–34 perfectly (`docs/report/h6_layers.md`) | https://huggingface.co/jobs/purvansh01/6b01593e4fdc5ab3c55c9569 |
 | 12 · ‖ΔW‖ baseline for H1 and H2 | CPU (cpu-upgrade) | ✅ 2 min, <$0.01 (team account). H1: ‖ΔW‖ alarms on 48/50 control checkpoints, CIS on 0 | https://huggingface.co/jobs/purvansh01/6b016fc3efaf5e14f4b4dd29 |
+| 13 · Specificity control: non-safety directions and activation norm for H1 and H6 (exploratory) | L40S 48 GB | ✅ 41 min, ~$1.22 (team account). Refusal direction tracks safety best (H1 AUROC 0.99 vs 0.94/0.74; H6 0.83 vs 0.67/0.59), non-safety directions also move (`docs/report/specificity_control.md`) | https://huggingface.co/jobs/purvansh01/6b019af34fdc5ab3c55d37e8 |
 
 ## Hugging Face artifacts
 
