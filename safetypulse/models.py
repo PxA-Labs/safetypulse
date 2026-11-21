@@ -107,6 +107,13 @@ def adapter_base_model(adapter_dir: str | Path) -> str:
     return base
 
 
+def text_config(model):
+    """The language model's config: the config itself, or its text part for multimodal models (e.g. Gemma-3)."""
+    cfg = getattr(model, "config", None)
+    get = getattr(cfg, "get_text_config", None)
+    return get() if callable(get) else cfg
+
+
 FINGERPRINT_CONFIG_KEYS = ("model_type", "hidden_size", "num_hidden_layers", "num_attention_heads", "vocab_size")
 
 
@@ -115,8 +122,9 @@ def model_fingerprint(model, tok) -> dict:
     vocabulary size and the sha256 of its chat template (None if it has none). No weights are hashed."""
     import hashlib
 
-    cfg = getattr(model, "config", None)
+    cfg = text_config(model)
     fp = {k: getattr(cfg, k, None) for k in FINGERPRINT_CONFIG_KEYS}
+    fp["model_type"] = getattr(getattr(model, "config", None), "model_type", fp["model_type"])
     template = getattr(tok, "chat_template", None)
     if isinstance(template, dict):   # named templates
         template = json.dumps(template, sort_keys=True)
@@ -162,7 +170,8 @@ def restore_weights(model, sd: dict[str, torch.Tensor]) -> None:
 
 def decoder_layers(model):
     m = model.get_base_model() if hasattr(model, "get_base_model") else model
-    for path in ("model.layers", "transformer.h", "gpt_neox.layers"):
+    # model.language_model.layers: multimodal wrappers such as Gemma-3 (text decoder inside, vision tower beside it)
+    for path in ("model.layers", "transformer.h", "gpt_neox.layers", "model.language_model.layers", "language_model.layers"):
         obj = m
         try:
             for attr in path.split("."):
@@ -181,7 +190,7 @@ def layers_prefix(model) -> str:
 
 def head_geometry(model) -> tuple[int, int]:
     """(n_heads, head_dim) of the attention layers."""
-    cfg = model.config
+    cfg = text_config(model)
     n_heads = cfg.num_attention_heads
     head_dim = getattr(cfg, "head_dim", None) or cfg.hidden_size // n_heads
     return n_heads, head_dim

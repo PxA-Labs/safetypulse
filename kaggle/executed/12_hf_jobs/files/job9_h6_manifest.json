@@ -1,0 +1,150 @@
+{
+ "experiment": "H6: third-party SafeTune drift on other model families (docs/13_PREREGISTRATION.md \u00a72 H6, \u00a73d)",
+ "verdict": "refuted (FAIL on safe recovered: Lexsi/gemma3-4b-code-dpo-recover, Lexsi/gemma3-4b-gsm8k-dpo-recover, Lexsi/llama31-8b-code-dpo-recover)",
+ "code": {
+  "repo": "https://github.com/PxA-Labs/safetypulse",
+  "job_script": "tools/hf_jobs/job9_safetune_h6.py",
+  "commit": "e602e03b51bc939ff397c209dc4e69ba82b216ac",
+  "analysis": "tools/h6_analysis.py"
+ },
+ "models": {
+  "llama32-3b": {
+   "Lexsi/llama32-3b-hh-rlhf-aligned": "0345e31cc08f4d047b964cd198c8eae3367c8bbc",
+   "Lexsi/llama32-3b-code-sft-drift": "bdf14c15df2d238791b8718703141a01bf3be197",
+   "Lexsi/llama32-3b-dolly-sft-drift": "d636f0051d0b6e06811cacd9252fada5a5ad71f0",
+   "Lexsi/llama32-3b-gsm8k-sft-drift": "230f2e9ceb990e62548aedd1427eb27af1737b94",
+   "Lexsi/llama32-3b-legal-sft-drift": "6739f2f69df83817181413040b7fdb44ca87c307",
+   "Lexsi/llama32-3b-medical-sft-drift": "37fa9ed737861e5ad44e676a54c7fed7292a7ae4",
+   "Lexsi/llama32-3b-code-dpo-recover": "2fe8d20ea0b8e74a0ff4291293a9e6e8e5b50a98",
+   "Lexsi/llama32-3b-dolly-dpo-recover": "1ee5376a1b83f19e97ba96b5082a91e37c064a33",
+   "Lexsi/llama32-3b-gsm8k-dpo-recover": "61ec3feb8adcd05d33e34912a6ec9b0f72fef3a3",
+   "Lexsi/llama32-3b-legal-dpo-recover": "cb79c0d0314cd6c98c490dd3b9346841839a26da",
+   "Lexsi/llama32-3b-medical-dpo-recover": "c0ddb7cdf37f20bc7eee4eb6cc348b4b9810987f"
+  },
+  "qwen3-4b": {
+   "Lexsi/qwen3-4b-hh-rlhf-aligned": "f66cfde6570d8c7916165a19ff76207e8695b8cf",
+   "Lexsi/qwen3-4b-code-sft-drift": "bc6f0c6650c9f0b84778a3cce235fa96a41ec093",
+   "Lexsi/qwen3-4b-dolly-sft-drift": "b4110a4eb76a983e2f1b1fea7bfe02e744a61910",
+   "Lexsi/qwen3-4b-gsm8k-sft-drift": "1c2f494c9d425b2f689d9be47ab4b4eb748b0947",
+   "Lexsi/qwen3-4b-code-dpo-recover": "a579187041a82c15a78f164c233f28f87abc1702",
+   "Lexsi/qwen3-4b-dolly-dpo-recover": "5411e4ec79a407bc7bf510267fb138716b785bb3",
+   "Lexsi/qwen3-4b-gsm8k-dpo-recover": "3103303801a6d5c08abecf2f3172fb35180aa19f"
+  },
+  "gemma3-4b": {
+   "Lexsi/gemma3-4b-hh-rlhf-aligned": "9eeaabbf0230bf7211a5d1381cacc9470b6956fb",
+   "Lexsi/gemma3-4b-code-sft-drift": "940ec6e46a39e5897ce3e25c93d1545cb3afb377",
+   "Lexsi/gemma3-4b-dolly-sft-drift": "098d43de417faa5203c2e6e19a9b11b1c55dbe1c",
+   "Lexsi/gemma3-4b-gsm8k-sft-drift": "80364c546e4b35b0be89e744fd324b50e259c5f5",
+   "Lexsi/gemma3-4b-code-dpo-recover": "6b9ed7eccce1a8e1eaef7fd47f6058fbbd1ae2b8",
+   "Lexsi/gemma3-4b-dolly-dpo-recover": "d8f08a614b2a10f3b3099372e52d5e0d64a8658f",
+   "Lexsi/gemma3-4b-gsm8k-dpo-recover": "95af2999d2a7ec8e30e18390f33b5f4923a87acf"
+  },
+  "llama31-8b": {
+   "Lexsi/llama31-8b-hh-rlhf-aligned": "b2abba49e0a0a90fefca7fd6e5134b28d8e1f7df",
+   "Lexsi/llama31-8b-code-sft-drift": "1f6a2c596cb86ca9144c268a7322d5411f6dbb8e",
+   "Lexsi/llama31-8b-dolly-sft-drift": "31a1d03d271cfec55dcb6d4491c709bf5e2f0aa9",
+   "Lexsi/llama31-8b-gsm8k-sft-drift": "7928d667869b71672c5404285992e080db03d2a7",
+   "Lexsi/llama31-8b-legal-sft-drift": "54086db2a392f22df638bb9c74a9b3e346aaf9a3",
+   "Lexsi/llama31-8b-medical-sft-drift": "36e3d297bb896070f1487d19663754a33d1d07a6",
+   "Lexsi/llama31-8b-code-dpo-recover": "7dd77ad1a52f3301b54b2edfa3f76c33db10ec35",
+   "Lexsi/llama31-8b-dolly-dpo-recover": "9251ef64550d0cbb9c74e82ed931998ee164ae72",
+   "Lexsi/llama31-8b-gsm8k-dpo-recover": "849e23e5a675cb6aade49e63797a920c885fb6b8",
+   "Lexsi/llama31-8b-medical-dpo-recover": "3d73a59f7817b1a20c9c42b1d5a2f8063acbb099"
+  }
+ },
+ "files": {
+  "LICENSE-LSAL-1.2.md": {
+   "sha256": "a3f3380163ba175405369747a0600d7f464e7d697617f3b597a9317611953c31",
+   "bytes": 9510
+  },
+  "NOTICE": {
+   "sha256": "f02c6dd5207b3a160c5fdf22f590049fbc0847b044b9e5f589bf885c7975c78a",
+   "bytes": 1565
+  },
+  "gemma3-4b/bundle/directions.safetensors": {
+   "sha256": "81bbc7df080d27ae04037d79759ea46ccb4e7d7d3416ed86ea335e3620423bc0",
+   "bytes": 716960
+  },
+  "gemma3-4b/bundle/probe_bundle.json": {
+   "sha256": "6e575217320384380079b6489b644ec6861f7ac42d4650534cf4f30ed674fd4c",
+   "bytes": 14665
+  },
+  "gemma3-4b/bundle/probe_pairs.jsonl": {
+   "sha256": "f898d4c65567b5295dc2273ad3add35d785dba8bf918c3edefb2d2197bf15227",
+   "bytes": 15965
+  },
+  "gemma3-4b/calibration.json": {
+   "sha256": "091aaf74402b8072ffbd8d86d48582e27f61d6382311dfdda2f9f6b73b459fcc",
+   "bytes": 922
+  },
+  "gemma3-4b/scores.jsonl": {
+   "sha256": "9bddf6031c139cbb11224b9c26a3e5b2af5eccb0029acaa649271d87abfdd705",
+   "bytes": 16284
+  },
+  "jobs.json": {
+   "sha256": "2d6649830cdcf9e1d29f28c8b719ec87910a2a93352371a73636a4a6db77ee19",
+   "bytes": 1809
+  },
+  "llama31-8b/bundle/directions.safetensors": {
+   "sha256": "0720c34fa175dcbdafb63cdc8fd11fcf3d0a9626962bb26aeabefe19a306dd73",
+   "bytes": 1081512
+  },
+  "llama31-8b/bundle/probe_bundle.json": {
+   "sha256": "965f77f72ebd0dd07d559ff74810b3ecd0f3c6523c62d42bae0e1b77ffa6feee",
+   "bytes": 14392
+  },
+  "llama31-8b/bundle/probe_pairs.jsonl": {
+   "sha256": "f898d4c65567b5295dc2273ad3add35d785dba8bf918c3edefb2d2197bf15227",
+   "bytes": 15965
+  },
+  "llama31-8b/calibration.json": {
+   "sha256": "9b4a0e8b0d0bfc1787a1fb10cc766778b20e6f24d155ec99274b2783c2eef399",
+   "bytes": 912
+  },
+  "llama31-8b/scores.jsonl": {
+   "sha256": "f4fcbfc679b22f28aa166c5de4082670c272cd347998d871b7b3ee8aa051960b",
+   "bytes": 23116
+  },
+  "llama32-3b/bundle/directions.safetensors": {
+   "sha256": "28a04283fcaa2983c8b92c0c3b6ce17ee936fa2e4b94cb598ce6640c16cbd924",
+   "bytes": 712864
+  },
+  "llama32-3b/bundle/probe_bundle.json": {
+   "sha256": "edefb25dd39c8a39e29f5b8e73d28bb2d9d54856e8134183d166c48e9724a28f",
+   "bytes": 13956
+  },
+  "llama32-3b/bundle/probe_pairs.jsonl": {
+   "sha256": "f898d4c65567b5295dc2273ad3add35d785dba8bf918c3edefb2d2197bf15227",
+   "bytes": 15965
+  },
+  "llama32-3b/calibration.json": {
+   "sha256": "1ed9f2bc2c86bdd432cc30c2bc5851d4f9947d5de0ecc87779e445e919f84c4e",
+   "bytes": 897
+  },
+  "llama32-3b/scores.jsonl": {
+   "sha256": "15469bdf59fab87e04041d21fc9fe4c8a5f652f77ffa5d0c15db907c7a35519a",
+   "bytes": 25243
+  },
+  "qwen3-4b/bundle/directions.safetensors": {
+   "sha256": "c960d4dcadf92afe896f80fc423958a41468a81d7a89cece9c3e5b6d86c95d0d",
+   "bytes": 757920
+  },
+  "qwen3-4b/bundle/probe_bundle.json": {
+   "sha256": "027d2f262c348966ffa3dcbf24248ec9e373884abc8d0146d64a406d03f31045",
+   "bytes": 14707
+  },
+  "qwen3-4b/bundle/probe_pairs.jsonl": {
+   "sha256": "f898d4c65567b5295dc2273ad3add35d785dba8bf918c3edefb2d2197bf15227",
+   "bytes": 15965
+  },
+  "qwen3-4b/calibration.json": {
+   "sha256": "607daa6a6e7c819213d1c9bc1da7dbc32fa6a214e24538512306749b1281c0fd",
+   "bytes": 876
+  },
+  "qwen3-4b/scores.jsonl": {
+   "sha256": "e25724e3a1e3fa9534a72cc38017870756f94bec872b4a5ac9256dc63071b5c7",
+   "bytes": 15946
+  }
+ },
+ "note": "README.md is excluded (it is updated without changing the data)."
+}
