@@ -30,8 +30,9 @@ def violations(paths: list[str], root: Path = Path(".")) -> list[tuple[str, str]
     out = []
     for p in paths:
         name = PurePosixPath(p).name
+        names = {name, name.split("__", 1)[-1]}   # run outputs are saved as <tag>__<file> (e.g. final__audit.jsonl)
         for reason, patterns in RULES.items():
-            if any(fnmatch.fnmatch(name, pat) for pat in patterns):
+            if any(fnmatch.fnmatch(n, pat) for n in names for pat in patterns):
                 out.append((p, reason))
                 break
         else:
