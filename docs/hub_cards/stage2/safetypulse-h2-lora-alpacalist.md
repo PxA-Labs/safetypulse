@@ -105,7 +105,7 @@ Every checkpoint was scored by notebook `08_monitor_checkpoints`: **ASR** (attac
 ## Bias, risks and limitations
 
 - Fine-tuning can make the adapters less safe than the base model; check the evaluation table before any use.
-- ASR comes from one automatic judge (Llama Guard 3 1B) on a small English prompt set (roughly ±10 points per checkpoint). Other languages were not measured. The 8B-judge robustness check covered H1 and H3, not these runs.
+- ASR comes from one automatic judge (Llama Guard 3 1B) on a small English prompt set (roughly ±10 points per checkpoint). Other languages were not measured. Re-judged with Llama Guard 3 8B (HF Job 10, exploratory): recall stays 1.00 (43/43), but the 8B judge reverses the secondary peak-ASR prediction.
 - Few seeds of one recipe; results may not hold for other data, learning rates or model sizes.
 - The base model's own biases and limitations apply.
 

@@ -220,7 +220,7 @@ Each is listed in the model or data collection with a "Stage 2" note.
 | [`safetypulse-h2-lora-alpacalist`](https://huggingface.co/purvansh01/safetypulse-h2-lora-alpacalist) | model | `h2-v1`, `h2-v1.1` | H2: Global list-Alpaca adapters, seeds 1–3 × 26 checkpoints |
 | [`safetypulse-h2-logs`](https://huggingface.co/datasets/purvansh01/safetypulse-h2-logs) | dataset | `h2-v1`, `h2-v1.1` | H2: monitor rows, training logs, list-formatted training data, manifest |
 | [`safetypulse-judge8b`](https://huggingface.co/datasets/purvansh01/safetypulse-judge8b) | dataset | `judge8b-v1`, `judge8b-v1.1` | HF Job 8: Llama Guard 3 1B and 8B verdicts and ASR on all 208 H1/H3 checkpoints (no answer text) |
-| [`safetypulse-h6-safetune`](https://huggingface.co/datasets/purvansh01/safetypulse-h6-safetune) | dataset | `h6-v1` | H6: scores of 35 SafeTune checkpoints, calibration bundles (LSAL v1.2 derivative material), job records, manifest; no weights |
+| [`safetypulse-h6-safetune`](https://huggingface.co/datasets/purvansh01/safetypulse-h6-safetune) | dataset | `h6-v1` → `h6-v1.2` (current) | H6: scores of 35 SafeTune checkpoints, calibration bundles (LSAL v1.2 derivative material), job records, manifest; no weights |
 
 Still private: `safetypulse-earth-probe-bundle` (H1, tag `h1-v1`: Earth's calibrated bundle, directions, token sets;
 its 50 probe pairs are the same as in the public `safetypulse-probe-bundle`).
