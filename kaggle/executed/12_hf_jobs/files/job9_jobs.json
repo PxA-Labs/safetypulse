@@ -39,9 +39,15 @@
   "llama31-8b": {
    "id": "purvansh01/6b014c564fdc5ab3c55c81e3",
    "billed_to": "team account",
-   "status": "RUNNING",
-   "url": "https://huggingface.co/jobs/purvansh01/6b014c564fdc5ab3c55c81e3"
+   "status": "COMPLETED",
+   "url": "https://huggingface.co/jobs/purvansh01/6b014c564fdc5ab3c55c81e3",
+   "runtime": "22m 26s",
+   "cost_usd": 0.67
   }
  },
- "note": "Three earlier submissions (6b014c47\u2026, 6b014c4b\u2026, 6b014c4e\u2026) were cancelled while still scheduling (wrong billing flag); they never ran and cost nothing. Costs are runtime \u00d7 hourly price."
+ "note": "Three earlier submissions (6b014c47\u2026, 6b014c4b\u2026, 6b014c4e\u2026) were cancelled while still scheduling (wrong billing flag); they never ran and cost nothing. Costs are runtime \u00d7 hourly price.",
+ "total_cost_usd": {
+  "organisation": 0.67,
+  "team account": 1.02
+ }
 }
