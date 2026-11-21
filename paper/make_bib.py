@@ -1,0 +1,91 @@
+"""Build paper/custom.bib from the arXiv API (authors, titles and years as arXiv lists them), plus a few classic
+non-arXiv references written out by hand below. Run: python paper/make_bib.py   (needs network access)."""
+import re
+import time
+import unicodedata
+import urllib.request
+from pathlib import Path
+
+ARXIV = {   # key: arXiv id   (venue notes per docs/12_RELATED_WORK.md)
+    "qi2023finetuning": "2310.03693", "arditi2024refusal": "2406.11717", "wei2024brittleness": "2402.05162",
+    "mazeika2024harmbench": "2402.04249", "rottger2024xstest": "2308.01263", "seth2026circuitkit": "2607.19317",
+    "nghiem2026trait": "2606.07631", "du2025procon": "2509.06795", "guo2026routing": "2609.01455",
+    "lee2026relocates": "2610.00320", "hsu2024safelora": "2405.16833", "yu2026safeseek": "2603.23268",
+    "ruellan2026replay": "2610.38001", "hawkins2026multilingual": "2606.28843", "he2024safedata": "2404.01099",
+    "duan2026monitors": "2606.15980", "hu2021lora": "2106.09685", "inan2023llamaguard": "2312.06674",
+    "grattafiori2024llama3": "2407.21783", "syed2023attribution": "2310.10348", "salamanca2026tinyaya": "2603.11510",
+    "seth2026safetune": "2609.22153", "rafailov2023dpo": "2305.18290", "bai2022hhrlhf": "2204.05862",
+    "yang2025qwen3": "2505.09388", "gemmateam2025gemma3": "2503.19786", "zou2023advbench": "2307.15043",
+}
+MANUAL = r"""
+@misc{taori2023alpaca,
+  title = {Stanford Alpaca: An Instruction-following {LLaMA} model},
+  author = {Taori, Rohan and Gulrajani, Ishaan and Zhang, Tianyi and Dubois, Yann and Li, Xuechen and Guestrin, Carlos and Liang, Percy and Hashimoto, Tatsunori B.},
+  year = {2023},
+  howpublished = {GitHub repository},
+  url = {https://github.com/tatsu-lab/stanford_alpaca}
+}
+@article{wilson1927probable,
+  title = {Probable Inference, the Law of Succession, and Statistical Inference},
+  author = {Wilson, Edwin B.},
+  journal = {Journal of the American Statistical Association},
+  volume = {22}, number = {158}, pages = {209--212}, year = {1927},
+  doi = {10.1080/01621459.1927.10502953}
+}
+@article{cohen1960kappa,
+  title = {A Coefficient of Agreement for Nominal Scales},
+  author = {Cohen, Jacob},
+  journal = {Educational and Psychological Measurement},
+  volume = {20}, number = {1}, pages = {37--46}, year = {1960},
+  doi = {10.1177/001316446002000104}
+}
+@article{nosek2018preregistration,
+  title = {The Preregistration Revolution},
+  author = {Nosek, Brian A. and Ebersole, Charles R. and DeHaven, Alexander C. and Mellor, David T.},
+  journal = {Proceedings of the National Academy of Sciences},
+  volume = {115}, number = {11}, pages = {2600--2606}, year = {2018},
+  doi = {10.1073/pnas.1708274114}
+}
+"""
+
+
+def tex(s):
+    """BibTeX-safe ASCII: accents as TeX commands (Unicode is not allowed in BibTeX entries)."""
+    acc = {"́": "'", "̀": "`", "̈": '"', "̂": "^", "̃": "~", "̧": "c ", "̌": "v "}
+    out = []
+    for ch in unicodedata.normalize("NFD", s):
+        if ch in acc and out:
+            out[-1] = "{\\" + acc[ch] + out[-1] + "}"
+        elif ord(ch) < 128:
+            out.append(ch)
+    return "".join(out).replace("&", r"\&")
+
+
+def fetch(ids):
+    q = ",".join(ids)
+    x = urllib.request.urlopen(f"https://export.arxiv.org/api/query?id_list={q}&max_results={len(ids)}").read().decode()
+    meta = {}
+    for e in re.findall(r"<entry>(.*?)</entry>", x, re.S):
+        aid = re.search(r"<id>https?://arxiv.org/abs/([0-9.]+)", e).group(1)
+        meta[aid] = {"title": re.sub(r"\s+", " ", re.search(r"<title>(.*?)</title>", e, re.S).group(1)).strip(),
+                     "authors": re.findall(r"<name>(.*?)</name>", e),
+                     "year": re.search(r"<published>(\d{4})", e).group(1)}
+    return meta
+
+
+meta = fetch(list(ARXIV.values()))
+missing = [k for k, v in ARXIV.items() if v not in meta]
+assert not missing, missing
+out = []
+for key, aid in ARXIV.items():
+    m = meta[aid]
+    # group authors ("Gemma Team") are one name: brace them so BibTeX does not split first/last
+    authors = " and ".join("{" + tex(a).strip() + "}" if tex(a).strip().endswith("Team") else tex(a).strip()
+                           for a in m["authors"])
+    title = tex(m["title"]).replace("{", "").replace("}", "")
+    title = re.sub(r"\b([A-Z][A-Za-z]*[A-Z][A-Za-z0-9]*)\b", r"{\1}", title)   # keep acronyms / CamelCase
+    out.append(f"@misc{{{key},\n  title = {{{title}}},\n  author = {{{authors}}},\n  year = {{{m['year']}}},\n"
+               f"  eprint = {{{aid}}},\n  archivePrefix = {{arXiv}},\n  url = {{https://arxiv.org/abs/{aid}}}\n}}")
+Path(__file__).with_name("custom.bib").write_text("\n".join(out) + "\n" + MANUAL)
+for key, aid in ARXIV.items():
+    print(f"{key:28s} {aid}  {meta[aid]['year']}  {meta[aid]['authors'][0]}: {meta[aid]['title'][:70]}")
