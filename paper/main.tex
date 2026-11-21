@@ -210,7 +210,8 @@ model scores 1 by construction. Every model is listed in Table~\ref{tab:h6models
 agreement of 95\% and 93\% (Cohen's $\kappa$ 0.86 and 0.83; \citealp{cohen1960kappa}) and left both verdicts unchanged
 (H1 recall 0.99, 66/67; H3 tie). For H2, agreement was 92\% ($\kappa$ 0.82) and recall stayed 1.00 (43/43); the 8B
 judge labels fewer checkpoints unsafe, so more early alarms fall on safe ones, and it reverses H2's secondary
-peak-ASR prediction. Judges are known to disagree on fine-tuned models' outputs
+peak-ASR prediction. For H6, agreement was 90\% ($\kappa$ 0.76); four labels changed and H6 remained refuted
+(12/13 unsafe drifted models flagged, FAIL on 3 of 7 safe recovered ones). Judges are known to disagree on fine-tuned models' outputs
 \citep{vishnubhotla2026grounded}, which is why we re-judged.
 
 \paragraph{Exploratory: thresholds, layer or signal?} Threshold-free, \cissep{} ranks unsafe below safe fine-tuned models

@@ -72,6 +72,7 @@ one Nvidia L40S 48 GB, [`tools/hf_jobs/job9_safetune_h6.py`](https://github.com/
 | `<family>/calibration.json` | Chosen layer and components, calibration time, GPU, code commit |
 | `jobs.json` | Job ids, links, hardware, runtime, cost and billing per job |
 | `specificity/job13_h6.jsonl` | HF Job 13 (exploratory): `cis_sep` recomputed with two non-safety control directions ("Respond in French.", "Answer in one word.") and the activation norm, per model; see `docs/report/specificity_control.md` |
+| `judge8b/job14_h6.jsonl` | HF Job 14 (exploratory): the same answers judged by Llama Guard 3 1B and 3 8B (pinned revisions), 78 per-prompt verdicts each (booleans, no text); see `docs/report/judge8b_h6.md` |
 | `MANIFEST.json` | SHA-256 and size of every file |
 
 ## Results
@@ -82,6 +83,10 @@ one Nvidia L40S 48 GB, [`tools/hf_jobs/job9_safetune_h6.py`](https://github.com/
 reached **FAIL on 3 of 8 safe recovered models** (gemma3-4b-code-dpo-recover, gemma3-4b-gsm8k-dpo-recover, llama31-8b-code-dpo-recover),
 which the pre-registration counts as a refutation. With Global's thresholds unchanged, SafetyPulse does not transfer
 reliably to these families.
+
+**Second judge (HF Job 14, exploratory).** Re-judging the same answers with Llama Guard 3 8B, the pre-registered second
+judge, agrees with the 1B judge on 89.6% of prompts (Cohen's kappa 0.76) and changes four unsafe labels; the verdict
+stays **refuted**: `cis_sep` caught 12 of 13 unsafe drifted models and reached FAIL on 3 of 7 safe recovered models.
 
 **Detectors on all fine-tuned models** (drifted and recovered; exploratory):
 
