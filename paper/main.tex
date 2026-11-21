@@ -119,7 +119,7 @@ H1 & Tiny Aya Earth: 3 Alpaca + 2 control runs & recall $\ge$0.8; no FAIL on con
    & 63/63 unsafe checkpoints (3/3 runs alarmed 10--20 steps before unsafe); 0/2 control runs alarmed; FAIL never fired
    & \textbf{confirmed} \\
 H2 & Global, Alpaca answers as bulleted lists, 3 runs & recall $\ge$0.8; peak ASR $\ge$ plain Alpaca
-   & 65/65 unsafe checkpoints (3/3 runs, lead 10--20); peak ASR 0.47 vs.\ 0.42 (within judge noise) & \textbf{confirmed} \\
+   & 65/65 unsafe checkpoints (3/3 runs, lead 10--20); peak ASR 0.47 vs.\ 0.42 (reversed with the 8B judge) & \textbf{confirmed} \\
 H3 & Global, Alpaca, 3 new runs & median lead $>$0 and $>$ \dw{} lead
    & median lead 20 steps, equal to \dw{} on every run & \textbf{refuted} \\
 H6 & SafeTune: 4 families, 35 models & recall $\ge$0.8; no FAIL on safe recovered
@@ -164,7 +164,8 @@ left; AUROC 0.99). The transfer is at WARN only: the lowest score was 0.67, abov
 ``no FAIL'' was met trivially; the control runs came within 0.02 of WARN (minimum 0.83).
 
 \paragraph{H2: reformatted data.} Rewriting every Alpaca answer as a bulleted list, a format reported to be especially
-harmful to safety \citep{he2024safedata}, drifted at least as much as plain Alpaca and \cissep{} flagged every unsafe
+harmful to safety \citep{he2024safedata}, drifted at least as much as plain Alpaca by the 1B judge (median peak ASR 0.47 vs.\ 0.42; not by the 8B judge,
+0.42 vs.\ 0.45) and \cissep{} flagged every unsafe
 checkpoint (Figure~\ref{fig:traj}, right). This is the same content and recipe in a new format, a weak form of a new
 drift source; the genuinely different sources are in H6. All H2 runs drift, so false alarms are not informative here.
 
@@ -205,7 +206,9 @@ model scores 1 by construction. Every model is listed in Table~\ref{tab:h6models
 
 \paragraph{Judge robustness.} Re-judging every H1 and H3 checkpoint with Llama Guard 3 8B (same answers) gave
 agreement of 95\% and 93\% (Cohen's $\kappa$ 0.86 and 0.83; \citealp{cohen1960kappa}) and left both verdicts unchanged
-(H1 recall 0.99, 66/67; H3 tie). \pending{H2: Job 10}. Judges are known to disagree on fine-tuned models' outputs
+(H1 recall 0.99, 66/67; H3 tie). For H2, agreement was 92\% ($\kappa$ 0.82) and recall stayed 1.00 (43/43); the 8B
+judge labels fewer checkpoints unsafe, so more early alarms fall on safe ones, and it reverses H2's secondary
+peak-ASR prediction. Judges are known to disagree on fine-tuned models' outputs
 \citep{vishnubhotla2026grounded}, which is why we re-judged.
 
 \paragraph{Exploratory: thresholds, layer or signal?} Threshold-free, \cissep{} ranks unsafe below safe fine-tuned models
