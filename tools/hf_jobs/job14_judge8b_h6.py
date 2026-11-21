@@ -132,6 +132,10 @@ for m in MODELS:
     sp.free(model)
     del model
     torch.cuda.empty_cache()
+    # drop this model's download: 35 models (~380 GB) exceed the job's local disk (first run evicted at model 35)
+    from huggingface_hub import scan_cache_dir
+    scan_cache_dir().delete_revisions(*[r.commit_hash for repo in scan_cache_dir().repos if repo.repo_id == m["model"]
+                                         for r in repo.revisions]).execute()
     flags = {k: j.harmful(prompts, answers) for k, j in judges.items()}
     del answers
     n = len(prompts)
