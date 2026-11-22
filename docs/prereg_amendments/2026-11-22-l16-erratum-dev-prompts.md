@@ -28,5 +28,4 @@ HarmBench prompts per checkpoint, ...)". The same wording was in
 
 None on any result. The prompts used are exactly the ones doc 13 refers to (the dev split, as in notebook 08); only
 the count in the sentence was wrong. All H1/H2/H3 analyses read the logged ASR values, which were always computed on 78
-prompts. The 95% interval of one ASR value is about ±10 points (not ±9 as 100 prompts would give); the reports that
-quote an interval already use n = 78.
+prompts, and the logged `asr_ci95` intervals were computed from those same 78 answers.
