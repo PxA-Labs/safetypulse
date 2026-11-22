@@ -26,7 +26,7 @@ import torch
 from pydantic import PrivateAttr
 
 from .activations import add_direction, parse_component, random_components_like, remove_hooks, unit
-from .models import head_geometry, layers_prefix
+from .models import decoder_layers, head_geometry, layers_prefix
 from .schemas import SCHEMA_VERSION, CheckpointRef, ProbeBundle, _Open
 from .utils import load_json, provenance, save_json
 
@@ -64,12 +64,19 @@ def component_slices(model, cid: str) -> Slices:
 
     attn head h: its rows of q_proj (+bias) and its columns of o_proj. k/v are shared across a GQA
     group, so they are left untouched. mlp: gate/up/down projections whole.
+    An id outside the model (layer or head index out of range) is an error: it would otherwise give an empty
+    slice (a head) or fail only after earlier components were already edited (a layer).
     """
     kind, layer, head = parse_component(cid)
+    n_layers = len(decoder_layers(model))
+    if not 0 <= layer < n_layers:
+        raise ValueError(f"component {cid!r}: layer {layer} out of range for a model with {n_layers} layers")
     pre = f"{layers_prefix(model)}.{layer}"
     names = dict(model.named_parameters())
     if kind == "attn_head":
-        _, hd = head_geometry(model)
+        n_heads, hd = head_geometry(model)
+        if not 0 <= head < n_heads:
+            raise ValueError(f"component {cid!r}: head {head} out of range for a model with {n_heads} heads")
         rows = slice(head * hd, (head + 1) * hd)
         out = [(f"{pre}.self_attn.q_proj.weight", (rows, slice(None))), (f"{pre}.self_attn.o_proj.weight", (slice(None), rows))]
         if f"{pre}.self_attn.q_proj.bias" in names:
