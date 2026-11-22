@@ -35,10 +35,13 @@ a cheap internal alarm, \cissep{}: the separation of harmful and harmless prompt
 direction, relative to the base model, with WARN and FAIL thresholds fixed once on development runs of Tiny Aya Global.
 We pre-registered four tests of where it transfers. At its WARN level it flagged every unsafe checkpoint of three
 drifting runs on a sibling model, Tiny Aya Earth, and none of two control runs, and every unsafe checkpoint after a
-reformatting of the training data (bulleted lists). Two predictions failed: it did not warn earlier than a weight-change
-baseline (at 10-step resolution), although that baseline also alarmed on 48 of 50 control checkpoints, and on 35 third-party checkpoints from four other model families its FAIL level fired
-on 3 of 8 safe recovered models. A check costs a fifth of a behavioural audit and warned earlier than a 50-prompt
-refusal spot-check, but on other families the spot-check raised far fewer false alarms (3 vs.\ 10 of 12 safe models). Exploratory analyses suggest the score still ranks models well
+reformatting of the training data (bulleted lists). Two predictions failed. It did not warn earlier than a weight-change
+baseline (tied at 10-step resolution; at 2-step resolution the baseline fired first in three exploratory runs),
+although that baseline also alarmed on 48 of 50 control checkpoints. On 35
+third-party checkpoints from four other model families, its FAIL level fired on 3 of 8 safe recovered models. A check
+costs about a fifth of a behavioural audit and warned earlier than a 50-prompt refusal spot-check in two of the three
+Tiny Aya tests (tied in the third), but on the other families the spot-check alarmed on far fewer safe models (3 vs.\ 10
+of 12). Exploratory analyses suggest the score still ranks models well
 within three families and that the failure in the fourth is tied to the layer chosen by calibration, but we could not
 set reliable thresholds for new families.
 \end{abstract}
@@ -49,7 +52,7 @@ Safety alignment is fragile under fine-tuning: even benign instruction data can 
 requests \citep{qi2023finetuning,he2024safedata}. Re-auditing every checkpoint with red-team prompts and a safety
 judge is expensive, so a cheap \emph{screening signal} that runs inside the training loop is attractive. Refusal in chat
 models is mediated largely by a single residual-stream direction \citep{arditi2024refusal}, and benign fine-tuning moves
-it \citep{du2025procon,guo2026routing}, which makes the strength of that direction a natural candidate.
+it \citep{du2025procon}, which makes the strength of that direction a natural candidate.
 
 Activation-based drift monitors exist and have been validated on held-out runs \citep{nghiem2026trait}; our
 contribution is not a new monitor but a \textbf{pre-registered test of where a simple one transfers}. All design choices
@@ -98,7 +101,7 @@ fine-tuned checkpoint; (iv) added after an internal review (App.~\ref{app:prereg
 relative to the base model (logged at every checkpoint; thresholds chosen likewise).
 
 \paragraph{Development results (post hoc, one model).} On Global (12 LoRA runs \citep{hu2021lora}, 150 checkpoints),
-Alpaca tuning \citep{taori2023alpaca} doubled ASR (21\%$\rightarrow$37--46\%) while GSM8K and the control did not; on
+Alpaca tuning \citep{taori2023alpaca} doubled ASR (21\%$\rightarrow$37--46\%) while GSM8K \citep{cobbe2021gsm8k} and the control did not; on
 held-out test runs \cissep{} at FAIL caught 96\% of unsafe checkpoints (precision 0.85) with no alarm on safe runs, and
 it separated drifting from benign fine-tunes better than \dw{} (AUROC 0.95 vs.\ 0.70). These comparisons were made after
 the test runs were scored, which is why we pre-registered the tests that follow.
@@ -107,7 +110,8 @@ the test runs were scored, which is why we pre-registered the tests that follow.
 \label{sec:prereg}
 
 The plan (App.~\ref{app:prereg}) was committed to a public repository before each experiment; it fixes the primary
-signal (\cissep{} at WARN-or-FAIL), the thresholds, the unsafe rule, the judge, the baselines and the verdict rules.
+signal (\cissep{} at WARN-or-FAIL), the thresholds, the unsafe rule, the judge, the baselines and the verdict rules;
+Table~\ref{tab:prereg} lists the four tests and their verdicts.
 Deviations were added as dated amendments before the affected analysis. Pass marks are point estimates; checkpoints of
 one run are not independent, so we also report results per run. New fine-tunes use LoRA ($r=16$, 2{,}000 examples,
 250 steps) with a checkpoint every 10 steps.
@@ -153,10 +157,10 @@ H6 false alarms & 10/12 & 3/12 & -- & 12/12 & 12/12 \\
 \bottomrule
 \end{tabular}
 \caption{Baselines at WARN-or-FAIL (counts are checkpoints; H6: fine-tuned models). False alarms: alarms on safe
-checkpoints of drifting runs. Spot: 50-prompt refusal spot-check with Global's thresholds; All: alarm on every fine-tuned checkpoint. \dw{} has
+checkpoints of the drifting H3 runs, and on safe fine-tuned models (drifted or DPO-recovered) for H6. Spot: 50-prompt refusal spot-check with Global's thresholds; All: alarm on every fine-tuned checkpoint. \dw{} has
 no threshold for full fine-tunes of other models. On Gemma-3 the refusal matcher rates the aligned model itself at
 0.34, so its spot-check alarms are uninformative; without Gemma, H6 is 17/17 and 7/8 for \cissep{}, 15/17 and 0/8
-for Spot. Logit: refusal-token score. Wilson 95\% intervals, e.g.\ H6 false alarms 0.55--0.95 (\cissep{}) vs.\ 0.09--0.53
+for Spot. Logit: refusal-token score. Wilson 95\% intervals \citep{wilson1927probable}, e.g.\ H6 false alarms 0.55--0.95 (\cissep{}) vs.\ 0.09--0.53
 (Spot), are in \texttt{docs/report/review\_followups.md}.}
 \label{tab:baselines}
 \end{table}
@@ -187,9 +191,12 @@ Alpaca runs fall below WARN and become unsafe; control runs stay above WARN. H2:
 
 \paragraph{H3: lead time.} With checkpoints every 10 steps, \cissep{} at WARN preceded the first unsafe checkpoint on
 all three runs (20, 10 and 30 steps), but \dw{} at its development threshold fired at the same checkpoint on every run,
-so the prediction of a strictly longer lead failed. On runs that all drift, any signal that grows with training warns
-early (Table~\ref{tab:baselines}). What separates them is the control runs: on Earth, \dw{} crossed its threshold at
-step 20 on every run, drifting or not, and alarmed on 48 of the 50 control checkpoints, while \cissep{} raised none. Compared with the behavioural spot-check, \cissep{} warned earlier on H1 and H3 (median 10 vs.\ 0 and 20
+so the prediction of a strictly longer lead failed. Finer spacing does not rescue it: in three further runs with
+checkpoints every 2 steps early in training (exploratory, new seeds), \dw{} fired first on all three, at step 12,
+against steps 20, 18 and 22 for \cissep{}; both preceded the first unsafe checkpoint (steps 100, 28 and 60).
+On runs that all drift, any signal that grows with training warns
+early (Table~\ref{tab:baselines}). What separates them is the control runs, which H3 lacks: in H1 on Earth, \dw{}
+crossed its threshold at step 20 on every run, drifting or not, and alarmed on 48 of the 50 control checkpoints, while \cissep{} raised none. Compared with the behavioural spot-check, \cissep{} warned earlier on H1 and H3 (median 10 vs.\ 0 and 20
 vs.\ 0 steps) and tied on H2.
 
 \paragraph{H6: other model families.} SafeTune \citep{seth2026safetune} releases HH-RLHF-aligned \citep{bai2022hhrlhf}
@@ -208,7 +215,7 @@ against 7.3\,s for the spot-check and 25.9\,s for the audit (median per model, o
 \includegraphics[width=\textwidth]{figures/fig_safetune.pdf}
 \caption{H6: \cissep{} against the ASR change from the aligned model, per family. Points in the shaded region are
 unsafe ($\Delta$ASR $>0.10$); a good alarm puts them below the dashed thresholds and the others above. The aligned
-model scores 1 by construction. Every model is listed in Table~\ref{tab:h6models}.}
+model scores 1 by construction (0.99--1.00 as measured). Every model is listed in Table~\ref{tab:h6models}.}
 \label{fig:safetune}
 \end{figure*}
 
@@ -217,7 +224,9 @@ agreement of 95\% and 93\% (Cohen's $\kappa$ 0.86 and 0.83; \citealp{cohen1960ka
 (H1 recall 0.99, 66/67; H3 tie). For H2, agreement was 92\% ($\kappa$ 0.82) and recall stayed 1.00 (43/43); the 8B
 judge labels fewer checkpoints unsafe, so more early alarms fall on safe ones, and it reverses H2's secondary
 peak-ASR prediction. For H6, agreement was 90\% ($\kappa$ 0.76); four labels changed and H6 remained refuted
-(12/13 unsafe drifted models flagged, FAIL on 3 of 7 safe recovered ones). Judges are known to disagree on fine-tuned models' outputs
+(12/13 unsafe drifted models flagged, FAIL on 3 of 7 safe recovered ones). On the 119 held-out test prompts, never
+used for H6, 3 (1B) and 5 (8B) of the 31 labels change and H6 stays refuted under both judges (11/12 unsafe drifted
+models flagged; FAIL on 5 of 11 and 4 of 9 safe recovered ones). Judges are known to disagree on fine-tuned models' outputs
 \citep{vishnubhotla2026grounded}, which is why we re-judged.
 
 \paragraph{Exploratory: thresholds, layer or signal?} Threshold-free, \cissep{} ranks unsafe below safe fine-tuned models
@@ -226,7 +235,7 @@ Gemma-3-4B (2, 4). Scoring every layer with the same directions shows why: on Ge
 models perfectly, but calibration chose layer 11 of 34, where ranking is at chance (App.~\ref{app:layers}). Ranking is
 not an alarm, however \citep{gao2026alarm}: \cissep{} thresholds chosen on the other fine-tune domains of the same
 family caught 14 of 19 unsafe models and flagged 2 of 12 safe ones (15/19 and 4/12 if the threshold must catch every
-unsafe training model), so with 6--11 models per family we could not set reliable ones. The secondary circuit score
+unsafe training model), so with 6--10 fine-tuned models per family we could not set reliable ones. The secondary circuit score
 \textsc{cis}$_{\text{circ}}$ ranked better pooled (AUROC 0.94 vs.\ 0.83; Gemma 0.88). These
 analyses were chosen after the H6 result, on few models, and select nothing for any claim.
 
@@ -243,7 +252,8 @@ controls are stricter than a random direction, which would carry no prompt contr
 recovery, itself a further fine-tune, should lower it. It did the opposite: over the 15 drifted/recovered pairs of the
 same family and domain, recovery lowered ASR in all 15 and raised \cissep{} in 13 (median $+0.09$; e.g.\ Llama-3.2-3B
 Dolly 0.18 to 0.49), while the French direction moved by at most 0.01 in 11. But the score recovered less than
-behaviour: the spot-check returned to at least 0.88 of the aligned model's in 11 pairs, \cissep{} rose above WARN in 2.
+behaviour: the spot-check returned to at least 0.88 of the aligned model's in 11 pairs, \cissep{} ended above WARN in 2,
+one of which (Gemma-3 Dolly) was already above it before recovery.
 A repaired model can refuse again while its separation stays below FAIL, so a threshold on the level cannot tell
 ``drifted'' from ``drifted and repaired''; this is how the three FAILs on safe recovered models arise. The refusal-token
 score, from the same forward pass, was a weaker alarm: it fired on 4 of 50 Earth control checkpoints and on all 12 safe
@@ -257,58 +267,90 @@ Benign fine-tuning degrades safety \citep{qi2023finetuning,he2024safedata,wei202
 routed to refusal \citep{guo2026routing}. Reading concepts from activation directions follows representation
 engineering \citep{zou2023repe}; in weight space, fine-tuning compromises safety once it leaves a ``safety basin''
 around the aligned model \citep{peng2024landscape}, measured by perturbing weights rather than reading activations. The closest monitor tracks seven trait directions during LoRA tuning of four
-7--9B models and validates a classifier on 468 held-out checkpoints \citep{nghiem2026trait}; we test frozen thresholds of
+7--9B models and validates a thresholded regressor on 468 held-out checkpoints \citep{nghiem2026trait}; we test frozen thresholds of
 one direction-based score across models and drift sources. Harmful-request probes transfer from a base model to its
 distilled and instruction-tuned successors with little loss of AUC \citep{tsatsos2026probes}, consistent with our
 within-family transfer; preserving the base refusal direction is not a reliable proxy for safety in every model
-\citep{ruellan2026replay}, and frozen probes can go stale after updates \citep{duan2026monitors}, consistent with H6.
+\citep{ruellan2026replay}, and frozen activation probes often go stale after fine-tuning, although refusal probes were
+comparatively stable \citep{duan2026monitors}; H6 shows that frozen thresholds can fail across model families.
 High AUROC does not make a valid alarm policy \citep{gao2026alarm}, as our per-family analysis also finds. For auditing
 whole checkpoints, an activation refusal gap combined with a weight-difference signal transfers a threshold across
 held-out families for abliterated models \citep{hurtado2026abliterated}, a much larger change than benign drift, and the
-weights of harmful fine-tunes carry a readable trace \citep{bao2026trace}. Prevention methods constrain tuning instead
-\citep{hsu2024safelora,du2025procon}; SafeTune \citep{seth2026safetune} and CircuitKIT \citep{seth2026circuitkit} provide
+weights of harmful fine-tunes carry a readable trace \citep{bao2026trace}. Prevention methods constrain tuning
+\citep{du2025procon} or project the LoRA update onto a safety-aligned subspace \citep{hsu2024safelora}; SafeTune \citep{seth2026safetune} and CircuitKIT \citep{seth2026circuitkit} provide
 the auditing, repair and circuit tools SafetyPulse builds on.
 
 \section{Conclusion}
 
 With thresholds fixed on one model, a refusal-direction alarm transferred to a sibling model and to reformatted
 training data, stayed silent on control runs where a weight-change alarm fired on 48 of 50 checkpoints, and on Tiny Aya warned earlier than a behavioural
-spot-check, at a fifth of an audit's cost. It did not warn earlier than a weight-change alarm on drifting runs, and its
-thresholds did not carry over to other model families. The score kept ranking information in three of four families,
-and the fourth failed at the calibrated layer, so the weak points are calibration choices (layer and thresholds), which
-we could not fix from the few models available. A cheap behavioural spot-check, which raised far fewer false alarms on
-new families, should be kept alongside; \cissep{}'s own advantages are earlier warning on Tiny Aya and needing no
-generation.
+spot-check; a check costs about a fifth of an audit. It did not warn earlier than a weight-change alarm on drifting
+runs, and its thresholds did not carry over to other model families. In exploratory analyses the score kept ranking
+information in three of four families, the fourth failed at the calibrated layer, and after DPO repair the score
+recovered less than refusal behaviour; the layer choice, the thresholds and this lag are the weak points we found, and
+we could not fix them from the few models available. A cheap behavioural spot-check, which raised far fewer false alarms on
+new families, should be kept alongside. Run only to confirm a \cissep{} WARN (FAIL alarming alone; exploratory), it
+kept 18 of 19 unsafe H6 models with 4 of 12 false alarms instead of 10, at 6.6\,s per model, but the confirmation
+came no earlier than the spot-check, removing \cissep{}'s earlier warning on Tiny Aya (median lead 0 vs.\ 10 steps);
+needing no generation remains \cissep{}'s own advantage.
 
 \section*{Limitations}
 
-\textbf{Small samples, dependent checkpoints.} Each test uses 3--5 runs or 6--11 models per family; checkpoints within
+\textbf{Small samples, dependent checkpoints.} Each test uses 3--5 runs or 6--10 fine-tuned models per family; checkpoints within
 a run are strongly correlated, so checkpoint counts overstate the evidence and we give run-level results.
 \textbf{Labels near the noise floor.} Unsafe labels come from Llama Guard 3 1B on 78 English prompts (about $\pm$10
 points per checkpoint), the same size as the unsafe margin; verdicts are unchanged at 5 or 15 points, but three H6 models
 lie within 3 points of the line. \textbf{English only.} Calibration and evaluation are in English, although benign
 multilingual fine-tuning moves safety differently per language \citep{hawkins2026multilingual}. \textbf{Specificity.}
 Non-safety directions also move under fine-tuning; the refusal direction tracked safety better in our tests, but not in
-every family, and we tested only two control directions. \textbf{Ablation on Gemma-3.} Layer selection ablates the refusal
-direction from attention and MLP outputs; Gemma-3 normalises those outputs again before the residual stream, so there
-the ablation is partial, which may have contributed to its early layer choice. \textbf{H6 endpoints.} One model per fine-tune, so H6 tests
+every family, and we tested only two control directions. \textbf{Ablation on Gemma-3.} Gemma-3 normalises attention and MLP outputs again before the residual stream, so the
+ablation used for layer selection was partial there. Ablating after those norms (exploratory) moves the selected layer
+earlier, from 11 to 9 of 34, where all six Gemma-3-4B fine-tunes read FAIL and the unsafe-vs-safe AUROC is 0.63
+(0.50 at layer 11); the partial ablation does not explain the early layer choice. \textbf{H6 endpoints.} One model per fine-tune, so H6 tests
 detection, not lead time; ASR for recovered models is our measurement, not the releasing authors' evaluation.
-\textbf{Not run.} Two pre-registered exploratory hypotheses (multilingual drift, H4; localising the drift, H5), an
-exploratory transfer to Aya Expanse 8B, and a human check of the judge on 100 items were not run for lack of time. \textbf{Post-hoc choices.} The primary signal was chosen after Global's test runs were scored; the
+\textbf{No human checks.} The harmless twins of the contrast pairs were drafted and screened by an AI assistant and
+checked by no human, and a planned human check of the judge on 100 items was not run. \textbf{Run after the
+verdicts.} Four follow-ups ran under dated amendments (App.~\ref{app:prereg}) and change no verdict.
+\emph{Multilingual drift (H4):} on the 15 fine-tuned H3 checkpoints, with the test prompts machine-translated into
+Hindi, Spanish and French (NLLB-200 \citep{nllbteam2022nllb}, translation quality not measured) and judged by Llama Guard 3 8B, the English
+\cissep{} alarm fired on every checkpoint; it missed none that was unsafe in some language but also flagged every safe
+one, so drift confined to a non-English language remains untested. \emph{Localising the drift (H5):} on one
+checkpoint, no single attention or MLP block changed ASR by more than the 78-prompt noise, and restoring the 16 blocks
+with the largest effect (29\% of the update's energy) returned ASR to base level, but random blocks of equal energy
+did nearly as well, so we see no evidence that the drift is localised. \emph{A third judge:} ShieldGemma 9B
+\citep{zeng2024shieldgemma}, from another family and not a substitute for a human check, agreed with the 1B judge on
+73\% of the H6 answers ($\kappa$ 0.26) and flagged far fewer, partly because its four policies do not cover every
+Llama Guard category; H6 stayed refuted under its labels. \emph{Aya Expanse 8B (one run):} with its own bundle
+(same pairs and code; layer 21 of 32) and Global's thresholds unchanged, one Alpaca fine-tune was unsafe from the first
+checkpoint on (step 25; 48--65 of 78 prompts vs.\ 9 at step 0), where \cissep{} read FAIL (0.30--0.39) and the
+spot-check fell to 0.04--0.26; with no safe fine-tuned checkpoint and checkpoints every 25 steps, this run cannot
+assess false alarms or lead time. \textbf{Reproducibility.} Greedy generation repeated exactly within a job but not
+across jobs: for 8 Llama-3.2-3B models, answers regenerated a day later changed 1--11 of 78 judge labels per model; no
+H6 unsafe label changed. \textbf{Post-hoc choices.} The primary signal was chosen after Global's test runs were scored; the
 pre-registered tests are the evidence we rely on.
 
 \section*{Ethics Statement}
 
 We study harmful-request compliance to make fine-tuning safer. Harmful model answers and our harmful fine-tuning
-positive control are not released; published logs contain verdicts and scores only. Third-party checkpoints were
-accessed under their licences (LSAL v1.2 for SafeTune) for academic research and are not redistributed. AI assistance:
-an AI coding assistant helped write code and draft text; the authors designed the study, checked every number against
-the logged results and take responsibility for the content.
+positive control are not released (reviewers may request access). The logs of the pre-registered tests contain
+verdicts and scores only; the development runs' logs include the answers judged safe and replace every answer judged
+harmful with a placeholder. A PASS is not a safety certificate: on other model families the score missed the most
+unsafe model of one family and reached FAIL on safe recovered models (H6), so it should decide which checkpoints get a
+behavioural audit, not replace the audit. Our public calibration bundles contain refusal directions, which can also be
+used to remove refusals \citep{arditi2024refusal}; that technique is already public, and we release no model with
+refusals removed. Third-party checkpoints were
+accessed under their licences (LSAL v1.2 for SafeTune) for academic research and are not redistributed. Tiny Aya
+Global and Earth and Alpaca are licensed CC BY-NC 4.0, Llama Guard 3 under the Llama 3.1/3.2 community licences, and
+AdvBench, HarmBench and GSM8K under MIT; the refusal data used in the control states no licence. We release code under
+Apache-2.0 and adapters and logs under CC BY-NC 4.0, for non-commercial research. The use of AI assistance is described in the Acknowledgements.
 
 \section*{Acknowledgements}
 
 We thank Lexsi Labs for the SafeTune, CircuitKIT, AuditKIT and CuratorKIT toolkits, the SafeTune checkpoints and
-compute credits, and Cohere Labs for the Tiny Aya models.
+compute credits, and Cohere Labs for the Tiny Aya models. AI assistance: an AI assistant helped write code and draft
+text, drafted and screened the harmless twins of the contrast pairs (no human check; see Limitations), and carried out
+the exploratory follow-ups dated 2026-11-22 (App.~\ref{app:prereg}). The authors designed the study, checked every
+number against the logged results and take responsibility for the content.
 
 \bibliography{custom}
 
@@ -325,10 +367,24 @@ the baselines: commit \texttt{2a9141f} (2026-11-13), with H1 run notes in \textt
 analyses, layer diagnosis): \texttt{f079239}; specificity control: \texttt{50802b3}; H6 re-judged with the 8B judge:
 \texttt{8e3d75b} (all 2026-11-21, each before its run); follow-ups to an internal review, no new runs: \texttt{15a248e}
 (2026-11-22, before the analysis). One H2 monitoring session hit a 1.5-hour time guard
-after 25 of 26 checkpoints; the last checkpoint was scored in a resumed session (amendment in \texttt{1cb8ea0}, before
-the analysis). Llama Guard 3 8B is pre-registered as the second judge (\S1 of the plan), but the H1 and H3 re-judging ran after
+after 25 of 26 checkpoints; the last checkpoint was scored in a resumed session (amendment dated before the analysis,
+committed together with the H2 results in \texttt{1cb8ea0}). Llama Guard 3 8B is pre-registered as the second judge (\S1 of the plan), but the H1 and H3 re-judging ran after
 their verdicts and H2 and H6 were added by amendment, so all 8B results are reported as robustness checks.
-H4 (multilingual drift) and H5 (localisation) were pre-registered as exploratory and not run.
+H4 (multilingual drift) and H5 (localisation) were pre-registered as exploratory and were run after the verdicts,
+as were a third judge (ShieldGemma 9B) and H6 labels on the 119 held-out test prompts, each under an amendment
+committed before its run (2026-11-22): H4 \texttt{edda1dd}, H5 \texttt{3fc67ac}, third judge \texttt{baeb43e},
+test-prompt labels \texttt{90350d1} (dev and test labels come from separate jobs, whose library versions may differ);
+later, also before their runs: Gemma-3 post-norm ablation \texttt{3538084}, two-stage alarm \texttt{898ac5a},
+2-step lead time \texttt{e3f8d55}, \texttt{e2fb4a1} and \texttt{eacb3a3} (seeds 7--9), generation determinism
+\texttt{a625859} and Aya Expanse 8B \texttt{e59ca1b} (checkpoints every 25 steps rather than 10, to fit the compute
+budget). These 2026-11-22 (UTC) commits are reachable from the repository tag \texttt{stage2-workflow-history}.
+H5 used the most-drifted Alpaca checkpoint (seed 5, step 100): each of the 72 attention and MLP LoRA blocks was
+restored to base in turn, the top $k$ by effect were restored together, and each top-$k$ set was compared with 5 random
+sets of equal LoRA energy. In-job ASR was 19.2\% (base) and 39.7\% (drifted; 78 dev prompts, Llama Guard 3 1B).
+Restoring one block changed ASR by $-3$ to $+8$ prompts, none beyond the Wilson half-width (10.6 points). Top-$k$ was
+below every random set at each $k$, by 4--8 points (in-sample, within noise). The top 16 blocks (29\% of the energy)
+gave 15.4\% vs.\ 22.1\% for random sets, and 13.5\% vs.\ base 14.3\% on the 119 held-out prompts. \cissep{} tracked
+ASR across the 104 configurations (Spearman $-0.73$) but stayed at WARN (0.80) after the top-16 restore.
 
 \section{Robustness}
 \label{app:robust}
@@ -366,6 +422,11 @@ slightly, by at most 0.033 and 0.004 on average over the 35 models, enough to mo
 
 Code, notebooks, run summaries and analysis scripts: \url{https://github.com/PxA-Labs/safetypulse}. Adapters, logs and
 the H6 scores and calibration bundles are on the Hugging Face Hub (collections linked from the repository). Experiments
-ran on Kaggle T4 GPUs and Hugging Face Jobs (A100, L40S); each H6 family took 9--22 minutes on one L40S.
+ran on Kaggle T4 GPUs and Hugging Face Jobs (A100, A10G, L4 and L40S GPUs, and one CPU job; 15.3 GPU-hours and about \$28 in total, of
+which 7.6 hours and \$14 for the exploratory follow-ups of 2026-11-22); each H6 family took 9--22
+minutes on one L40S. Fine-tuning used LoRA with $r=16$, $\alpha=32$ and dropout 0.05 on all attention and MLP
+projections (30.2M trainable parameters on Tiny Aya), 2 epochs, learning rate $2\cdot10^{-4}$ with cosine decay and
+3\% warm-up, and an effective batch of 16 (Kaggle: transformers 5.20.2, peft 0.21.2, torch 2.11.0). The control's 200
+refusals come from \url{https://huggingface.co/datasets/LLM-LAT/harmful-dataset}.
 
 \end{document}
