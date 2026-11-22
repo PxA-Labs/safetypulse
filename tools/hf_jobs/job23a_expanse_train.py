@@ -89,8 +89,8 @@ work = inp / "work"
 for d in (inp / "lib", inp / "notebooks", inp / "data", work):
     d.mkdir(parents=True, exist_ok=True)
 os.environ.update(SP_INPUT_DIR=str(inp), SP_WORK_DIR=str(work))   # before importing sp_utils (read at import)
-here = Path(__file__).resolve().parents[2]
-if SMOKE:
+if SMOKE:   # local checkout only (on HF Jobs the script runs as /data/<name>.py)
+    here = Path(__file__).resolve().parents[2]
     shutil.copy(here / "kaggle/lib/sp_utils.py", inp / "lib" / "sp_utils.py")
     shutil.copy(here / "kaggle/notebooks/07_finetune_checkpoints.ipynb", inp / "notebooks")
 else:
