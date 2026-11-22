@@ -16,7 +16,7 @@ from collections.abc import Iterable, Sequence
 
 import torch
 
-from .models import decoder_layers, head_geometry
+from .models import decoder_layers, has_post_block_norms, head_geometry
 from .prompts import encode, format_chat, logit_diff_from_logits
 from .utils import batched, progress
 
@@ -102,7 +102,15 @@ def random_unit_like(v: torch.Tensor, generator: torch.Generator | None = None) 
 
 def ablate_direction(model, direction: torch.Tensor) -> list:
     """Project `direction` out of everything written to the residual stream (embeddings, every
-    attention and MLP output), as in Arditi et al. (2024) directional ablation. Returns hook handles."""
+    attention and MLP output), as in Arditi et al. (2024) directional ablation. Returns hook handles.
+
+    On post-norm ("sandwich") layers (Gemma-2/3, see models.has_post_block_norms) the attention and MLP outputs
+    pass through post_attention_layernorm / post_feedforward_layernorm before the residual add, and the norm
+    weight would re-introduce the projected-out component; there the hooks sit on those two norms' outputs,
+    which are exactly what is added to the residual stream. Other layouts (Llama/Qwen/Cohere) hook self_attn
+    and mlp as before. Known limitation, not changed here: ablate_components / component_means mean-ablate
+    the o_proj input and the mlp output, which on Gemma-2/3 are still followed by the post-norms, so
+    component ablation there is not a clean replacement of the residual write either."""
     r = _per_device(unit(direction.float()), next(model.parameters()).dtype)
 
     def proj_out(h):
@@ -113,8 +121,12 @@ def ablate_direction(model, direction: torch.Tensor) -> list:
     try:   # a failure part-way (e.g. a layer without .mlp) must not leave the hooks already registered
         handles.append(model.get_input_embeddings().register_forward_hook(lambda m, i, o: proj_out(o)))
         for layer in decoder_layers(model):
-            handles.append(layer.self_attn.register_forward_hook(lambda m, i, o: _replace(o, proj_out(_hidden(o)))))
-            handles.append(layer.mlp.register_forward_hook(lambda m, i, o: proj_out(o)))
+            if has_post_block_norms(layer):
+                handles.append(layer.post_attention_layernorm.register_forward_hook(lambda m, i, o: proj_out(o)))
+                handles.append(layer.post_feedforward_layernorm.register_forward_hook(lambda m, i, o: proj_out(o)))
+            else:
+                handles.append(layer.self_attn.register_forward_hook(lambda m, i, o: _replace(o, proj_out(_hidden(o)))))
+                handles.append(layer.mlp.register_forward_hook(lambda m, i, o: proj_out(o)))
     except BaseException:
         remove_hooks(handles)
         raise
