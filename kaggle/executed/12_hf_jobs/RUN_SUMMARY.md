@@ -666,3 +666,16 @@ whatever this shows; thresholds unchanged.
   (−8) and 8 (−6). Side by side (not pooled), first unsafe steps 100 / 28 / 60 for seeds 7 / 8 / 9.
 - Outputs: adapters → private `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca`, subfolder `alpaca-s9/` (card owned
   by lane 4, unchanged); scores-only results → `results/job24/` in `purvansh01/safetypulse-jobs`.
+
+## Publication of the follow-up outputs (2026-11-23)
+
+The adapters written by Jobs 18, 21, 24 (`pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca`) and Job 23
+(`pxaLabs-lexsi/safetypulse-wf-expanse-lora-alpaca`) were copied file for file to
+[`purvansh01/safetypulse-h3fine-lora-alpaca`](https://huggingface.co/purvansh01/safetypulse-h3fine-lora-alpaca) (251
+files, from org revision `01bb53a9`) and
+[`purvansh01/safetypulse-expanse-lora-alpaca`](https://huggingface.co/purvansh01/safetypulse-expanse-lora-alpaca) (25
+files, from `d3c84404`) by a CPU job (`6b0368dc130a00b5aa814c0d`; the script asserts equal file lists), made public
+and added to the model collection. The org has no transfer right for the account's token, so the org copies stay
+private. The Jobs 15–24 files of this folder and their reports are public in
+[`purvansh01/safetypulse-followups`](https://huggingface.co/datasets/purvansh01/safetypulse-followups) (with a SHA-256
+manifest) and in the data collection. Cards: `docs/hub_cards/stage2/safetypulse-{h3fine-lora-alpaca,expanse-lora-alpaca,followups}.md`.

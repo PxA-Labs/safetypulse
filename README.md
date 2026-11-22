@@ -167,6 +167,9 @@ All under [huggingface.co/purvansh01](https://huggingface.co/purvansh01):
 | `safetypulse-h3-lora-alpaca`, `-h3-logs` | Stage 2 H3: Alpaca adapters at 10-step spacing, logs and ‖ΔW‖ |
 | `safetypulse-judge8b` | Llama Guard 3 1B vs 8B verdicts on every H1 and H3 checkpoint (no answer text) |
 | `safetypulse-h6-safetune` | Stage 2 H6: scores and calibration bundles for the 35 SafeTune checkpoints (no weights; bundles under LSAL v1.2) |
+| `safetypulse-h3fine-lora-alpaca` | Stage 2 follow-up: Global Alpaca adapters at 2-step spacing, seeds 7–9 (HF Jobs 18, 21, 24; exploratory) |
+| `safetypulse-expanse-lora-alpaca` | Stage 2 follow-up: Aya Expanse 8B Alpaca adapters, one run, 11 checkpoints (HF Job 23; exploratory) |
+| `safetypulse-followups` | Scores, flags and reports of the exploratory follow-ups, HF Jobs 15–24 (no prompt or answer text) |
 
 Withheld on purpose: the positive-control adapters trained on harmful data and the text of harmful model answers.
 Why, and how judges can get access: [docs/11_WITHHELD_ARTIFACTS.md](https://github.com/PxA-Labs/safetypulse/blob/main/docs/11_WITHHELD_ARTIFACTS.md).
