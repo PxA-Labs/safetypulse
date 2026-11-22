@@ -22,6 +22,7 @@ import random
 import re
 import subprocess
 import time
+import warnings
 from pathlib import Path
 from typing import Iterable, Sequence
 
@@ -388,6 +389,17 @@ def head_geometry(model) -> tuple[int, int]:
     return n_heads, head_dim
 
 
+def has_post_block_norms(layer) -> bool:
+    """True for "sandwich" decoder layers (Gemma-2/3) that normalise the attention and MLP outputs before the
+    residual add (post_attention_layernorm / post_feedforward_layernorm); mirrors safetypulse.models."""
+    return hasattr(layer, "post_feedforward_layernorm") and hasattr(layer, "post_attention_layernorm")
+
+
+def _mlp_write_site(layer):
+    """Module whose output is the MLP's residual write: post_feedforward_layernorm on post-norm layers, else mlp."""
+    return layer.post_feedforward_layernorm if has_post_block_norms(layer) else layer.mlp
+
+
 def n_resid(model) -> int:
     return len(decoder_layers(model)) + 1
 
@@ -615,8 +627,11 @@ def all_components(model) -> list[str]:
 
 @torch.no_grad()
 def component_means(model, tok, prompts: Sequence[str], batch_size: int = 8, system: str | None = None) -> dict:
-    """Mean o_proj input (all heads) and MLP output per layer over every real token of `prompts`:
-    {"attn": Float[Tensor, "layer d"], "mlp": Float[Tensor, "layer d"]}, used for mean-ablation."""
+    """Mean o_proj input (all heads) and mean MLP residual write per layer over every real token of `prompts`:
+    {"attn": Float[Tensor, "layer d"], "mlp": Float[Tensor, "layer d"], "mlp_post_norm": Bool[Tensor, "layer"]},
+    used for mean-ablation. The MLP mean is taken at _mlp_write_site (post_feedforward_layernorm on Gemma-2/3,
+    since mean(norm(mlp(x))) != norm(mean(mlp(x)))); "mlp_post_norm" records the site, as in
+    safetypulse.activations.component_means."""
     layers = decoder_layers(model)
     sums = {"attn": [0.0] * len(layers), "mlp": [0.0] * len(layers)}
     mask: list = [None]
@@ -628,7 +643,7 @@ def component_means(model, tok, prompts: Sequence[str], batch_size: int = 8, sys
     handles = []
     for k, layer in enumerate(layers):
         handles.append(layer.self_attn.o_proj.register_forward_pre_hook(lambda m, a, k=k: add("attn", k, a[0])))
-        handles.append(layer.mlp.register_forward_hook(lambda m, i, o, k=k: add("mlp", k, o)))
+        handles.append(_mlp_write_site(layer).register_forward_hook(lambda m, i, o, k=k: add("mlp", k, o)))
     try:
         for batch in batched(format_chat(tok, prompts, system), batch_size):
             enc = encode(tok, batch, model.device)
@@ -637,13 +652,21 @@ def component_means(model, tok, prompts: Sequence[str], batch_size: int = 8, sys
             model(**enc, logits_to_keep=1)
     finally:
         remove_hooks(handles)
-    return {kind: torch.stack(v) / n for kind, v in sums.items()}
+    out = {kind: torch.stack(v) / n for kind, v in sums.items()}
+    out["mlp_post_norm"] = torch.tensor([has_post_block_norms(layer) for layer in layers])
+    return out
 
 
 def ablate_components(model, components: Iterable[str], means: dict | None = None) -> list:
     """Ablate attention heads (their slice of the o_proj input) and whole MLP outputs: replaced by
     `means` from component_means (mean-ablation) or, without it, by zero. Zero-ablating many MLPs
-    knocks the model off-distribution, so random-component baselines should use means."""
+    knocks the model off-distribution, so random-component baselines should use means.
+
+    Post-norm (Gemma-2/3) layers, as in safetypulse.activations.ablate_components: MLPs are replaced at the
+    post_feedforward_layernorm output (their residual write); means without the "mlp_post_norm" record raise
+    ValueError. Heads are still replaced at the o_proj input with a UserWarning, because post_attention_layernorm
+    re-normalises the sum of all heads, so an ablated head does not write its mean to the residual stream.
+    Llama/Qwen/Cohere layers are hooked exactly as before."""
     _, head_dim = head_geometry(model)
     layers = decoder_layers(model)
     heads: dict[int, list[int]] = {}
@@ -654,6 +677,12 @@ def ablate_components(model, components: Iterable[str], means: dict | None = Non
             heads.setdefault(layer, []).append(head)
         else:
             mlps.add(layer)
+    post_norm_heads = sorted(k for k in heads if 0 <= k < len(layers) and has_post_block_norms(layers[k]))
+    if post_norm_heads:
+        warnings.warn(f"ablate_components: attention heads in post-norm layers {post_norm_heads} are replaced at "
+                      "the o_proj input; post_attention_layernorm then normalises the sum of all heads, so an "
+                      "ablated head does not write its mean to the residual stream (see the docstring)",
+                      UserWarning, stacklevel=2)
     handles = []
     for layer, hs in heads.items():
         dev = layers[layer].self_attn.o_proj.weight.device
@@ -667,11 +696,17 @@ def ablate_components(model, components: Iterable[str], means: dict | None = Non
 
         handles.append(layers[layer].self_attn.o_proj.register_forward_pre_hook(pre))
     for layer in mlps:
+        site = _mlp_write_site(layers[layer])
         if means is None:
-            handles.append(layers[layer].mlp.register_forward_hook(lambda m, i, o: torch.zeros_like(o)))
+            handles.append(site.register_forward_hook(lambda m, i, o: torch.zeros_like(o)))
         else:
+            recorded = means.get("mlp_post_norm")
+            if has_post_block_norms(layers[layer]) and (recorded is None or not bool(recorded[layer])):
+                remove_hooks(handles)   # do not leave the hooks already registered
+                raise ValueError(f"means['mlp'][{layer}] was not measured at post_feedforward_layernorm (stale "
+                                 "component_means output?); recompute the means with component_means")
             mu = means["mlp"][layer]
-            handles.append(layers[layer].mlp.register_forward_hook(
+            handles.append(site.register_forward_hook(
                 lambda m, i, o, mu=mu: mu.to(o.device, o.dtype).expand_as(o).clone()))
     return handles
 
