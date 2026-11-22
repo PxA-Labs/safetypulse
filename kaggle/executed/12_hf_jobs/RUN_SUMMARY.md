@@ -374,3 +374,32 @@ Outputs (flags, rates, cosines, sha256 of translations; no text) → `results/jo
 Launch check (~25 min in): `translations.json` (no truncated, capped or empty lines) and `directions.json` uploaded;
 first checkpoint (seed 4, step 0) scored in all four languages at ~46 s per language, so ~3 min per checkpoint and
 ~65 min in total, inside the timeout. Result: pending.
+
+## Job 22 · Generation determinism: why Job 17's 1B rerun did not reproduce Job 9 flags (2026-11-22, running)
+
+Exploratory. Amendment `docs/prereg_amendments/2026-11-22-l11-determinism.md` (commit `a625859`, pushed 2026-11-22
+17:20 UTC on `wf/r2-lane11`, before the job was created at 17:26 UTC). Org namespace (`pxaLabs-lexsi`), L40S,
+`--timeout 50m` (at most $1.50). [Job](https://huggingface.co/jobs/pxaLabs-lexsi/6b0325c8130a00b5aa80a77b)
+`6b0325c8130a00b5aa80a77b` · script `tools/hf_jobs/job22_determinism.py` at commit `4f6db77` · `sp_utils` and package
+at Job 9's commit `e602e03` (as Jobs 14 and 17) · output `results/job22/determinism.jsonl` in
+`purvansh01/safetypulse-jobs` (flags, equality booleans and counts only; answers never stored), to be copied to
+`files/job22_determinism.jsonl`.
+
+Why: Job 17's 1B rerun matched Job 9/14 flags on 27/35 models; all 8 misses are Llama-3.2-3B. The job logs print no
+versions, but uv's wheel sizes matched against PyPI (`docs/report/workflow/determinism_versions.md`) indicate Jobs 14
+and 17 both used torch 2.15.0 and transformers 5.24.0 on an L40S (Job 9: transformers 5.23.0, and it still matched
+Job 14 on 35/35); Job 17 only added sentencepiece 0.2.3. So the unpinned-version explanation is not supported and the
+hypothesis tested is run-to-run nondeterminism of batched bf16 greedy generation.
+
+What: the 8 non-reproducing models (h6-v1 revisions), torch 2.15.0 / transformers 5.24.0 pinned, no sentencepiece,
+generation exactly as Job 14 (greedy, 256 tokens, bf16, batch 32, 78 dev prompts), pass A over all 8 then pass B
+reloading each; Llama Guard 3 1B at `acf7aafa`. Per model: flags A == B, answer strings A == B (count of differing
+prompts), A/B equal to Jobs 9, 14, 17, unsafe counts and differences. The job prints and stores the actual torch,
+transformers, tokenizers, CUDA, cuDNN, driver and GPU.
+
+Status: **RUNNING** (launched 2026-11-22 17:26 UTC). Results, runtime and cost are collected next round.
+
+Early log: environment as printed by the job: torch `2.15.0+cu132`, transformers `5.24.0`, tokenizers `0.23.3`,
+CUDA 13.2, cuDNN 92600, driver 620.70.06, NVIDIA L40S; uv wheel sizes identical to Job 14's. First model
+(`llama32-3b-hh-rlhf-aligned`, pass A, 32 s): 2 unsafe of 78, as Job 17 (2), not Job 9/14 (1); one model, so no
+conclusion yet.

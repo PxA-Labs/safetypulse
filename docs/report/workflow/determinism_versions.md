@@ -64,3 +64,11 @@ other families; (b) the extra `sentencepiece` package changing how something is 
 tokenizer is `tokenizer.json`-based and Llama-3.1-8B reproduces); (c) GPU-memory state (Job 17 had ShieldGemma 9B
 resident, Job 14 had Llama Guard 3 8B). HF Job 22 (amendment `docs/prereg_amendments/2026-11-22-l11-determinism.md`)
 tests (a) directly: same environment as Job 14 with torch and transformers pinned, two generation passes in one job.
+
+## Check from HF Job 22 (added after launch)
+
+Job 22 pins `torch==2.15.0` and `transformers==5.24.0`. Its uv log shows the same wheel sizes as Jobs 14 and 17
+(torch 514.2 MiB, transformers 12.9 MiB, tokenizers 3.2 MiB, nvidia-cublas 386.1 MiB; 60 packages installed, as Job 14),
+which supports the inference above. Job 22 prints its environment: torch `2.15.0+cu132`, transformers `5.24.0`,
+tokenizers `0.23.3`, CUDA `13.2`, cuDNN `92600`, driver `620.70.06`, GPU `NVIDIA L40S`, Python `3.12.12`. Jobs 9, 14
+and 17 most likely ran the same torch/CUDA/cuDNN builds; their driver is unknown.
