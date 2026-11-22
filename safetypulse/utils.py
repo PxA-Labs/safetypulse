@@ -135,9 +135,17 @@ def env_info() -> dict:
 
 
 def git_sha() -> str | None:
+    """Short commit of the safetypulse source tree that is running, or None when it is not a git checkout (e.g. an
+    installed wheel). Asked of the package's own directory, never the caller's working directory, and only trusted
+    if that checkout's top level holds this very package (a wheel inside some other repo's .venv must not report
+    that repo's commit)."""
+    pkg = Path(__file__).resolve().parent
     with contextlib.suppress(Exception):
-        out = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, timeout=5)
-        return out.stdout.strip() or None
+        out = subprocess.run(["git", "rev-parse", "--show-toplevel", "--short", "HEAD"], cwd=pkg,
+                             capture_output=True, text=True, timeout=5)
+        top, sha = out.stdout.split()
+        if (Path(top) / pkg.name).resolve() == pkg:
+            return sha
     return None
 
 

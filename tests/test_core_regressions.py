@@ -70,3 +70,37 @@ def test_llamaguard_judge_left_pads_a_right_padded_tokenizer(tok):
     j.harmful(PROMPTS, ["a", "a b c d e f", "a b", "a b c"])
     assert guard.masks and all(bool(m[:, -1].all()) for m in guard.masks), \
         "generation must start right after the last real prompt token in every row"
+
+
+def test_git_sha_is_the_package_repo_not_the_callers_working_directory(tmp_path, monkeypatch):
+    """provenance()["git_sha"] identifies the safetypulse code that ran. It used to run `git rev-parse` in the
+    current directory, so scoring from inside another repository (a training project, a job workspace) recorded
+    that repository's commit as the safetypulse version."""
+    import subprocess
+
+    from safetypulse.utils import git_sha
+
+    other = tmp_path / "someone_elses_repo"
+    other.mkdir()
+    git = ["git", "-C", str(other), "-c", "user.name=t", "-c", "user.email=t@example.invalid"]
+    subprocess.run([*git, "init", "-q"], check=True)
+    subprocess.run([*git, "commit", "-q", "--allow-empty", "-m", "x"], check=True)
+    other_sha = subprocess.run([*git, "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
+    monkeypatch.chdir(other)
+    assert git_sha() != other_sha
+
+
+def test_git_sha_reports_this_checkout(tmp_path, monkeypatch):
+    import subprocess
+    from pathlib import Path
+
+    from safetypulse.utils import git_sha
+
+    repo = Path(__file__).resolve().parents[1]
+    head = subprocess.run(["git", "-C", str(repo), "rev-parse", "--short", "HEAD"], capture_output=True, text=True)
+    if head.returncode != 0:
+        import pytest
+
+        pytest.skip("tests are not running from a git checkout")
+    monkeypatch.chdir(tmp_path)   # outside any repository
+    assert git_sha() == head.stdout.strip()
