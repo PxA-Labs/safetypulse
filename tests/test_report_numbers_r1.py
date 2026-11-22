@@ -2,7 +2,7 @@
 
 tests/test_report_numbers.py pins the numbers printed in paper/main.tex. This file covers the docs/report JSON files
 it does not read (label_noise, h6_threshold_transfer, two_stage_alarm) or reads only in part (h6_layers), and HF Job
-15's summary (kaggle/executed/12_hf_jobs/files/job15_*). For each it
+15's summary (tracked under 12_hf_jobs/files: job15_*). For each it
   (a) recomputes the report from its raw source rows by calling the tool's own functions (no logic copied), and
   (b) pins the exact values that the round-1 paper proposals in docs/report/workflow/paper_proposals/ cite.
 It also checks that the pre-registered frozen cis_sep thresholds (WARN < 0.8098, FAIL < 0.6196) are used verbatim by
@@ -121,7 +121,7 @@ def test_label_noise_recomputed(tmp_path, monkeypatch):
 
 
 def test_job15_summary_recomputed():
-    """kaggle/executed/12_hf_jobs/files/job15_summary.json follows from job15_gemma3-4b_scores.jsonl and
+    """12_hf_jobs/files/job15_summary.json (tracked) follows from job15_gemma3-4b_scores.jsonl and
     job15_layer_selection.json: layer choice by safetypulse.calibrate.choose_layer, statuses by the frozen thresholds,
     AUROC by tools/h6_layers.auroc, unsafe labels by the H6 rule (Job 9 1B ASR > aligned + 0.10)."""
     from safetypulse.calibrate import choose_layer
