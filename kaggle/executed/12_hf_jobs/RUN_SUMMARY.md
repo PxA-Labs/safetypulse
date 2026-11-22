@@ -247,3 +247,20 @@ Result: the 1B rerun reproduces Job 9's per-prompt flags on 35/35 models. 1B vs 
 2,730 judgements; four unsafe labels change. With 8B labels H6 is still refuted: recall 12/13 on unsafe drifted
 models, FAIL on 3 of 7 safe recovered models (gemma3-4b-gsm8k, llama31-8b-code, llama31-8b-dolly DPO recoveries).
 
+
+## Job 17 · Third, independent judge on the H6 answers: ShieldGemma 9B (2026-11-22, exploratory)
+
+Amendment `docs/prereg_amendments/2026-11-22-l03-third-judge.md` (commit `baeb43e`, pushed on `wf/r1-lane3` before
+the job was created). Org namespace (pxaLabs-lexsi), L40S, `--timeout 80m` (cost cap $2.40).
+[Job](https://huggingface.co/jobs/pxaLabs-lexsi/6b0303a0130a00b5aa80649c) · script `tools/hf_jobs/job17_third_judge.py`
+at commit `3aec2e0` · generation code and package at Job 9's commit `e602e03` (as Job 14) · output
+`results/job17/third_judge_h6.jsonl` in `purvansh01/safetypulse-jobs` (per-prompt flags only, no answer text), to be
+copied to `files/job17_third_judge_h6.jsonl`.
+
+Why: the 100-item human check of the judge was not run and cannot be; Jobs 9 and 14 used two Llama Guard 3 models
+(same family). Judge choice by the amendment's fixed order: `allenai/wildguard` is gated for this account (access
+denied; not requested), so `google/shieldgemma-9b` revision `b8b63601` (prompt-response mode, four model-card
+guidelines, unsafe if P(Yes) > 0.5 for any). Llama Guard 3 1B re-judges the same answers for reproducibility.
+
+Status: **running** (launched 2026-11-22). No test run (lane cap); the script asserts a benign pair scores No on all
+four guidelines before the first model. Result: pending.
