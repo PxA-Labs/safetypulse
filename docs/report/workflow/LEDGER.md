@@ -8,8 +8,11 @@ adapters, ft_harm data, harmdense artifacts or harmful answer text are ever publ
 
 ## GPU spend (running total)
 
-**Running total (round 2 poll, 2026-11-22 17:59 UTC): Spent $9.05 of $25. Committed by running jobs: $3.00 (Job 21 at
-its timeout). Remaining: $12.95.** Per-job round-2 table: see "Round 2" below.
+**Running total (end of round 2, polled 2026-11-23): Spent $10.97 of $25 (44%). Committed by running jobs: $0.00 (no job
+running). Remaining: $14.03.** Basis: 8 workflow jobs, all COMPLETED, 21,934 running seconds x $1.80/h (l40sx1). See
+"Round 2 results (after review and integration)" at the end of this file.
+
+Earlier round-2 poll (2026-11-22 17:59 UTC, superseded): spent $9.05, committed $3.00 (Job 21 running), remaining $12.95.
 
 After round 1 (unchanged record): Spent $8.80 of $25 (35%). Committed by running jobs: $0.00. Remaining: $16.20.
 
@@ -211,3 +214,107 @@ public `kaggle/executed` folder await the owner's decision.
   203 communities** (counted from `graphify-out/graph.json`), same as after round 1. 115 of 351 files (notebooks, config)
   have no extractor. Warning printed: skill 0.9.105 vs package 0.9.103 (not upgraded by this lane).
 - `graphify-out/` is not committed. The graph should be updated again after round 2 is merged into the integration branch.
+
+## Round 2 results (after review and integration)
+
+Polled 2026-11-23 on `stage2/wf-integration` at `a87b00c` (`git pull --ff-only`, `git fetch origin`; `hf jobs ps -a
+--namespace pxaLabs-lexsi`; `HfApi.inspect_job`, field `durations.running_secs`; read-only `HfApi` repo/collection checks).
+Review verdicts are the reviewers'; the tracker records them and does not re-judge. Integration tests after all merges:
+597 passed, 8 skipped (safetune not installed), 1 xfailed (known l15 Wilson-interval proposal mismatch); paper builds with
+tectonic; `paper/main.tex` unchanged since round start (`eb262cd`).
+
+### GPU spend, all workflow jobs (final for rounds 1-2)
+
+| Round | Lane | Job | Job id | Flavor | `--timeout` (max) | Status | `running_secs` | Cost |
+|---|---|---|---|---|---|---|---|---|
+| 1 | 1 | 15 | `6b030376130a00b5aa8063fc` | l40sx1 | 80m ($2.40) | COMPLETED | 274 | $0.14 |
+| 1 | 2 | 16 | `6b0301c98d268c0fbd21f9c5` | l40sx1 | 110m ($3.30) | COMPLETED | 2678 | $1.34 |
+| 1 | 3 | 17 | `6b0303a0130a00b5aa80649c` | l40sx1 | 80m ($2.40) | COMPLETED | 2761 | $1.38 |
+| 1 | 4 | 18 | `6b03028b8d268c0fbd21fa6f` | l40sx1 | 130m ($3.90) | COMPLETED | 3828 | $1.91 |
+| 1 | 5 | 19 | `6b0305a18d268c0fbd21fffc` | l40sx1 | 100m ($3.00) | COMPLETED | 4154 | $2.08 |
+| 1 | 6 | 20 | `6b0303b18d268c0fbd21fdb7` | l40sx1 | 115m ($3.45) | COMPLETED | 3908 | $1.95 |
+| 2 | 10 | 21 | `6b03238a8d268c0fbd223666` | l40sx1 | 100m ($3.00) | COMPLETED | 3822 | $1.91 |
+| 2 | 11 | 22 | `6b0325c8130a00b5aa80a77b` | l40sx1 | 50m ($1.50) | COMPLETED | 509 | $0.25 |
+| 2 | 12 | 23 | none (not launched: gated model) | - | - | - | - | $0.00 |
+| **Total** | | | | | | 8/8 completed | **21,934** | **$10.97** |
+
+- Round 2 alone: 4,331 s, $2.17 (Job 21 $1.91 + Job 22 $0.25; total computed from seconds, rows rounded separately).
+- **Spent $10.97 of $25. Committed $0.00 (no running job). Remaining $14.03.** No job exceeded its timeout (Job 21 used
+  3822 of 6000 s, Job 22 509 of 3000 s). Timeouts come from the launch records; `inspect_job` does not expose them.
+- `hf jobs ps -a` lists no other job created on or after 2026-11-22. The three Job 9 runs (2026-11-21) predate the workflow
+  and are not counted.
+
+### Round 2 lane table
+
+| Lane | Result this round | Review | Integration | Branch / head | HF job (cost) | Repos |
+|---|---|---|---|---|---|---|
+| 1 | Gemma-2/3 post-norm MLP mean-ablation fixed (`_mlp_write_site`); stale means raise, per-head ablation on post-norm warns; Llama/Cohere byte-identical; no published number changes | accept | merged | `wf/r2-lane1` / `f19b203` (test `3c45e18`) | none | none |
+| 2 | Job 16 collected; `tools/h6_testsplit_analysis.py`; H6 stays refuted on test (119) and pooled (197) prompts under 1B and 8B judges; 3 (1B) / 5 (8B) of 31 labels change; 1B vs 8B kappa 0.784 | accept | merged | `wf/r2-lane2` / `cf7140a` (amendment `90350d1`) | Job 16 (round 1), $1.34 | none |
+| 3 | Job 17 collected; `tools/third_judge_h6.py`; ShieldGemma vs 1B kappa 0.259 (35 models); H6 refuted under every judge; 1B rerun matches Job 14 on 27/35 (cause not established) | accept | merged | `wf/r2-lane3` / `5e91599` (amendment `baeb43e`) | Job 17 (round 1), $1.38 | none |
+| 4 | Job 18 collected; `tools/h3_fine_lead.py`; at 2-step spacing ||dW|| alarms at step 12, cis_sep WARN at 20, first unsafe at 100; card updated on Hub (`eccc903`) | **revise** | **not merged** | `wf/r2-lane4` / `52ae95a` (amendment `e3f8d55`) | Job 18 (round 1), $1.91 | card on `safetypulse-wf-h3fine-lora-alpaca` |
+| 5 | Job 19 collected; `tools/h5_localise.py`; 0/72 single blocks exceed the Wilson half-width; top-k not clearly better than random; no evidence of localisation | accept | merged | `wf/r2-lane5` / `9f07db7` (amendment `3fc67ac`) | Job 19 (round 1), $2.08 | none |
+| 6 | Job 20 collected (3 of 4 files; `summary.json` withheld by the strict release rule); `tools/h4_multilingual.py`; English alarm fired on all 15 fine-tuned checkpoints, so recall 1.00 is uninformative | accept (worker status partial) | merged | `wf/r2-lane6` / `a0f5de2` (amendment `edda1dd`) | Job 20 (round 1), $1.95 | none |
+| 7 | `git_sha` parses lines and checks exit status; regression tests fail on old code; `last_logits` already `no_grad` (lane-8 finding was wrong) | accept | merged | `wf/r1-l07-core-audit` / `bba5494` (fix `45c4ce1`; round-1 branch name reused) | none | none |
+| 8 | ruff errors in owned tools/ cleared; outputs and 22 notebooks byte-identical; 9 errors left in lane-14-owned h1/h3 analysis | accept | merged | `wf/r2-lane8` / `4b3f58c` | none | none |
+| 9 | Consolidated paper patch (`CONSOLIDATED.md`, `consolidated.patch`), applies cleanly to main.tex | accept | merged | `wf/r2-lane9` / `1f697c0` | none | none |
+| 10 | Job 21 launched (seed 8, 2-step lead time); now COMPLETED, results in jobs repo, **not yet collected/analysed**; records still say RUNNING | accept | merged | `wf/r2-lane10` / `3cd09bd` (amendment `e2fb4a1`) | Job 21, $1.91 | `alpaca-s8/` in `safetypulse-wf-h3fine-lora-alpaca` |
+| 11 | Job 22 launched (generation determinism, torch 2.15.0 / transformers 5.24.0 pinned); COMPLETED, **not yet collected**; records still say RUNNING | accept | merged | `wf/r2-lane11` / `7214790` (amendment `a625859`) | Job 22, $0.25 | none |
+| 12 | Stopped at step 0: `CohereLabs/aya-expanse-8b` is gated (403, licence not accepted for the account); nothing created or spent | accept | nothing to merge (no `wf/r2-lane12`) | - | none | none |
+| 13 | Interval estimates for headline proportions and AUROCs | **revise** (reasons truncated in tracker input) | **not merged** | `wf/r2-lane13` / `66e1fe8` (amendment `5b41d6b`) | none | none |
+| 14 | Exact integer-count unsafe rule (`tools/_rules.py`) | verdict not visible in tracker input | **not merged** | `wf/r2-lane14` / `8825007` | none | none |
+| 15 | Round-1 report numbers pinned in tests; l15 Wilson mismatch marked xfail | merged (verdict truncated; integration merges accepted branches only) | merged | `wf/r2-lane15` / `ecf6bb8` | none | none |
+| 16 | kaggle/executed README (public), erratum, owner-decision list, README test count | merged (as above) | merged | `wf/r2-lane16` / `4a8adc3` | none | none |
+| 17 | calibrate/check: refuse/comply token-set overlap rejected; Qwen3 `enable_thinking` warning | merged (as above) | merged | `wf/r2-lane17` / `738ca1f` | none | none |
+| 18 | ACL Responsible NLP checklist; Limitations/Ethics/Acknowledgements proposals | merged (as above) | merged | `wf/r2-lane18` / `99b8f59` | none | none |
+| 19 | Release audit round 2; strict free-text rules for job outputs | merged (as above) | merged | `wf/r2-lane19` / `93e5838` | none | none |
+| 20 | Tracker (mid-round poll) | merged (as above) | merged | `wf/r2-lane20` / `1fc076b` | none | none |
+
+### Private repos and collections awaiting the user's approval (verified 2026-11-23)
+
+Nothing is public and nothing was added to a collection this round. Checked with `list_models/list_datasets(author=
+"pxaLabs-lexsi")`, `list_collections(owner="pxaLabs-lexsi")` and `repo_info`.
+
+| Item | Type | `private` | Content / note |
+|---|---|---|---|
+| `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca` | model (benign Alpaca LoRA adapters) | True (head `f5d74ac0`) | `alpaca-s7/` (Job 18) and `alpaca-s8/` (Job 21), 41 checkpoints each; card at Hub `eccc903` (lane 4 revision pending: spot-check threshold wording) |
+| `pxaLabs-lexsi/safetypulse-workflow-models-private-6b030dd4c3a7647760ae6f16` | collection, 1 item (repo above) | True | round-0 deviation; owner decides keep/delete |
+| `pxaLabs-lexsi/safetypulse-workflow-datasets-private-6b030dd671c703296d096ac3` | collection, empty | True | round-0 deviation; owner decides |
+| `purvansh01/safetypulse-jobs` | dataset (job outputs; stays private by policy) | True (head `0d5b5a3d`) | `results/job15`..`job22`; `results/job21/` complete (dw, monitor, summary, train log, 2 executed notebooks) |
+
+No other model or dataset repo exists under `pxaLabs-lexsi`. `safetypulse-wf-expanse-lora-alpaca` was never created.
+
+### Revision backlog (for round 3)
+
+1. Lane 4 (revise, reviewer request): fix the RUN_SUMMARY Job 18 sentence that says the repo "is in no collection" (it is the
+   one item of the private round-0 collection); make the spot-check threshold exact (`spot_refusal <= 0.96`, from
+   `h3_analysis.spot_threshold`) in `tools/h3_fine_lead.py`, regenerate `docs/report/h3_fine_lead.{md,json,pdf}` (two runs
+   byte-identical), fix card line 84 and re-upload the README; record the new Hub commit; do not change visibility,
+   collections or `alpaca-s8/`. Then merge.
+2. Lane 13 (revise): reasons were truncated in the tracker's input; take the request from the round-2 review record.
+3. Lane 14: not merged and verdict not visible to the tracker; confirm the verdict. Lane 8 left 9 ruff errors in
+   `tools/h1_analysis.py` (6) and `tools/h3_analysis.py` (3), which lane 14 owns.
+4. Collect Job 21 (`results/job21/*`) into `kaggle/executed/12_hf_jobs/files/job21_*`, release-check, analyse with the
+   amendment `e2fb4a1` items (n=2 side by side with Job 18, no pooling); RUN_SUMMARY and docs/10 row 21 to COMPLETED,
+   3822 s, $1.91.
+5. Collect Job 22 (`results/job22/determinism.jsonl`) into git, analyse per amendment `a625859`; RUN_SUMMARY and docs/10
+   row 22 to COMPLETED, 509 s, $0.25.
+6. Lane 12 (Expanse): blocked until the account owner accepts the `CohereLabs/aya-expanse-8b` licence; cap $4.50 kept.
+7. Lane 6 follow-up: owner/commander decision on committing Job 20 `summary.json` (105-character rule string from the job
+   script, not answer text).
+8. `kaggle/lib/sp_utils.py` still carries the old Gemma post-norm component ablation (lane 1 open issue; Cohere notebook
+   results unaffected).
+9. Paper proposals that touch the same sentences must be merged by hand: lanes 2 and 3 (Judge robustness), lanes 5 and 6
+   ("Not run" Limitations sentence, appendix line 331), lane 18 overlaps; lane 9's consolidated patch predates them.
+10. Cited SHAs (`90350d1`, `baeb43e`, `e3f8d55`, `3fc67ac`, `edda1dd`, `e2fb4a1`, `a625859`) live on workflow branches;
+    recheck after any rebase-merge into main.
+11. Environment: mandated `uv run --extra dev ...` commands stalled on the torch download / uv cache lock in lanes 1-8;
+    lanes used the main `.venv` or `uv run --no-project --with ruff`. Rerun the mandated commands once nothing else holds
+    the lock. Future generation jobs should print torch/transformers/CUDA versions.
+12. Owner decisions still open: the two private collections; the public `kaggle/executed` folder.
+
+### Graphify, end of round 2
+
+- 2026-11-23: `graphify update .` in the main checkout at `a87b00c` (all round-2 merges included). Code-only AST update, no
+  LLM. 54 of 267 scanned files had changed and were re-extracted. Rebuilt: **3,200 nodes, 6,348 edges, 222 communities**
+  (up from 2,850 / 5,645 / 203). 116 of 383 files (notebooks, config) have no extractor. 37 communities renamed by hub;
+  `graphify label` (LLM) not run. Warning: skill 0.9.105 vs package 0.9.103 (not upgraded). `graphify-out/` not committed.
