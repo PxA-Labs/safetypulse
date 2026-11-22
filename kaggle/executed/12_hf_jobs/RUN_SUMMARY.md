@@ -509,7 +509,7 @@ conclusion yet.
 
 ## Job 23 · Aya Expanse 8B recipe-transfer run, one Alpaca seed (2026-11-22, exploratory)
 
-**Status:** 23a RUNNING (launched detached); 23b not yet launched (it monitors 23a's checkpoints).
+**Status:** 23a RUNNING (second attempt, launched detached); 23b not yet launched (it monitors 23a's checkpoints).
 Pre-registered as exploratory in `docs/prereg_amendments/2026-11-22-l12-aya-expanse.md` (commit
 `e59ca1b9c0fa37cac77e679029ae849e03b446df`, committed 2026-11-22 19:50:38 UTC and pushed on `wf/r3-lane12` before
 Job 23a was created at 19:55:18 UTC). Doc 13 §3 item 6: Expanse's own bundle, Global's frozen thresholds; n = 1,
@@ -518,11 +518,18 @@ recipe transfer (not direction transfer). No verdict or threshold changes.
 - Gate (2026-11-22 19:39 UTC, local token, not printed): `CohereLabs/aya-expanse-8b` `config.json` downloaded,
   revision `5062468bf9bc0c6035fd64e06274333ec127d980`, licence `cc-by-nc-4.0`. Each job repeats the check first
   (`sys.exit(2)` on failure).
-- Job 23a (bundle + fine-tune): https://huggingface.co/jobs/pxaLabs-lexsi/6b0348a6130a00b5aa8102e9
-  (`6b0348a6130a00b5aa8102e9`, org namespace `pxaLabs-lexsi`, `l40sx1`, `--timeout 75m`, max $2.25); script
-  `tools/hf_jobs/job23a_expanse_train.py` at commit `0cc34f0`; code (sp_utils, notebook 07, package) pinned to
-  `e59ca1b`.
-- Job 23b (monitoring): to be launched when 23a has finished; `--timeout 75m`, max $2.25. Total cap $4.50.
+- Job 23a, first attempt: https://huggingface.co/jobs/pxaLabs-lexsi/6b0348a6130a00b5aa8102e9
+  (`6b0348a6130a00b5aa8102e9`, created 19:55:18 UTC, `--timeout 75m`; scheduled for 28 min waiting for an L40S) —
+  **ERROR after 2m 4s of runtime (124 s, $0.06)**: a script bug, `Path(__file__).resolve().parents[2]` evaluated
+  outside smoke mode fails for `/data/job23a_expanse_train.py`; it failed right after the gate and version print,
+  before any download, calibration or training. Fixed in `09f27da` (the path is resolved in smoke mode only).
+- Job 23a (bundle + fine-tune): https://huggingface.co/jobs/pxaLabs-lexsi/6b0350768d268c0fbd22a37a
+  (`6b0350768d268c0fbd22a37a`, created 2026-11-22 20:28:38 UTC, org namespace `pxaLabs-lexsi`, `l40sx1`,
+  `--timeout 72m`, `SP_TIMEOUT_MIN=72`, max $2.16; reduced from 75m so the lane total stays under $4.50 after the
+  failed attempt); script `tools/hf_jobs/job23a_expanse_train.py` at commit `09f27da`; code (sp_utils, notebook 07,
+  package) pinned to `e59ca1b`.
+- Job 23b (monitoring): to be launched when 23a has finished; `--timeout 72m`, max $2.16. Lane maximum
+  $0.06 + $2.16 + $2.16 = $4.38.
 - Pins: pairs `purvansh01/safetypulse-pairs` @ `47f888c4`; `ft_alpaca.jsonl` @ `15ac4436` (sha256 `ecb46b32…`);
   eval prompts `purvansh01/safetypulse-jobs` @ `0d5b5a3d` (78 dev); Llama Guard 3 1B @ `acf7aafa`; seed 1; run
   `alpaca-s1`; checkpoints 0, 25, …, 250.
