@@ -224,7 +224,7 @@ saved nothing; the job version saves every 10 checkpoints and retries downloads.
 
 ## Job 13 · Specificity control for `cis_sep` (2026-11-21)
 
-Pre-registered as exploratory in `docs/13_PREREGISTRATION.md` §3f (commit `7f9e6b5`, before the run). Team account.
+Pre-registered as exploratory in `docs/13_PREREGISTRATION.md` §3f (commit `50802b3`, before the run). Team account.
 [Job](https://huggingface.co/jobs/purvansh01/6b019af34fdc5ab3c55d37e8) · L40S · 40m 50s · ~$1.22 ·
 `tools/hf_jobs/job13_specificity.py` → `files/job13_specificity.jsonl` (165 rows: 130 Earth checkpoints, 35 SafeTune
 models) → `docs/report/specificity_control.md` (`tools/specificity_analysis.py`). H6 rows also in
