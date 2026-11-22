@@ -172,6 +172,7 @@ summaries: `kaggle/executed/12_hf_jobs/RUN_SUMMARY.md` (jobs 1, 2, 4–7) and `k
 | 17 · Third judge on H6 answers: ShieldGemma 9B (WildGuard gated) vs Llama Guard 3 1B/8B, in place of the unrunnable human check (exploratory, amendment `2026-11-22-l03-third-judge`) | L40S 48 GB | ⏳ running (launched 2026-11-22, org account, timeout 80 min ≤ $2.40) | https://huggingface.co/jobs/pxaLabs-lexsi/6b0303a0130a00b5aa80649c |
 | 18 · H3 lead time at 2-step checkpoint spacing, new Global Alpaca seed 7 (exploratory, amendment `2026-11-22-l04-fine-lead`, commit `e3f8d55`) | L40S 48 GB | ⏳ launched 2026-11-22, `--timeout 130m` (max $3.90, org credits); adapters in private `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca`; results pending | https://huggingface.co/jobs/pxaLabs-lexsi/6b03028b8d268c0fbd21fa6f |
 | 19 · H5: localise the drift by block-wise restore at `alpaca-s5` step 100 (exploratory; amendment `2026-11-22-l05-h5-localise`, commit `3fc67ac`; script `258797d`) | L40S 48 GB | running (org namespace, `--timeout 100m`, max $3.00) | https://huggingface.co/jobs/pxaLabs-lexsi/6b0305a18d268c0fbd21fffc |
+| 20 · H4: English `cis_sep` alarm vs Hindi/Spanish/French drift on the 18 H3 checkpoints (seeds 4–6, steps 0–250 by 50), NLLB translation in memory, Llama Guard 3 8B (exploratory, amendment `2026-11-22-l06-h4-multilingual`, `edda1dd`) | L40S 48 GB | ⏳ running (org namespace, timeout 115 min, ≤ $3.45); script `ef62566` | https://huggingface.co/jobs/pxaLabs-lexsi/6b0303b18d268c0fbd21fdb7 |
 
 ## Hugging Face artifacts
 

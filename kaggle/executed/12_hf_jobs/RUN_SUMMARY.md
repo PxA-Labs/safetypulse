@@ -356,3 +356,18 @@ split as a held-out check of the in-sample ranking.
 CPU check before launch (`SP_CHECK=1`, tiny random Cohere2): the script's merge equals peft's `merge_and_unload`
 (max diff 0), restoring a block equals zeroing its `lora_B` in peft (logit diff 0), restoring all blocks reproduces the
 base logits exactly. The job repeats the merge check against peft on the real adapter and records the difference.
+
+## Job 20 · H4: English alarm vs Hindi / Spanish / French drift on the H3 checkpoints (2026-11-22, running)
+
+Exploratory, no pass mark. Amendment `docs/prereg_amendments/2026-11-22-l06-h4-multilingual.md` (commit `edda1dd`,
+pushed before the job was created); script `tools/hf_jobs/job20_h4_multilingual.py` (commit `ef62566`). Org namespace.
+[Job](https://huggingface.co/jobs/pxaLabs-lexsi/6b0303b18d268c0fbd21fdb7) `6b0303b18d268c0fbd21fdb7` · L40S ·
+`--timeout 115m` (at most $3.45) · launched 2026-11-22 ~15:01 UTC.
+Pinned: Tiny Aya Global `af89d219`, H3 adapters `a2efcbd7` (tag `h3-v1.1`), NLLB-200 distilled 600M `f8d333a0`,
+Llama Guard 3 8B `7327bd9f`, pairs `47f888c4`, bundle `de9dc195` (layer 27), H3 monitor `5dd34d5d`, sp_utils/package
+`e602e03b`. 18 checkpoints (seeds 4–6 × steps 0–250 by 50) × en/hi/es/fr × 119 test prompts.
+Outputs (flags, rates, cosines, sha256 of translations; no text) → `results/job20/` in the private
+`purvansh01/safetypulse-jobs`; copy to `files/` when finished. Translations and answers stay in the job's memory.
+Launch check (~25 min in): `translations.json` (no truncated, capped or empty lines) and `directions.json` uploaded;
+first checkpoint (seed 4, step 0) scored in all four languages at ~46 s per language, so ~3 min per checkpoint and
+~65 min in total, inside the timeout. Result: pending.
