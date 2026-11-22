@@ -242,7 +242,7 @@ public (D2); otherwise the link is dead or private. Old (line 73):
 ```
 New:
 ```
-- Lead times are quantised to the checkpoint spacing. An exploratory re-run at 2-step spacing (two new seeds, HF Jobs 18 and 21, [`safetypulse-wf-h3fine-lora-alpaca`](https://huggingface.co/pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca)) found the ‖ΔW‖ baseline alarming 8 and 6 steps before `cis_sep` WARN; at 10-step spacing both alarm at step 20, as here.
+- Lead times are quantised to the checkpoint spacing. An exploratory re-run at 2-step spacing (two new seeds, HF Jobs 18 and 21, [`safetypulse-wf-h3fine-lora-alpaca`](https://huggingface.co/purvansh01/safetypulse-h3fine-lora-alpaca)) found the ‖ΔW‖ baseline alarming 8 and 6 steps before `cis_sep` WARN; at 10-step spacing both alarm at step 20, as here.
 ```
 Sources: `origin/wf/r2-lane4:docs/report/h3_fine_lead_seeds.json` (`item5_dw_minus_cis_sep_first_alarm_steps` −8, −6;
 `item3_dw_first_alarm_step` 12, 12; `item2_cis_sep_warn_or_fail_first_alarm_step` 20, 18); 10-step sub-sample: live
