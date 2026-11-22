@@ -2,6 +2,10 @@
 
 Status: Draft v0.1 · Today: 5 Nov 2026 · Submission: 21 Nov 2026 (confirm exact time and timezone)
 
+> **Status (2026-11-22):** the Stage 1 plan, kept as written; Stage 1 was submitted and the project went on to
+> Stage 2 (pre-registered tests in [13_PREREGISTRATION.md](13_PREREGISTRATION.md), paper in `paper/`). The
+> dates and checkboxes below are not updated.
+
 ---
 
 ## 1. Roles (assign names)

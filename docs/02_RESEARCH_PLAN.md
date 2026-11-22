@@ -3,6 +3,16 @@
 Status: Draft v0.1. Hypotheses, metrics and thresholds in this document are **pre-registered**:
 changes after results are observed must be logged in §8 with a reason.
 
+> **Status (2026-11-22):** this is the Stage 1 planning document (written 5–7 Nov 2026) and is kept as
+> written. Results: Stage 1 in [report/REPORT.md](report/REPORT.md); Stage 2 pre-registered tests in
+> [13_PREREGISTRATION.md](13_PREREGISTRATION.md) (H1 and H2 confirmed, H3 and H6 refuted; reports in
+> [report/](report/)). Per doc 13 §4, no claim of "cross-model" or "general" transfer goes beyond the
+> confirmed hypotheses: the frozen `cis_sep` thresholds did not transfer to other model families (H6,
+> [report/h6_safetune.md](report/h6_safetune.md)).
+> The hypotheses H1–H5 below are Stage 1's and are **not** the Stage 2 H1–H6 of doc 13 (same labels, different
+> tests). The §3.6 "second model family" stretch goal was tested in Stage 2 as H1 (sibling model, confirmed) and
+> H6 (four other families, refuted).
+
 ---
 
 ## 1. Research questions
