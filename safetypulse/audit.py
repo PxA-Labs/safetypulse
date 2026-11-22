@@ -22,6 +22,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
+from .check import scoring_mode
 from .judge import DEFAULT_GUARD, JUDGE_KINDS, Judge, is_refusal
 from .prompts import encode, format_chat, last_logits
 from .schemas import SCHEMA_VERSION, _Open
@@ -312,6 +313,8 @@ def audit(
 
     harm/overrefusal items need "prompt"; task items "question" + "gold"; general items "question", "choices", "answer".
     The per-metric token budgets and batch sizes (general: batch_size // 2, judge: its own) are those of sp_utils.
+    The model is scored in eval mode with gradients disabled; its train mode, requires_grad flags and .grad are
+    restored afterwards (`check.scoring_mode`).
     datasets: refs from `load_suite`; sets without one are hashed from their items.
     completions_path: if set, ALSO write raw completions ({"metric", "id", "flag", "completion"}) to this local
         jsonl. That file is unredacted model output and must not be shared or uploaded; the report stays redacted.
@@ -329,7 +332,9 @@ def audit(
             raw.extend({"metric": metric, "id": it.get("id", i), "flag": f, "completion": r}
                        for i, (it, f, r) in enumerate(zip(items, result.flags, responses, strict=True)))
 
-    with gpu_timer() as total:
+    # Eval mode with parameter gradients off (dropout off, no autograd graph), restoring the caller's train mode,
+    # requires_grad flags and .grad afterwards: a model audited from a training loop is scored like a loaded one.
+    with scoring_mode(model), gpu_timer() as total:
         if sets.get("harm"):
             with gpu_timer() as t:
                 m, resp = eval_asr(model, tok, judge, sets["harm"], max_new_tokens, batch_size, n_boot, seed)
