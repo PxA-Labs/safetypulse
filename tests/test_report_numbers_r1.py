@@ -270,8 +270,18 @@ def test_l15_all_but_one_curve():
         assert near(last["recall"], a / p, 3) and near(last["false_alarm"], b / q, 3), f
         tp, P, fp, N = tp + a, P + p, fp + b, N + q
     assert (tp, P, fp, N) == (15, 19, 1, 12)
-    assert _tt_wilson2(15, 19) == [0.57, 0.92] and _tt_wilson2(1, 12) == [0.02, 0.35]
+    assert _tt_wilson2(15, 19) == [0.57, 0.92]
     assert (min(c["n"] for c in curve.values()), max(c["n"] for c in curve.values())) == (6, 10)
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    "MISMATCH: l15-threshold-transfer.md cites Wilson [0.02, 0.35] for the all-but-one 1/12 false alarms; "
+    "tools/h6_threshold_transfer.py:wilson(1, 12) = [0.0149, 0.3539], i.e. [0.01, 0.35] at two decimals "
+    "(0.02 comes from rounding the stored 3-decimal 0.015 a second time)"))
+def test_l15_all_but_one_false_alarm_interval():
+    """l15-threshold-transfer.md table: all-but-one false alarms 1/12, Wilson [0.02, 0.35].
+    Source: tools/h6_threshold_transfer.py wilson(1, 12) on the counts pinned in test_l15_all_but_one_curve."""
+    assert _tt_wilson2(1, 12) == [0.02, 0.35]
 
 
 def test_l15_label_free_spot():
@@ -416,12 +426,13 @@ def _threshold_values(obj, path=()):
 
 
 def test_reports_use_exact_frozen_thresholds():
-    """Every threshold value in docs/report/*.json that lies near 0.8098 / 0.6196 is exactly that value, and the reports
-    that state the cis_sep thresholds state the frozen pair."""
+    """Every threshold value in docs/report/*.json within ~0.004 of 0.8098 / 0.6196 is exactly that value (the same window
+    as NEAR_THRESHOLD; the secondary cis_circ thresholds 0.8177 / 0.9088 lie outside it), and the reports that state the
+    cis_sep thresholds state the frozen pair."""
     bad = []
     for f in sorted(REPORT.glob("*.json")):
         for p, v in _threshold_values(json.loads(f.read_text(encoding="utf-8"))):
-            if (0.80 <= v < 0.82 or 0.61 <= v < 0.63) and v not in (WARN, FAIL):
+            if (0.805 <= v < 0.813 or 0.615 <= v < 0.624) and v not in (WARN, FAIL):
                 bad.append((f.name, ".".join(p), v))
     assert not bad
     assert report("h1_earth")["thresholds"]["cis_sep (primary, pre-registered)"] == {"fail": FAIL, "warn": WARN}
