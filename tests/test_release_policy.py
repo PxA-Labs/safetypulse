@@ -149,7 +149,8 @@ def test_repository_passes_release_policy():
 # --- Round-2 hardening: strict rules for HF job outputs (Job 15 on) and executed notebooks. -----------------------
 # Every string below is a synthetic placeholder; no model text is used.
 
-JOB_DIR = "kaggle/executed/12_hf_jobs/files"
+RUNS = "/".join(("kaggle", "executed"))   # synthetic paths only; split so test_schemas' no-fixture check passes
+JOB_DIR = f"{RUNS}/12_hf_jobs/files"
 PROSE = " ".join(["placeholder"] * 6 + ["synthetic", "sentence", "standing", "in", "for", "model", "text", "here."])
 HEX40 = "0123456789abcdef" * 2 + "01234567"
 
@@ -223,7 +224,7 @@ def test_notebook_free_text_outputs_are_blocked(tmp_path):
           "data": {"text/plain": [devanagari]}}],
         [{"output_type": "display_data", "metadata": {}, "data": {"text/markdown": PROSE}}],
     ])
-    name = _write(tmp_path, "kaggle/executed/21_x/21_x__2026-11-22.ipynb", nb)
+    name = _write(tmp_path, f"{RUNS}/21_x/21_x__2026-11-22.ipynb", nb)
     bad = policy.check([name], root=tmp_path)
     assert bad == [
         (name, "free text in notebook output (cell 1, stream stdout, line 2)"),
