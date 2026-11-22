@@ -2,6 +2,15 @@
 
 Status: Draft v0.1. Frozen (v1.0) before test runs begin — target Day 9.
 
+> **Status (2026-11-22):** this is the Stage 1 planning document (written 5–7 Nov 2026) and is kept as
+> written. Results: Stage 1 in [report/REPORT.md](report/REPORT.md); Stage 2 pre-registered tests in
+> [13_PREREGISTRATION.md](13_PREREGISTRATION.md) (H1 and H2 confirmed, H3 and H6 refuted; reports in
+> [report/](report/)). Per doc 13 §4, no claim of "cross-model" or "general" transfer goes beyond the
+> confirmed hypotheses: the frozen `cis_sep` thresholds did not transfer to other model families (H6,
+> [report/h6_safetune.md](report/h6_safetune.md)).
+> The thresholds actually frozen (Global's dev runs, never re-tuned) are in doc 13 §1: `cis_sep` WARN < 0.8098,
+> FAIL < 0.6196.
+
 ---
 
 ## 1. Metrics

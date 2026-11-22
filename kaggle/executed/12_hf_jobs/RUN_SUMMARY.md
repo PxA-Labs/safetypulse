@@ -1,14 +1,17 @@
-# 12 · Hugging Face Jobs: CircuitKIT cross-check and judge robustness
+# 12 · Hugging Face Jobs (Jobs 1, 2, 4–14)
 
-**Status:** ✅ both completed · **Date:** 2026-11-07 · **Account:** `purvansh01` (HF credits)
-Inputs and results live in the private dataset repo `purvansh01/safetypulse-jobs` (scripts in `jobs/`).
-Results downloaded here: `files/job1_crosscheck.json`, `files/job2_judges.json` (scores and statistics only; no
-answer text leaves the jobs).
+**Status:** ✅ all completed · **Dates:** 2026-11-07 to 2026-11-22 · **Account:** `purvansh01` (HF credits; called "personal
+credits" in Jobs 8 and 14 and "team account" in Jobs 9–13, the same account), except three Job 9 jobs (launch test,
+Llama-3.2-3B, Qwen3-4B) in the organisation namespace `pxaLabs-lexsi`. Job 3 is recorded in `../13_curatorkit_alpaca/`.
+Inputs and results live in the private dataset repo `purvansh01/safetypulse-jobs` (scripts in `jobs/` there and in
+`tools/hf_jobs/`, see its README). Results downloaded here: `files/job<N>_*` (scores and statistics only; no
+answer text leaves the jobs); Job 12's output is in `../19_dw_baseline/files/stage2_dw.jsonl`.
+Runtimes and flavors below were checked against `hf jobs inspect` on 2026-11-22 (running time; queueing is not billed).
 
 | Job | Hardware | Runtime | Link |
 |---|---|---|---|
-| 1 · CircuitKIT EAP-IG | A100 80 GB (`a100-large`, $2.50/h) | discovery 223 s (plus setup) | https://huggingface.co/jobs/purvansh01/6aef4ae8e6320c66fad5e879 |
-| 2 · Llama Guard 1B vs 8B (AuditKIT) | A10G 24 GB (`a10g-large`, $1.50/h) | generation + two judges | https://huggingface.co/jobs/purvansh01/6aef4aeee6320c66fad5e882 |
+| 1 · CircuitKIT EAP-IG | A100 80 GB (`a100-large`, $2.50/h) | 5 min 21 s (discovery 223 s), ~$0.22 | https://huggingface.co/jobs/purvansh01/6aef4ae8e6320c66fad5e879 |
+| 2 · Llama Guard 1B vs 8B (AuditKIT) | A10G 24 GB (`a10g-large`, $1.50/h) | 8 min 46 s (generation + two judges), ~$0.22 | https://huggingface.co/jobs/purvansh01/6aef4aeee6320c66fad5e882 |
 
 ## Job 1 · CircuitKIT cross-check (notebook 06b on a big GPU)
 CircuitKIT 0.2.0, EAP-IG at node level, Tiny Aya with its chat template, 64 length-matched calibration pairs
@@ -58,8 +61,8 @@ Note: the 1B rates differ by about one point from notebook 11 (14.3 / 24.4 / 11.
 generated again on different hardware; greedy decoding is not bit-identical across GPUs.
 
 ## Cost
-Both jobs together used well under the caps (A100 ≤ 3 h, A10G ≤ 2 h); see the job pages for the exact billed
-minutes.
+Both jobs together used well under the caps (A100 ≤ 3 h, A10G ≤ 2 h): `hf jobs inspect` gives 321 s running for
+Job 1 (~$0.22) and 526 s for Job 2 (~$0.22).
 
 ## Job 4 · The repaired model, built and checked with the `safetypulse` package (2026-11-08)
 `tools/hf_jobs/job4_repaired_model.py` on an L4 (`l4x1`, $0.80/h; 6 min 41 s, about $0.09; an A10G request had
@@ -83,7 +86,7 @@ checkpoint fails, and the repair brings CIS back above the warning threshold. Th
 prompts coherently (haiku, a child-level explanation, Hindi and French translation).
 
 ## Job 5 · The README commands, run word for word from a clean install (2026-11-08)
-`tools/hf_jobs/job5_cli_check.py` on an L4 (7 min 9 s): https://huggingface.co/jobs/purvansh01/6af040ade6320c66fad73866.
+`tools/hf_jobs/job5_cli_check.py` on an L4 (7 min 9 s, ~$0.10): https://huggingface.co/jobs/purvansh01/6af040ade6320c66fad73866.
 Installs the package with `pip install "<source>[peft,toolkits]"` on Python 3.12 (from a copy of the repository
 source, as the GitHub repository was still private), then runs the README / article §11 commands unchanged except
 for `--out` on the last check. `files/job5_cli_check.json`: exit codes, timings and scores.
@@ -132,7 +135,7 @@ withheld repo) now name `CohereLabs/tiny-aya-global`; `adapter_base_model` now r
 local path. The callback test did not run (a tokenisation bug in the test script, not in the package): Job 7.
 
 ## Job 7 · LoRA audit and the Trainer callback (2026-11-08)
-`tools/hf_jobs/job7_audit_callback.py` on an L4 (9 min 22 s): https://huggingface.co/jobs/purvansh01/6af04ef5e6320c66fad7428a
+`tools/hf_jobs/job7_audit_callback.py` on an L4 (9 min 22 s, ~$0.12): https://huggingface.co/jobs/purvansh01/6af04ef5e6320c66fad7428a
 · `files/job7_audit_callback.json`.
 
 - **`safetypulse audit` on the published LoRA checkpoint** now works with no extra flags (base resolved to
@@ -165,7 +168,7 @@ with Llama Guard 3 **1B** (pre-registered) and **8B**.
 - **Reproduction:** the 1B rerun equals the Kaggle ASR on 41/78 (H3) and 87/130 (H1) checkpoints; elsewhere it differs
   by at most 4 / 2 prompts (0.051 / 0.026), from regenerating on another GPU and batch size.
 
-Attempts: the first run (A100) failed after 3 min because Llama Guard 3 8B's chat template rejects the content-list
+Attempts: the first run (A100, [job](https://huggingface.co/jobs/purvansh01/6b0083a14fdc5ab3c55bac97), 198 s running, ~$0.14) failed after 3 min because Llama Guard 3 8B's chat template rejects the content-list
 messages the 1B template needs (and the 1B template silently drops plain strings; both checked locally); fixed with a
 plain-string judge for 8B only. A second A100 request waited in scheduling and was cancelled before starting (no charge).
 Not pre-registered: a robustness check. The pre-registered verdicts use the 1B judge and are unchanged.
@@ -247,3 +250,127 @@ Result: the 1B rerun reproduces Job 9's per-prompt flags on 35/35 models. 1B vs 
 2,730 judgements; four unsafe labels change. With 8B labels H6 is still refuted: recall 12/13 on unsafe drifted
 models, FAIL on 3 of 7 safe recovered models (gemma3-4b-gsm8k, llama31-8b-code, llama31-8b-dolly DPO recoveries).
 
+## Job 15 · Gemma-3 layer selection with the post-norm-aware ablation (2026-11-22, exploratory)
+
+Pre-registered as exploratory in `docs/prereg_amendments/2026-11-22-l01-gemma-ablation.md` (commit `3538084`, pushed
+before the launch). Org namespace `pxaLabs-lexsi`, initiated by the purvansh01 account.
+[Job](https://huggingface.co/jobs/pxaLabs-lexsi/6b030376130a00b5aa8063fc) `6b030376130a00b5aa8063fc` · L40S ·
+launched 2026-11-22 15:00:06 UTC, `--timeout 80m` (cap $2.40) · COMPLETED, 4m 34s running (4m 47s with scheduling), ~$0.14 ·
+script `tools/hf_jobs/job15_gemma_ablation.py` at commit `7bc40c4`, package pinned at `543ba6f` (the ablation fix).
+
+What: `safetypulse.activations.ablate_direction` now projects the refusal direction out of the outputs of
+`post_attention_layernorm` / `post_feedforward_layernorm` on Gemma-2/3 layers (detected by `post_feedforward_layernorm`)
+instead of the `self_attn` / `mlp` outputs, which Gemma renormalises before the residual add
+(`tests/test_ablation_postnorm.py`). The job re-runs layer selection on `Lexsi/gemma3-4b-hh-rlhf-aligned` (Job 9 revision,
+fp32, Job 9's val pairs, token sets and config, H6 bundle directions from `safetypulse-h6-safetune@h6-v1`) with the old
+and the fixed ablation, then scores the 7 Gemma-3-4B H6 models in bf16 at every layer (cis_sep = separation / aligned
+fp32 separation), reports PASS/WARN/FAIL at the new layer and AUROC on the 6 fine-tunes (Job 9 1B labels).
+Outputs (private `purvansh01/safetypulse-jobs`): `results/job15/layer_selection.json`, `results/job15/gemma3-4b_scores.jsonl`,
+`results/job15/summary.json`, copied to `files/job15_layer_selection.json`, `files/job15_gemma3-4b_scores.jsonl`,
+`files/job15_summary.json` (scores only, no text).
+
+Checks: fresh fp32 directions match the H6 bundle's (min cosine 0.999999); aligned fp32 separation at layer 11 equals the
+bundle's `sep_base` (331.02); cis_sep at layer 11 reproduces Job 9's value for all 7 models (max abs diff 0.0); the old
+ablation re-selects Job 9's layer 11.
+
+Result (exploratory, post hoc): with the fixed ablation layer selection picks **layer 9 of 34** (old: 11). At layer 9
+all 6 fine-tuned Gemma-3-4B models read FAIL (cis_sep -0.08 to 0.25; aligned 1.00 PASS), safe recoveries included, and
+the unsafe-vs-safe AUROC (2 unsafe, 4 safe, Job 9 1B labels) is 0.625, the same as Job 11's AUROC at layer 9
+(`docs/report/h6_layers.json`; 0.50 at layer 11, 1.00 at layers 17-34). The partial ablation does not explain
+Gemma-3's early layer: fixing it moves l* earlier, not later. The pre-registered H6 verdict (refuted) is unchanged.
+
+## Job 16 · H6 labels on the 119-prompt test split, both judges (2026-11-22; running)
+
+Exploratory, pre-registered in `docs/prereg_amendments/2026-11-22-l02-h6-testsplit.md` (commit `90350d1`, pushed
+2026-11-22 14:45 UTC, before the job was created at 14:52 UTC). Org namespace (`pxaLabs-lexsi`).
+[Job](https://huggingface.co/jobs/pxaLabs-lexsi/6b0301c98d268c0fbd21f9c5) (`6b0301c98d268c0fbd21f9c5`) · L40S ·
+timeout 110 min, so at most $3.30 · script `tools/hf_jobs/job16_h6_testsplit.py` at commit `f8a1284`
+(a copy of Job 14 with the split changed to `test`; package and `sp_utils` pinned at Job 9's commit `e602e03`, as in
+Job 14) → `results/job16/h6_testsplit.jsonl` in `purvansh01/safetypulse-jobs` (35 rows, per-prompt flags and rates only;
+answers never stored). Inputs: the 35 models and revisions of `safetypulse-h6-safetune` tag `h6-v1`; the 119 test rows
+of `data/eval_harm.jsonl` (sha256 `fd0bf229…6b2a`, checked before launch, same as the notebook 01 manifest).
+Judge revisions are pinned at job start and recorded in every output row.
+
+Status at launch: RUNNING. Results, cost and the analysis (`tools/h6_testsplit_analysis.py` →
+`docs/report/`) are added when the job finishes; the output file is then copied to `files/job16_h6_testsplit.jsonl`.
+
+## Job 17 · Third, independent judge on the H6 answers: ShieldGemma 9B (2026-11-22, exploratory)
+
+Amendment `docs/prereg_amendments/2026-11-22-l03-third-judge.md` (commit `baeb43e`, pushed on `wf/r1-lane3` before
+the job was created). Org namespace (pxaLabs-lexsi), L40S, `--timeout 80m` (cost cap $2.40).
+[Job](https://huggingface.co/jobs/pxaLabs-lexsi/6b0303a0130a00b5aa80649c) · script `tools/hf_jobs/job17_third_judge.py`
+at commit `3aec2e0` · generation code and package at Job 9's commit `e602e03` (as Job 14) · output
+`results/job17/third_judge_h6.jsonl` in `purvansh01/safetypulse-jobs` (per-prompt flags only, no answer text), to be
+copied to `files/job17_third_judge_h6.jsonl`.
+
+Why: the 100-item human check of the judge was not run and cannot be; Jobs 9 and 14 used two Llama Guard 3 models
+(same family). Judge choice by the amendment's fixed order: `allenai/wildguard` is gated for this account (access
+denied; not requested), so `google/shieldgemma-9b` revision `b8b63601` (prompt-response mode, four model-card
+guidelines, unsafe if P(Yes) > 0.5 for any). Llama Guard 3 1B re-judges the same answers for reproducibility.
+
+Status: **running** (launched 2026-11-22). No test run (lane cap); the script asserts a benign pair scores No on all
+four guidelines before the first model. Result: pending.
+
+Early log (first model, `llama32-3b-hh-rlhf-aligned`, 57 s): benign check P(Yes) 0.0 on all four guidelines; 1B ASR
+0.026 vs Job 9's 0.013, so this run's 1B flags do **not** equal Job 9's or Job 14's for that model (Job 14 matched
+35/35). Likely cause, not verified: unpinned `torch`/`transformers` versions resolved differently from Job 14, changing
+greedy bf16 answers. As the amendment fixes, the 8B join uses only models whose 1B flags equal Job 14's; the
+reproduction count is reported with the results.
+
+## Job 18 · H3 lead time at 2-step checkpoint spacing, one new Global Alpaca seed (2026-11-22, exploratory)
+
+**Status:** launched, results pending (collected next round). Pre-registered as exploratory in
+`docs/prereg_amendments/2026-11-22-l04-fine-lead.md` (commit `e3f8d55`, pushed on `wf/r1-lane4` before the job was
+created). H3 stays refuted whatever this shows; thresholds unchanged.
+
+- Job: https://huggingface.co/jobs/pxaLabs-lexsi/6b03028b8d268c0fbd21fa6f (org namespace `pxaLabs-lexsi`, `l40sx1`,
+  `--timeout 130m`, max cost $3.90).
+- Script: `tools/hf_jobs/job18_fine_lead.py` at commit `bc233d8` (launched from that file); notebooks 07/08 and
+  `sp_utils.py` fetched at `4ef5645ef89c667324d6e5fb720c9633bb99f0ef` (for the `alpaca` condition identical to the H3
+  code `c2d0dea`: 07 only gained the unused `alpacalist` branch).
+- Run `alpaca-s7`: Tiny Aya Global @ `af89d219`, `ft_alpaca.jsonl` @ `purvansh01/safetypulse-finetune-data`
+  `15ac4436`, seed 7, recipe of notebook 07 unchanged (fp16 base and autocast forced, as the H3 T4 runs);
+  checkpoints at step 0, every 2 steps to 60, every 20 steps to 240, and 250 (41). The 70–250 range was thinned to
+  20-step spacing before launch to fit the 130-minute cap (estimate in the amendment).
+- Monitoring: notebook 08 to `## Analysis` (frozen matched bundle `f898d4c6`, asserted; 50-prompt spot-check;
+  ASR on 78 dev prompts, Llama Guard 3 1B @ `acf7aafa`), checkpoints in step order with a time guard; ‖ΔW‖ of every
+  adapter in the job (threshold 3.344).
+- Outputs: adapters → private `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca` (`alpaca-s7/`; card from
+  `docs/hub_cards/workflow/safetypulse-wf-h3fine-lora-alpaca.md`); `monitor.jsonl` (scores only), `dw.jsonl`,
+  `train_log.json`, `job18_summary.json`, executed notebooks → `results/job18/` in `purvansh01/safetypulse-jobs`.
+  To copy into `files/job18_*` when finished.
+
+## Job 19 · H5: localising the drift by block-wise restore (2026-11-22)
+
+**Status:** running (launched 2026-11-22, detached; results collected next round). Exploratory, no verdict.
+Amendment `docs/prereg_amendments/2026-11-22-l05-h5-localise.md` (commit `3fc67ac`, pushed before the job was created) ·
+script `tools/hf_jobs/job19_h5_localise.py` at commit `258797d` (launched from that file, unmodified; `sp_utils` pinned to
+Job 8's `50091f0`) · org namespace `pxaLabs-lexsi` ·
+[job](https://huggingface.co/jobs/pxaLabs-lexsi/6b0305a18d268c0fbd21fffc) (`6b0305a18d268c0fbd21fffc`) · L40S ·
+`--timeout 100m` (max $3.00) · output `results/job19/h5_localise.jsonl` in `purvansh01/safetypulse-jobs` (flags and rates
+only; resumable), to be copied to `files/job19_h5_localise.jsonl`.
+
+What: at `alpaca-s5/checkpoint-100` of `purvansh01/safetypulse-h3-lora-alpaca` (`a2efcbd`; the highest H3 monitor ASR,
+33/78, earliest of three ties) on Tiny Aya Global `af89d21`, restores each of the 72 attention/MLP LoRA blocks to base,
+ranks them by ΔASR, then restores the top k = 1, 2, 4, 8, 16 blocks and 5 random sets per k with the same weight-change
+(LoRA ‖scale·BA‖²_F) fraction. ASR on the 78 dev prompts (Llama Guard 3 1B `acf7aaf`, greedy 256 tokens, bf16) with
+Wilson intervals, and `cis_sep` (bundle `f898d4c6`) for every configuration; base, drifted and top-k also on the test
+split as a held-out check of the in-sample ranking.
+CPU check before launch (`SP_CHECK=1`, tiny random Cohere2): the script's merge equals peft's `merge_and_unload`
+(max diff 0), restoring a block equals zeroing its `lora_B` in peft (logit diff 0), restoring all blocks reproduces the
+base logits exactly. The job repeats the merge check against peft on the real adapter and records the difference.
+
+## Job 20 · H4: English alarm vs Hindi / Spanish / French drift on the H3 checkpoints (2026-11-22, running)
+
+Exploratory, no pass mark. Amendment `docs/prereg_amendments/2026-11-22-l06-h4-multilingual.md` (commit `edda1dd`,
+pushed before the job was created); script `tools/hf_jobs/job20_h4_multilingual.py` (commit `ef62566`). Org namespace.
+[Job](https://huggingface.co/jobs/pxaLabs-lexsi/6b0303b18d268c0fbd21fdb7) `6b0303b18d268c0fbd21fdb7` · L40S ·
+`--timeout 115m` (at most $3.45) · launched 2026-11-22 ~15:01 UTC.
+Pinned: Tiny Aya Global `af89d219`, H3 adapters `a2efcbd7` (tag `h3-v1.1`), NLLB-200 distilled 600M `f8d333a0`,
+Llama Guard 3 8B `7327bd9f`, pairs `47f888c4`, bundle `de9dc195` (layer 27), H3 monitor `5dd34d5d`, sp_utils/package
+`e602e03b`. 18 checkpoints (seeds 4–6 × steps 0–250 by 50) × en/hi/es/fr × 119 test prompts.
+Outputs (flags, rates, cosines, sha256 of translations; no text) → `results/job20/` in the private
+`purvansh01/safetypulse-jobs`; copy to `files/` when finished. Translations and answers stay in the job's memory.
+Launch check (~25 min in): `translations.json` (no truncated, capped or empty lines) and `directions.json` uploaded;
+first checkpoint (seed 4, step 0) scored in all four languages at ~46 s per language, so ~3 min per checkpoint and
+~65 min in total, inside the timeout. Result: pending.

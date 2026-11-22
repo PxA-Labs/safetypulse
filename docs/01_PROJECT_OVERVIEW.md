@@ -6,7 +6,14 @@
 | Track | 2b — AI Safety and Correction |
 | Problem statements covered | Repairing safety drift without retraining · Locating where safety lives · Circuit-level interventions |
 | Toolkits used | CuratorKIT, CircuitKIT, SafeTune, AuditKIT |
-| Document status | Draft v0.1 |
+| Document status | Draft v0.1 (Stage 1 plan; see the status note below) |
+
+> **Status (2026-11-22):** this is the Stage 1 planning document (written 5–7 Nov 2026) and is kept as
+> written. Results: Stage 1 in [report/REPORT.md](report/REPORT.md); Stage 2 pre-registered tests in
+> [13_PREREGISTRATION.md](13_PREREGISTRATION.md) (H1 and H2 confirmed, H3 and H6 refuted; reports in
+> [report/](report/)). Per doc 13 §4, no claim of "cross-model" or "general" transfer goes beyond the
+> confirmed hypotheses: the frozen `cis_sep` thresholds did not transfer to other model families (H6,
+> [report/h6_safetune.md](report/h6_safetune.md)).
 
 ---
 

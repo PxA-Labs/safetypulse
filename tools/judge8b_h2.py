@@ -11,6 +11,7 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
+JOBS_REV = "e93a955bff0f9d598b7f126b32de13aeff311488"   # jobs-repo commit whose copy is byte-identical to the file committed here
 sys.path.insert(0, str(ROOT / "tools"))
 import h2_analysis  # noqa: E402
 
@@ -28,7 +29,7 @@ def main():
     if not JOB.exists():
         from huggingface_hub import hf_hub_download
         JOB.write_text(Path(hf_hub_download("purvansh01/safetypulse-jobs", "results/job10/judge8b_h2.jsonl",
-                                            repo_type="dataset")).read_text())
+                                            repo_type="dataset", revision=JOBS_REV)).read_text())
     job = {(r["run"], r["step"]): r for r in map(json.loads, open(JOB))}
     mon = h2_analysis.load("h2", "alpacalist", (1, 2, 3))
     assert len(job) == len(mon) == 78

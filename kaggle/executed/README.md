@@ -24,4 +24,11 @@ Keep earlier runs, including failed ones: their summaries explain what went wron
 
 Checkpoints, `.safetensors` files, `audit.jsonl` and the generated datasets live in private Kaggle datasets
 (`sp-pipeline-outputs`, `sp-07-checkpoints-dev`, `sp-07-checkpoints-test`): see
-[docs/10_KAGGLE_AND_HF_RESOURCES.md](../../docs/10_KAGGLE_AND_HF_RESOURCES.md).
+[docs/10_KAGGLE_AND_HF_RESOURCES.md](../../docs/10_KAGGLE_AND_HF_RESOURCES.md). Stage 2 checkpoints are in the
+Hugging Face repos listed there.
+
+## Hugging Face Jobs
+
+Runs on Hugging Face Jobs (scripts in `tools/hf_jobs/`) are recorded in `12_hf_jobs/` (Jobs 1, 2, 4–14),
+`13_curatorkit_alpaca/` (Job 3) and `19_dw_baseline/` (Job 12's output). Their result files are copied from the
+private dataset repo `purvansh01/safetypulse-jobs` (`results/<job>/`) into `12_hf_jobs/files/` when a job finishes.

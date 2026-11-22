@@ -10,6 +10,8 @@ Steps, in order (each is idempotent):
   publish      make the repos public.
   collections  add the repos to the SafetyPulse model and data collections, with a note per item.
   verify       anonymous check: public, tag resolves, configs name the Hub id, manifest SHAs match the files.
+  carddiff     read-only: unified diff of each repo's Hub README.md against its git card (also covers
+               safetypulse-h6-safetune, whose card is produced by tools/h6_card.py and released by hand).
 
 Never touches the repos that stay private (safetypulse-jobs, safetypulse-withheld, safetypulse-earth-probe-bundle).
 Uses the local `hf auth login`; prints no token.
@@ -78,7 +80,8 @@ def step_configs():
         files = configs_of(name)
         with ThreadPoolExecutor(16) as ex:
             raws = list(ex.map(lambda f: Path(hf_hub_download(rid(name), f, force_download=True)).read_bytes(), files))
-        ops = [CommitOperationAdd(f, fixed_config(r, base)) for f, r in zip(files, raws) if fixed_config(r, base) != r]
+        ops = [CommitOperationAdd(f, fixed_config(r, base))
+               for f, r in zip(files, raws, strict=True) if fixed_config(r, base) != r]
         if ops:
             api.create_commit(rid(name), ops, commit_message=f"Adapter configs: base model {base[0]} (Hub id) and revision")
         print(name, len(files), "configs,", len(ops), "rewritten")
@@ -89,7 +92,7 @@ def step_manifest():
         p = hf_hub_download(rid(logs), "MANIFEST.json", repo_type="dataset", force_download=True)
         m = json.loads(Path(p).read_text())
         changed = 0
-        for name, (rtype, base, lg, tag, _) in REPOS.items():
+        for name, (_rtype, _base, lg, tag, _) in REPOS.items():
             if lg != logs:
                 continue
             files = m["repos"][rid(name)]["files"]
@@ -157,12 +160,27 @@ def step_verify():
             with ThreadPoolExecutor(16) as ex:
                 raws = list(ex.map(lambda f: Path(hf_hub_download(rid(name), f, token=False)).read_bytes(), files))
             bases = {json.loads(r)["base_model_name_or_path"] for r in raws}
-            match = all(m[f]["sha256"] == sha(r) for f, r in zip(files, raws))
+            match = all(m[f]["sha256"] == sha(r) for f, r in zip(files, raws, strict=True))
             ok &= bases == {base[0]} and match
             line += f", configs {len(files)} base {bases}, manifest match {match}"
         print(line)
     print("ALL OK" if ok else "PROBLEMS FOUND")
     return ok
+
+
+def step_carddiff():
+    import difflib
+    repos = {name: v[0] for name, v in REPOS.items()} | {"safetypulse-h6-safetune": "dataset"}
+    same = True
+    for name, rtype in repos.items():
+        hub = Path(hf_hub_download(rid(name), "README.md", repo_type=rtype, force_download=True)).read_text()
+        git = (CARDS / f"{name}.md").read_text()
+        diff = list(difflib.unified_diff(hub.splitlines(True), git.splitlines(True),
+                                         f"hub:{name}/README.md", f"git:docs/hub_cards/stage2/{name}.md"))
+        same &= not diff
+        print(f"{name}: {'same' if not diff else 'DIFFERS'}")
+        sys.stdout.writelines(diff)
+    return same
 
 
 if __name__ == "__main__":

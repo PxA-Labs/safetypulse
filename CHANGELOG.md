@@ -14,6 +14,10 @@ All notable changes to this project are recorded here. The format follows
 ### Added
 - Probe bundles record the tokens behind the refuse/comply IDs in `provenance.token_strings`, so a token set from
   another tokenizer is visible in the bundle (#113).
+- Stage 2 (research code, not part of the package): pre-registration (`docs/13_PREREGISTRATION.md`), Hugging Face
+  Job scripts 8–14 (`tools/hf_jobs/`, documented in its README), analysis scripts (`tools/h1_analysis.py` …
+  `tools/review_followups.py`) writing `docs/report/`, and the paper (`paper/`). Results: H1 and H2 confirmed, H3
+  and H6 refuted (`docs/13_PREREGISTRATION.md`, `docs/report/`).
 
 ## [0.1.1] - 2026-11-09
 
