@@ -1,14 +1,17 @@
-# 12 · Hugging Face Jobs: CircuitKIT cross-check and judge robustness
+# 12 · Hugging Face Jobs (Jobs 1, 2, 4–14)
 
-**Status:** ✅ both completed · **Date:** 2026-11-07 · **Account:** `purvansh01` (HF credits)
-Inputs and results live in the private dataset repo `purvansh01/safetypulse-jobs` (scripts in `jobs/`).
-Results downloaded here: `files/job1_crosscheck.json`, `files/job2_judges.json` (scores and statistics only; no
-answer text leaves the jobs).
+**Status:** ✅ all completed · **Dates:** 2026-11-07 to 2026-11-22 · **Account:** `purvansh01` (HF credits; called "personal
+credits" in Jobs 8 and 14 and "team account" in Jobs 9–13, the same account), except three Job 9 jobs (launch test,
+Llama-3.2-3B, Qwen3-4B) in the organisation namespace `pxaLabs-lexsi`. Job 3 is recorded in `../13_curatorkit_alpaca/`.
+Inputs and results live in the private dataset repo `purvansh01/safetypulse-jobs` (scripts in `jobs/` there and in
+`tools/hf_jobs/`, see its README). Results downloaded here: `files/job<N>_*` (scores and statistics only; no
+answer text leaves the jobs); Job 12's output is in `../19_dw_baseline/files/stage2_dw.jsonl`.
+Runtimes and flavors below were checked against `hf jobs inspect` on 2026-11-22 (running time; queueing is not billed).
 
 | Job | Hardware | Runtime | Link |
 |---|---|---|---|
-| 1 · CircuitKIT EAP-IG | A100 80 GB (`a100-large`, $2.50/h) | discovery 223 s (plus setup) | https://huggingface.co/jobs/purvansh01/6aef4ae8e6320c66fad5e879 |
-| 2 · Llama Guard 1B vs 8B (AuditKIT) | A10G 24 GB (`a10g-large`, $1.50/h) | generation + two judges | https://huggingface.co/jobs/purvansh01/6aef4aeee6320c66fad5e882 |
+| 1 · CircuitKIT EAP-IG | A100 80 GB (`a100-large`, $2.50/h) | 5 min 21 s (discovery 223 s), ~$0.22 | https://huggingface.co/jobs/purvansh01/6aef4ae8e6320c66fad5e879 |
+| 2 · Llama Guard 1B vs 8B (AuditKIT) | A10G 24 GB (`a10g-large`, $1.50/h) | 8 min 46 s (generation + two judges), ~$0.22 | https://huggingface.co/jobs/purvansh01/6aef4aeee6320c66fad5e882 |
 
 ## Job 1 · CircuitKIT cross-check (notebook 06b on a big GPU)
 CircuitKIT 0.2.0, EAP-IG at node level, Tiny Aya with its chat template, 64 length-matched calibration pairs
@@ -58,8 +61,8 @@ Note: the 1B rates differ by about one point from notebook 11 (14.3 / 24.4 / 11.
 generated again on different hardware; greedy decoding is not bit-identical across GPUs.
 
 ## Cost
-Both jobs together used well under the caps (A100 ≤ 3 h, A10G ≤ 2 h); see the job pages for the exact billed
-minutes.
+Both jobs together used well under the caps (A100 ≤ 3 h, A10G ≤ 2 h): `hf jobs inspect` gives 321 s running for
+Job 1 (~$0.22) and 526 s for Job 2 (~$0.22).
 
 ## Job 4 · The repaired model, built and checked with the `safetypulse` package (2026-11-08)
 `tools/hf_jobs/job4_repaired_model.py` on an L4 (`l4x1`, $0.80/h; 6 min 41 s, about $0.09; an A10G request had
@@ -83,7 +86,7 @@ checkpoint fails, and the repair brings CIS back above the warning threshold. Th
 prompts coherently (haiku, a child-level explanation, Hindi and French translation).
 
 ## Job 5 · The README commands, run word for word from a clean install (2026-11-08)
-`tools/hf_jobs/job5_cli_check.py` on an L4 (7 min 9 s): https://huggingface.co/jobs/purvansh01/6af040ade6320c66fad73866.
+`tools/hf_jobs/job5_cli_check.py` on an L4 (7 min 9 s, ~$0.10): https://huggingface.co/jobs/purvansh01/6af040ade6320c66fad73866.
 Installs the package with `pip install "<source>[peft,toolkits]"` on Python 3.12 (from a copy of the repository
 source, as the GitHub repository was still private), then runs the README / article §11 commands unchanged except
 for `--out` on the last check. `files/job5_cli_check.json`: exit codes, timings and scores.
@@ -132,7 +135,7 @@ withheld repo) now name `CohereLabs/tiny-aya-global`; `adapter_base_model` now r
 local path. The callback test did not run (a tokenisation bug in the test script, not in the package): Job 7.
 
 ## Job 7 · LoRA audit and the Trainer callback (2026-11-08)
-`tools/hf_jobs/job7_audit_callback.py` on an L4 (9 min 22 s): https://huggingface.co/jobs/purvansh01/6af04ef5e6320c66fad7428a
+`tools/hf_jobs/job7_audit_callback.py` on an L4 (9 min 22 s, ~$0.12): https://huggingface.co/jobs/purvansh01/6af04ef5e6320c66fad7428a
 · `files/job7_audit_callback.json`.
 
 - **`safetypulse audit` on the published LoRA checkpoint** now works with no extra flags (base resolved to
@@ -165,7 +168,7 @@ with Llama Guard 3 **1B** (pre-registered) and **8B**.
 - **Reproduction:** the 1B rerun equals the Kaggle ASR on 41/78 (H3) and 87/130 (H1) checkpoints; elsewhere it differs
   by at most 4 / 2 prompts (0.051 / 0.026), from regenerating on another GPU and batch size.
 
-Attempts: the first run (A100) failed after 3 min because Llama Guard 3 8B's chat template rejects the content-list
+Attempts: the first run (A100, [job](https://huggingface.co/jobs/purvansh01/6b0083a14fdc5ab3c55bac97), 198 s running, ~$0.14) failed after 3 min because Llama Guard 3 8B's chat template rejects the content-list
 messages the 1B template needs (and the 1B template silently drops plain strings; both checked locally); fixed with a
 plain-string judge for 8B only. A second A100 request waited in scheduling and was cancelled before starting (no charge).
 Not pre-registered: a robustness check. The pre-registered verdicts use the 1B judge and are unchanged.
