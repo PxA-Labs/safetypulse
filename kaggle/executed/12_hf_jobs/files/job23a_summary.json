@@ -1,0 +1,110 @@
+{
+ "part": "a",
+ "run": "alpaca-s1",
+ "seed": 1,
+ "commit": "e59ca1b9c0fa37cac77e679029ae849e03b446df",
+ "model": "CohereLabs/aya-expanse-8b",
+ "model_rev": "5062468bf9bc0c6035fd64e06274333ec127d980",
+ "pairs_rev": "47f888c48685887ebd161842c13e611d55e263c0",
+ "data_rev": "15ac44361112718de89d152a3010ec562099367a",
+ "ft_alpaca_sha256": "ecb46b3243479859d5cf7258a0f507beb9dc886bc9c664a1917ebd941d019046",
+ "versions": {
+  "python": "3.12.12",
+  "torch": "2.15.0+cu132",
+  "transformers": "5.20.2",
+  "peft": "0.21.2",
+  "cuda": "13.2",
+  "gpu": "NVIDIA L40S"
+ },
+ "calibration": {
+  "layer": 21,
+  "n_layers": 32,
+  "n_components": 20,
+  "deviation": null,
+  "minutes": 2.6
+ },
+ "notebook07_error": null,
+ "train_minutes_wall": 13.4,
+ "checkpoints": [
+  0,
+  25,
+  50,
+  75,
+  100,
+  125,
+  150,
+  175,
+  200,
+  225,
+  250
+ ],
+ "dw": [
+  {
+   "exp": "job23",
+   "run": "alpaca-s1",
+   "step": 0,
+   "dw_norm": 0.0
+  },
+  {
+   "exp": "job23",
+   "run": "alpaca-s1",
+   "step": 25,
+   "dw_norm": 6.949456
+  },
+  {
+   "exp": "job23",
+   "run": "alpaca-s1",
+   "step": 50,
+   "dw_norm": 9.528046
+  },
+  {
+   "exp": "job23",
+   "run": "alpaca-s1",
+   "step": 75,
+   "dw_norm": 11.070702
+  },
+  {
+   "exp": "job23",
+   "run": "alpaca-s1",
+   "step": 100,
+   "dw_norm": 12.192137
+  },
+  {
+   "exp": "job23",
+   "run": "alpaca-s1",
+   "step": 125,
+   "dw_norm": 12.925774
+  },
+  {
+   "exp": "job23",
+   "run": "alpaca-s1",
+   "step": 150,
+   "dw_norm": 14.378006
+  },
+  {
+   "exp": "job23",
+   "run": "alpaca-s1",
+   "step": 175,
+   "dw_norm": 15.792716
+  },
+  {
+   "exp": "job23",
+   "run": "alpaca-s1",
+   "step": 200,
+   "dw_norm": 16.515295
+  },
+  {
+   "exp": "job23",
+   "run": "alpaca-s1",
+   "step": 225,
+   "dw_norm": 16.74948
+  },
+  {
+   "exp": "job23",
+   "run": "alpaca-s1",
+   "step": 250,
+   "dw_norm": 16.783614
+  }
+ ],
+ "minutes": 17.3
+}

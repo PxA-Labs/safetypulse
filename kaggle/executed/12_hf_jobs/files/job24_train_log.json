@@ -1,0 +1,258 @@
+{
+  "run": "alpaca-s9",
+  "condition": "alpaca",
+  "seed": 9,
+  "model": "CohereLabs/tiny-aya-global",
+  "hp": {
+    "epochs": 2,
+    "lr": 0.0002,
+    "batch": 2,
+    "accum": 8,
+    "save_every": 1000
+  },
+  "lora": {
+    "r": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ]
+  },
+  "dense_until": 40,
+  "dense_every": 2,
+  "base_dtype": "torch.float16",
+  "n_examples": 2000,
+  "train_minutes": 7.922147658,
+  "log_history": [
+    {
+      "loss": 2.0891401290893556,
+      "grad_norm": 1.054673433303833,
+      "learning_rate": 0.00011428571428571428,
+      "epoch": 0.04,
+      "step": 5
+    },
+    {
+      "loss": 1.670848274230957,
+      "grad_norm": 0.4323484003543854,
+      "learning_rate": 0.00019996657333896877,
+      "epoch": 0.08,
+      "step": 10
+    },
+    {
+      "loss": 1.4337246894836426,
+      "grad_norm": 0.4195408225059509,
+      "learning_rate": 0.00019959077999460095,
+      "epoch": 0.12,
+      "step": 15
+    },
+    {
+      "loss": 1.5449604034423827,
+      "grad_norm": 0.39583271741867065,
+      "learning_rate": 0.00019879898494768093,
+      "epoch": 0.16,
+      "step": 20
+    },
+    {
+      "loss": 1.338275146484375,
+      "grad_norm": 0.3703300654888153,
+      "learning_rate": 0.00019759449561369038,
+      "epoch": 0.2,
+      "step": 25
+    },
+    {
+      "loss": 1.3867721557617188,
+      "grad_norm": 0.33946746587753296,
+      "learning_rate": 0.00019598234327779118,
+      "epoch": 0.24,
+      "step": 30
+    },
+    {
+      "loss": 1.520978832244873,
+      "grad_norm": 0.42257389426231384,
+      "learning_rate": 0.00019396926207859084,
+      "epoch": 0.28,
+      "step": 35
+    },
+    {
+      "loss": 1.3278074264526367,
+      "grad_norm": 0.45753955841064453,
+      "learning_rate": 0.0001915636608789006,
+      "epoch": 0.32,
+      "step": 40
+    },
+    {
+      "loss": 1.382349395751953,
+      "grad_norm": 0.4049483835697174,
+      "learning_rate": 0.00018877558814098561,
+      "epoch": 0.36,
+      "step": 45
+    },
+    {
+      "loss": 1.3391031265258788,
+      "grad_norm": 0.4899477958679199,
+      "learning_rate": 0.00018561668995302667,
+      "epoch": 0.4,
+      "step": 50
+    },
+    {
+      "loss": 1.242358684539795,
+      "grad_norm": 0.3752656579017639,
+      "learning_rate": 0.00018210016138212187,
+      "epoch": 0.44,
+      "step": 55
+    },
+    {
+      "loss": 1.3924552917480468,
+      "grad_norm": 0.37367433309555054,
+      "learning_rate": 0.00017824069135703198,
+      "epoch": 0.48,
+      "step": 60
+    },
+    {
+      "loss": 1.3865429878234863,
+      "grad_norm": 0.4946080148220062,
+      "learning_rate": 0.00017405440131090048,
+      "epoch": 0.52,
+      "step": 65
+    },
+    {
+      "loss": 1.3408438682556152,
+      "grad_norm": 0.3553387224674225,
+      "learning_rate": 0.0001695587778402442,
+      "epoch": 0.56,
+      "step": 70
+    },
+    {
+      "loss": 1.305345630645752,
+      "grad_norm": 0.4225338399410248,
+      "learning_rate": 0.00016477259966150588,
+      "epoch": 0.6,
+      "step": 75
+    },
+    {
+      "loss": 1.4135302543640136,
+      "grad_norm": 0.31580081582069397,
+      "learning_rate": 0.00015971585917027862,
+      "epoch": 0.64,
+      "step": 80
+    },
+    {
+      "loss": 1.3214717864990235,
+      "grad_norm": 0.3896392285823822,
+      "learning_rate": 0.00015440967893085828,
+      "epoch": 0.68,
+      "step": 85
+    },
+    {
+      "loss": 1.3259355545043945,
+      "grad_norm": 0.43534624576568604,
+      "learning_rate": 0.00014887622344495643,
+      "epoch": 0.72,
+      "step": 90
+    },
+    {
+      "loss": 1.440212345123291,
+      "grad_norm": 0.35780343413352966,
+      "learning_rate": 0.00014313860656812536,
+      "epoch": 0.76,
+      "step": 95
+    },
+    {
+      "loss": 1.405792808532715,
+      "grad_norm": 0.5526322722434998,
+      "learning_rate": 0.00013722079496062702,
+      "epoch": 0.8,
+      "step": 100
+    },
+    {
+      "loss": 1.3559006690979003,
+      "grad_norm": 0.3862755596637726,
+      "learning_rate": 0.00013114750797604247,
+      "epoch": 0.84,
+      "step": 105
+    },
+    {
+      "loss": 1.2732558250427246,
+      "grad_norm": 0.3778582513332367,
+      "learning_rate": 0.00012494411440579814,
+      "epoch": 0.88,
+      "step": 110
+    },
+    {
+      "loss": 1.3524087905883788,
+      "grad_norm": 0.35256749391555786,
+      "learning_rate": 0.00011863652651091823,
+      "epoch": 0.92,
+      "step": 115
+    },
+    {
+      "loss": 1.3234021186828613,
+      "grad_norm": 0.39818185567855835,
+      "learning_rate": 0.00011225109178364455,
+      "epoch": 0.96,
+      "step": 120
+    },
+    {
+      "loss": 1.392540454864502,
+      "grad_norm": 0.3572726845741272,
+      "learning_rate": 0.00010581448289104758,
+      "epoch": 1.0,
+      "step": 125
+    },
+    {
+      "loss": 1.299117660522461,
+      "grad_norm": 0.33064213395118713,
+      "learning_rate": 9.935358626034606e-05,
+      "epoch": 1.04,
+      "step": 130
+    },
+    {
+      "loss": 1.1650992393493653,
+      "grad_norm": 0.3545748293399811,
+      "learning_rate": 9.289538977132703e-05,
+      "epoch": 1.08,
+      "step": 135
+    },
+    {
+      "loss": 1.1972897529602051,
+      "grad_norm": 0.35877251625061035,
+      "learning_rate": 8.646687002498692e-05,
+      "epoch": 1.12,
+      "step": 140
+    },
+    {
+      "train_runtime": 475.0787,
+      "train_samples_per_second": 4.715,
+      "train_steps_per_second": 0.295,
+      "total_flos": 1.7730942855929856e+16,
+      "train_loss": 1.3916951179504395,
+      "epoch": 1.12,
+      "step": 140
+    }
+  ],
+  "provenance": {
+    "git_sha": null,
+    "seed": 9,
+    "created_at": "2026-11-22T20:31:45",
+    "torch": "2.15.0+cu132",
+    "transformers": "5.20.2",
+    "cuda_available": true,
+    "on_kaggle": false,
+    "smoke": false,
+    "peft": "0.21.2",
+    "gpus": [
+      "NVIDIA L40S"
+    ],
+    "capability": [
+      8,
+      9
+    ],
+    "vram_gb": 47.7
+  }
+}

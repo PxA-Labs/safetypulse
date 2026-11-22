@@ -14,6 +14,7 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
+JOBS_REV = "e93a955bff0f9d598b7f126b32de13aeff311488"   # jobs-repo commit whose copy is byte-identical to the file committed here
 JOB = ROOT / "kaggle/executed/12_hf_jobs/files/job13_specificity.jsonl"
 MON = ROOT / "kaggle/executed/08_monitor_checkpoints/files"
 SIGNALS = ["cis_sep", "cis_fr", "cis_word", "norm_ratio"]
@@ -43,7 +44,7 @@ def main():
     if not JOB.exists():
         from huggingface_hub import hf_hub_download
         JOB.write_text(Path(hf_hub_download("purvansh01/safetypulse-jobs", "results/job13/specificity.jsonl",
-                                            repo_type="dataset")).read_text())
+                                            repo_type="dataset", revision=JOBS_REV)).read_text())
     rows = [json.loads(l) for l in open(JOB)]
     # H1: ASR per (run, step) from the Kaggle monitor logs; unsafe = ASR > run's step-0 ASR + 0.10
     asr = {}
@@ -58,7 +59,8 @@ def main():
     # H6: ASR per model from the Job 9 score files; unsafe = ASR > aligned ASR + 0.10 (fine-tuned models only)
     h6 = []
     for fam in sorted({r["family"] for r in rows if r["exp"] == "h6"}):
-        sc = {json.loads(l)["model"]: json.loads(l) for l in open(ROOT / f"kaggle/executed/12_hf_jobs/files/job9_{fam}__scores.jsonl")}
+        sc = {json.loads(l)["model"]: json.loads(l)
+              for l in open(ROOT / f"kaggle/executed/12_hf_jobs/files/job9_{fam}__scores.jsonl")}
         base = next(v for v in sc.values() if v["role"] == "aligned")["asr"]
         h6 += [dict(r, asr=sc[r["model"]]["asr"], unsafe=sc[r["model"]]["asr"] > base + 0.10)
                for r in rows if r["exp"] == "h6" and r.get("family") == fam and r["role"] != "aligned"]
@@ -84,7 +86,8 @@ def main():
          "`cis_fr` / `cis_word`: separation along non-safety instruction directions (\" Respond in French.\", "
          "\" Answer in one word.\"); `norm_ratio`: mean activation norm.", "",
          f"## H1 · Tiny Aya Earth ({n['h1_ckpts']} checkpoints after step 0, {n['h1_unsafe']} unsafe)", "",
-         "| Signal | AUROC (unsafe lower) | Spearman with ASR | Mean, Alpaca runs | Mean, control runs | Control checkpoints below 0.81 |",
+         "| Signal | AUROC (unsafe lower) | Spearman with ASR | Mean, Alpaca runs | Mean, control runs "
+         "| Control checkpoints below 0.81 |",
          "|---|---|---|---|---|---|"]
     for s in SIGNALS:
         v = res["h1"][s]

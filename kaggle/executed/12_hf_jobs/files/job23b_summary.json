@@ -1,0 +1,47 @@
+{
+ "part": "b",
+ "run": "alpaca-s1",
+ "commit": "e59ca1b9c0fa37cac77e679029ae849e03b446df",
+ "model_rev": "5062468bf9bc0c6035fd64e06274333ec127d980",
+ "judge_rev": "acf7aafa60f0410f8f42b1fa35e077d705892029",
+ "jobs_rev": "0d5b5a3d3675837f9add52b3786cb766461c3862",
+ "bundle_layer": 21,
+ "n_components": 20,
+ "checkpoints": [
+  0,
+  25,
+  50,
+  75,
+  100,
+  125,
+  150,
+  175,
+  200,
+  225,
+  250
+ ],
+ "monitored_steps": [
+  0,
+  25,
+  50,
+  75,
+  100,
+  125,
+  150,
+  175,
+  200,
+  225,
+  250
+ ],
+ "not_started_time_guard": [],
+ "versions": {
+  "python": "3.12.12",
+  "torch": "2.15.0+cu132",
+  "transformers": "5.20.2",
+  "peft": "0.21.2",
+  "cuda": "13.2",
+  "gpu": "NVIDIA L40S"
+ },
+ "dtype": "float16",
+ "minutes": 12.7
+}

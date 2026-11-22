@@ -160,6 +160,15 @@ class ProbeBundle(_Open):
     _tensors: dict[str, torch.Tensor] = PrivateAttr(default_factory=dict)
     _root: Path | None = PrivateAttr(default=None)
 
+    @field_validator("schema_version")
+    @classmethod
+    def _known_major_version(cls, v):
+        # A different major version may give the same field names another meaning; minor versions only add fields.
+        if v.split(".")[0] != SCHEMA_VERSION.split(".")[0]:
+            raise ValueError(f"probe bundle schema_version {v!r} is not readable by this safetypulse (reads "
+                             f"{SCHEMA_VERSION.split('.')[0]}.x); upgrade safetypulse or re-run calibrate")
+        return v
+
     @model_validator(mode="after")
     def _circ_reference(self):
         if self.components and self.reference.circ_base is None:
@@ -206,6 +215,8 @@ class ProbeBundle(_Open):
             if key not in tensors:
                 raise ValueError(f"{self.direction_file} lacks tensor {key!r}")
             t = tensors[key]
+            if not t.is_floating_point():
+                raise ValueError(f"{key} must be a floating-point tensor, got {t.dtype}")
             if t.ndim != 2:
                 raise ValueError(f"{key} must be [resid, d_model], got shape {tuple(t.shape)}")
             if self.layer >= t.shape[0]:
@@ -234,7 +245,9 @@ class ProbeBundle(_Open):
         bundle._root = json_path.parent
         tensors = load_file(str(json_path.parent / bundle.direction_file))
         bundle._validate_tensors(tensors)
-        bundle._tensors = tensors
+        # fp32 like with_tensors(): scoring multiplies these with fp32 activations, so a file saved in bf16 / fp16
+        # would otherwise fail with a dtype error. sha256() already hashes the fp32 values, so bundle ids are unchanged.
+        bundle._tensors = {k: v.float() for k, v in tensors.items()}
         return bundle
 
     @classmethod

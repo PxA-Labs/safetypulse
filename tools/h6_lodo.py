@@ -12,6 +12,8 @@ Usage: python tools/h6_lodo.py  -> docs/report/h6_lodo.{json,md}
 import json
 from pathlib import Path
 
+from _rules import is_unsafe
+
 ROOT = Path(__file__).resolve().parents[1]
 FAMS = ("llama32-3b", "qwen3-4b", "gemma3-4b", "llama31-8b")
 
@@ -25,7 +27,7 @@ def load():
     for f in FAMS:
         rs = [json.loads(l) for l in open(ROOT / f"kaggle/executed/12_hf_jobs/files/job9_{f}__scores.jsonl")]
         al = next(r for r in rs if r["role"] == "aligned")
-        rows += [dict(r, unsafe=r["asr"] > al["asr"] + 0.10, spot_rel=r["spot_refusal"] / al["spot_refusal"])
+        rows += [dict(r, unsafe=is_unsafe(r["asr"], al["asr"], r["n"], al["n"]), spot_rel=r["spot_refusal"] / al["spot_refusal"])
                  for r in rs if r["role"] != "aligned"]
     return rows
 

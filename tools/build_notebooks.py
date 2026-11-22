@@ -3,6 +3,8 @@
 Usage: python tools/build_notebooks.py [output_dir]
 Edit the notebooks here, not in kaggle/notebooks/, so the two never drift apart.
 """
+# The long lines are notebook cell source inside string literals; wrapping them would change the generated notebooks.
+# ruff: noqa: E501
 import json
 import sys
 import textwrap
@@ -1706,7 +1708,8 @@ write("10_audit_and_report.ipynb", [
            " · outputs of **01**, **05**, **06**, **07**, **08**, **09**", "everything above",
            "`report/tables.md`, `report/audit.jsonl`, `report/table_c.csv`, `report/judge_validation_sample.csv`, figures",
            "GPU T4"),
-    md("Run only **after** the evaluation protocol is frozen (docs/09 Day 9). Test-split numbers computed here go in the report."),
+    md("Run only **after** the evaluation protocol is frozen (docs/09 Day 9). "
+       "Test-split numbers computed here go in the report."),
     SETUP,
     code('''
         import json, random

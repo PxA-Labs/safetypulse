@@ -10,6 +10,7 @@ from pathlib import Path
 import torch
 
 from .activations import remove_hooks
+from .calibrate import warn_thinking_setting
 from .cis import cis_status, compute_cis
 from .models import adapter_base_model, fingerprint_mismatches, is_adapter_dir, load_model, model_fingerprint
 from .repair import attach_saved_steering
@@ -179,6 +180,7 @@ def check(
 
     try:
         verify_base_model(bundle, model, tok, names=names, allow_mismatch=allow_base_mismatch)
+        warn_thinking_setting(tok, bundle.provenance)   # warns only; scoring is unchanged
         # cis_circ needs activation gradients (not parameter gradients), so no torch.no_grad() around compute_cis.
         with scoring_mode(model):
             cis = compute_cis(model, tok, probe_pairs, bundle, with_circ=with_circ or th.metric == "cis_circ",

@@ -182,6 +182,16 @@ def decoder_layers(model):
     raise ValueError(f"cannot find decoder layers on {type(model).__name__}")
 
 
+def has_post_block_norms(layer) -> bool:
+    """True for "sandwich" decoder layers (Gemma-2/3) that normalise the attention and MLP outputs before the
+    residual add: post_attention_layernorm(self_attn(...)) and post_feedforward_layernorm(mlp(...)).
+
+    Detected by `post_feedforward_layernorm`, not `post_attention_layernorm`: in Llama/Qwen/Cohere-style layers
+    `post_attention_layernorm` is the pre-MLP norm and its output never reaches the residual stream directly.
+    """
+    return hasattr(layer, "post_feedforward_layernorm") and hasattr(layer, "post_attention_layernorm")
+
+
 def layers_prefix(model) -> str:
     """Parameter-name prefix of the decoder layers, e.g. "model.layers"."""
     layers = decoder_layers(model)

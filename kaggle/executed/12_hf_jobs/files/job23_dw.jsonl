@@ -1,0 +1,11 @@
+{"exp": "job23", "run": "alpaca-s1", "step": 0, "dw_norm": 0.0}
+{"exp": "job23", "run": "alpaca-s1", "step": 25, "dw_norm": 6.949456}
+{"exp": "job23", "run": "alpaca-s1", "step": 50, "dw_norm": 9.528046}
+{"exp": "job23", "run": "alpaca-s1", "step": 75, "dw_norm": 11.070702}
+{"exp": "job23", "run": "alpaca-s1", "step": 100, "dw_norm": 12.192137}
+{"exp": "job23", "run": "alpaca-s1", "step": 125, "dw_norm": 12.925774}
+{"exp": "job23", "run": "alpaca-s1", "step": 150, "dw_norm": 14.378006}
+{"exp": "job23", "run": "alpaca-s1", "step": 175, "dw_norm": 15.792716}
+{"exp": "job23", "run": "alpaca-s1", "step": 200, "dw_norm": 16.515295}
+{"exp": "job23", "run": "alpaca-s1", "step": 225, "dw_norm": 16.74948}
+{"exp": "job23", "run": "alpaca-s1", "step": 250, "dw_norm": 16.783614}

@@ -1,7 +1,10 @@
 """||dW|| baseline for H1 (Earth) and H2 (list Alpaca), as notebook 19 computed it for H3 (doc 13 §1: the weight-change
 baseline belongs in every table). CPU only; streams each public adapter from the Hub and deletes it after use.
 
-Usage: python tools/dw_stage2.py   -> kaggle/executed/19_dw_baseline/files/stage2_dw.json
+Usage: python tools/dw_stage2.py   -> kaggle/executed/19_dw_baseline/files/stage2_dw.jsonl
+The committed file was written by HF Job 12 (tools/hf_jobs/job12_dw_stage2.py, same formula and threshold), which
+replaced this local run after a hung download; this script writes the same path and format (one row per checkpoint,
+sorted by exp, run, step).
 ||dW|| = sqrt(sum over adapted modules of ||scale * B @ A||_F^2), scale = lora_alpha / r (notebook 19's dw_norm).
 Alarm when ||dW|| > 3.344, the threshold notebook 19 re-derived on Global's Stage 1 dev runs (h3__h3_dw.json).
 """
@@ -48,7 +51,6 @@ def one(job):
 jobs = [(e, repo, rev, run, s) for e, repo, rev, runs in SETS for run in runs for s in range(0, 251, 10)]
 with ThreadPoolExecutor(6) as ex:
     rows = sorted(ex.map(one, jobs), key=lambda r: (r["exp"], r["run"], r["step"]))
-out = ROOT / "kaggle/executed/19_dw_baseline/files/stage2_dw.json"
-out.write_text(json.dumps({"threshold_dw_norm": THRESH, "source": "notebook 19 dw_norm, Global Stage 1 dev threshold",
-                           "rows": rows}, indent=1) + "\n")
+out = ROOT / "kaggle/executed/19_dw_baseline/files/stage2_dw.jsonl"
+out.write_text("".join(json.dumps(r) + "\n" for r in rows))
 print(len(rows), "checkpoints ->", out)

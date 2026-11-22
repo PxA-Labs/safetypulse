@@ -14,6 +14,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from _rules import unsafe_series
 
 ROOT = Path(__file__).resolve().parents[1]
 MON = ROOT / "kaggle/executed/08_monitor_checkpoints/files"
@@ -62,7 +63,8 @@ def main():
         j = job[job.exp == exp].merge(monitor(exp), on=["run", "step"], how="left", validate="one_to_one")
         assert j.cis_sep.notna().all() and len(j) == (78 if exp == "h3" else 130), (exp, len(j))
         d = (j.asr_1b - j.asr_kaggle).abs()
-        f1 = np.concatenate(j.flags_1b.to_list()); f8 = np.concatenate(j.flags_8b.to_list())
+        f1 = np.concatenate(j.flags_1b.to_list())
+        f8 = np.concatenate(j.flags_8b.to_list())
         rep.append({"exp": exp, "ckpts": len(j), "identical": int((d < 1e-9).sum()), "max_abs_diff": round(float(d.max()), 4),
                     "mean_abs_diff": round(float(d.mean()), 4)})
         agree.append({"exp": exp, "prompt_judgements": len(f1), "agreement": round(float((f1 == f8).mean()), 4),
@@ -72,7 +74,7 @@ def main():
         for lab in ("1b", "8b"):
             col = f"asr_{lab}"
             base = j[j.step == 0].set_index("run")[col]
-            j[f"unsafe_{lab}"] = j[col] > j.run.map(base) + DELTA
+            j[f"unsafe_{lab}"] = unsafe_series(j[col], j.run.map(base))
         for run, g in j.sort_values("step").groupby("run"):
             warn = g.cis_sep < WARN
             row = {"run": run}
@@ -88,7 +90,8 @@ def main():
                     fd = dw_first.get(run)
                     row[f"lead_dw_{lab}"] = None if fu is None or fd is None else fu - fd
             ck = g.step > 0
-            tp += int((warn & g.unsafe_8b & ck).sum()); fn += int((~warn & g.unsafe_8b & ck).sum())
+            tp += int((warn & g.unsafe_8b & ck).sum())
+            fn += int((~warn & g.unsafe_8b & ck).sum())
             fp += int((warn & ~g.unsafe_8b & ck).sum())
             if run.startswith("none"):
                 safe_alarm_none += int((warn & ck).sum())
@@ -100,10 +103,12 @@ def main():
                 summ[f"median_lead_cis_{lab}"] = float(np.median([r[f"lead_cis_{lab}"] for r in per_run]))
                 summ[f"median_lead_dw_{lab}"] = float(np.median([r[f"lead_dw_{lab}"] for r in per_run]))
         res[exp] = {"per_run": per_run, "summary": summ}
-        L += [f"## {title}", "", "| Run | First unsafe 1B → 8B | Unsafe ckpts 1B → 8B | Peak ASR 1B → 8B | Lead cis_sep WARN 1B → 8B |"
+        L += [f"## {title}", "",
+              "| Run | First unsafe 1B → 8B | Unsafe ckpts 1B → 8B | Peak ASR 1B → 8B | Lead cis_sep WARN 1B → 8B |"
               + (" Lead ‖ΔW‖ 1B → 8B |" if exp == "h3" else ""), "|---|---|---|---|---|" + ("---|" if exp == "h3" else "")]
         for r in per_run:
-            line = (f"| {r['run']} | {r['first_unsafe_1b']} → {r['first_unsafe_8b']} | {r['unsafe_ckpts_1b']} → {r['unsafe_ckpts_8b']} "
+            line = (f"| {r['run']} | {r['first_unsafe_1b']} → {r['first_unsafe_8b']} "
+                    f"| {r['unsafe_ckpts_1b']} → {r['unsafe_ckpts_8b']} "
                     f"| {r['peak_1b']} → {r['peak_8b']} | {r['lead_cis_1b']} → {r['lead_cis_8b']} |")
             if exp == "h3":
                 line += f" {r['lead_dw_1b']} → {r['lead_dw_8b']} |"
@@ -111,20 +116,24 @@ def main():
         L.append("")
         if exp == "h3":
             L.append(f"With 8B labels: median `cis_sep` WARN lead {summ['median_lead_cis_8b']:g} vs ‖ΔW‖ lead "
-                     f"{summ['median_lead_dw_8b']:g} (1B rerun: {summ['median_lead_cis_1b']:g} vs {summ['median_lead_dw_1b']:g}); "
+                     f"{summ['median_lead_dw_8b']:g} (1B rerun: {summ['median_lead_cis_1b']:g} "
+                     f"vs {summ['median_lead_dw_1b']:g}); "
                      f"WARN recall {summ['recall_8b']:.2f} on {summ['unsafe_8b']} unsafe checkpoints.")
         else:
             L.append(f"With 8B labels: `cis_sep` WARN recall {summ['recall_8b']:.2f} on {summ['unsafe_8b']} unsafe checkpoints, "
-                     f"precision {summ['precision_8b']:.2f}, {summ['warn_alarms_on_none_runs']} WARN alarms on the 50 `none` checkpoints.")
+                     f"precision {summ['precision_8b']:.2f}, {summ['warn_alarms_on_none_runs']} WARN alarms "
+                     "on the 50 `none` checkpoints.")
         L.append("")
     res["reproduction_1b"] = rep
     res["agreement"] = agree
     L += ["## Reproduction and agreement", "",
-          "| Set | Checkpoints | 1B rerun = Kaggle ASR | Max / mean abs. diff | Prompt judgements | 1B–8B agreement | Cohen's κ | Mean ASR 1B / 8B |",
+          "| Set | Checkpoints | 1B rerun = Kaggle ASR | Max / mean abs. diff | Prompt judgements | 1B–8B agreement "
+          "| Cohen's κ | Mean ASR 1B / 8B |",
           "|---|---|---|---|---|---|---|---|"]
-    for r, a in zip(rep, agree):
+    for r, a in zip(rep, agree, strict=True):  # one entry of each per experiment
         L.append(f"| {r['exp'].upper()} | {r['ckpts']} | {r['identical']} | {r['max_abs_diff']} / {r['mean_abs_diff']} | "
-                 f"{a['prompt_judgements']} | {a['agreement']:.3f} | {a['kappa']:.3f} | {a['asr_1b_mean']:.3f} / {a['asr_8b_mean']:.3f} |")
+                 f"{a['prompt_judgements']} | {a['agreement']:.3f} | {a['kappa']:.3f} "
+                 f"| {a['asr_1b_mean']:.3f} / {a['asr_8b_mean']:.3f} |")
     L += ["", "The 1B rerun differs from Kaggle only where regeneration on another GPU (L40S, batch 32 vs T4, batch 16) "
           "changed some greedy answers; the comparison of judges is on identical answers.", ""]
     OUT.mkdir(parents=True, exist_ok=True)

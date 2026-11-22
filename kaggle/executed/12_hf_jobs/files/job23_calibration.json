@@ -1,0 +1,50 @@
+{
+ "model": "CohereLabs/aya-expanse-8b",
+ "revision": "5062468bf9bc0c6035fd64e06274333ec127d980",
+ "layer": 21,
+ "n_layers": 32,
+ "n_components": 20,
+ "components": [
+  "attn_head:26:30",
+  "mlp:31",
+  "mlp:30",
+  "mlp:27",
+  "mlp:28",
+  "mlp:23",
+  "mlp:24",
+  "mlp:25",
+  "attn_head:29:18",
+  "mlp:26",
+  "attn_head:26:7",
+  "attn_head:29:17",
+  "mlp:21",
+  "mlp:20",
+  "attn_head:29:22",
+  "mlp:19",
+  "mlp:16",
+  "mlp:22",
+  "attn_head:29:24",
+  "attn_head:31:18"
+ ],
+ "reference": {
+  "sep_base": 56.24335861206055,
+  "logit_gap_base": 20.338890075683594,
+  "circ_base": 20.241666421294212
+ },
+ "probe_set_sha256": "f898d4c65567b5295dc2273ad3add35d785dba8bf918c3edefb2d2197bf15227",
+ "config": {
+  "n_attr_pairs": 100,
+  "n_candidates": 40,
+  "top_k": 20,
+  "max_layer_frac": 0.8,
+  "seed": 0,
+  "batch_size": 8,
+  "validate": false,
+  "n_random": 10,
+  "gen_tokens": 64
+ },
+ "deviation": null,
+ "minutes": 2.6,
+ "package_commit": "e59ca1b9c0fa37cac77e679029ae849e03b446df",
+ "gpu": "NVIDIA L40S"
+}

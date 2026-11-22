@@ -15,7 +15,8 @@ in eval mode with parameter gradients disabled, then restores train mode, requir
                                                         trainer_state.json does not have them)
     the `safetypulse` logger                            one INFO line per check
 
-No prompt text is logged. Status ERROR (non-finite primary score) is treated like FAIL.
+No prompt text is logged. Status ERROR (non-finite primary score) is treated like FAIL. In multi-process training
+every rank runs the check (so all ranks stop at the same step); only the main process writes the two files.
 """
 from __future__ import annotations
 
@@ -88,7 +89,10 @@ class SafetyPulseCallback(TrainerCallback):
         ckpt_dir = Path(args.output_dir) / f"checkpoint-{step}"
         result.checkpoint.path = str(ckpt_dir)
         self.results.append(result)
-        if ckpt_dir.is_dir():   # the scores travel with the checkpoint they describe
+        # Under DDP every rank calls on_save and scores the same weights (so every rank sets the same stop flag),
+        # but only the main process writes files, as the Trainer itself does for checkpoints.
+        write = getattr(state, "is_world_process_zero", True)
+        if write and ckpt_dir.is_dir():   # the scores travel with the checkpoint they describe
             result.save(ckpt_dir / CHECKPOINT_FILE)
 
         entry = {f"{LOG_PREFIX}{k}": v for k, v in finite_or_none(result.scores).items()}   # NaN -> null in JSON
@@ -97,14 +101,19 @@ class SafetyPulseCallback(TrainerCallback):
         logger.info("SafetyPulse step %d: %s %s=%.4f", step, result.status, result.primary_metric or "cis_sep",
                     result.scores.get(result.primary_metric or "cis_sep", float("nan")))
 
-        out_dir = self.out_dir or Path(args.output_dir)
-        out_dir.mkdir(parents=True, exist_ok=True)
-        with (out_dir / CHECKS_FILE).open("a", encoding="utf-8") as f:
-            f.writelines(jsonl_lines([result.model_dump(mode="json")]))
+        if write:
+            out_dir = self.out_dir or Path(args.output_dir)
+            out_dir.mkdir(parents=True, exist_ok=True)
+            with (out_dir / CHECKS_FILE).open("a", encoding="utf-8") as f:
+                f.writelines(jsonl_lines([result.model_dump(mode="json")]))
 
         if result.status in STOP_STATUSES:
-            reason = (f"{result.primary_metric} < tau_fail={result.tau_fail}" if result.status == "FAIL"
-                      else f"{result.primary_metric} is not finite")
+            if result.status == "FAIL":
+                reason = f"{result.primary_metric} < tau_fail={result.tau_fail}"
+            elif result.primary_metric in result.nonfinite:
+                reason = f"{result.primary_metric} is not finite"
+            else:   # ERROR from the bundle, not from the score
+                reason = self.bundle.metric_problem(result.primary_metric) or "no verdict"
             logger.warning("SafetyPulse %s at step %d (%s)%s", result.status, step, reason,
                            ": stopping training" if self.on_fail == "stop" else "")
             if self.on_fail == "stop":

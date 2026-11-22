@@ -11,6 +11,7 @@ import numpy as np
 import torch
 
 from .models import load_model, pick_dtype
+from .prompts import encode
 from .utils import batched, progress
 
 DEFAULT_GUARD = "meta-llama/Llama-Guard-3-1B"
@@ -103,7 +104,8 @@ class Judge:
                  for p, r in zip(prompts, responses, strict=True)]
         verdicts = []
         for batch in progress(list(batched(texts, batch_size or self.batch_size)), desc="judge"):
-            enc = self.tok(batch, return_tensors="pt", padding=True, add_special_tokens=False).to(self.model.device)
+            # Left padding (forced by encode): the verdict is read from the tokens after the prompt length.
+            enc = encode(self.tok, batch, self.model.device)
             gen = self.model.generate(**enc, max_new_tokens=10, do_sample=False, temperature=None, top_p=None,
                                       pad_token_id=self.tok.pad_token_id)
             verdicts += [parse_guard_verdict(out) for out in
