@@ -51,6 +51,9 @@ jobs:
       - name: Ruff
         run: ruff check safetypulse tests tools/check_release_policy.py
 
+      - name: Ruff (analysis tools)
+        run: ruff check tools --exclude tools/hf_jobs
+
       - name: Pytest
         run: pytest -q
 
