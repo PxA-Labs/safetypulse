@@ -279,7 +279,7 @@ the unsafe-vs-safe AUROC (2 unsafe, 4 safe, Job 9 1B labels) is 0.625, the same 
 (`docs/report/h6_layers.json`; 0.50 at layer 11, 1.00 at layers 17-34). The partial ablation does not explain
 Gemma-3's early layer: fixing it moves l* earlier, not later. The pre-registered H6 verdict (refuted) is unchanged.
 
-## Job 16 · H6 labels on the 119-prompt test split, both judges (2026-11-22; running)
+## Job 16 · H6 labels on the 119-prompt test split, both judges (2026-11-22; completed)
 
 Exploratory, pre-registered in `docs/prereg_amendments/2026-11-22-l02-h6-testsplit.md` (commit `90350d1`, pushed
 2026-11-22 14:45 UTC, before the job was created at 14:52 UTC). Org namespace (`pxaLabs-lexsi`).
@@ -291,8 +291,23 @@ answers never stored). Inputs: the 35 models and revisions of `safetypulse-h6-sa
 of `data/eval_harm.jsonl` (sha256 `fd0bf229…6b2a`, checked before launch, same as the notebook 01 manifest).
 Judge revisions are pinned at job start and recorded in every output row.
 
-Status at launch: RUNNING. Results, cost and the analysis (`tools/h6_testsplit_analysis.py` →
-`docs/report/`) are added when the job finishes; the output file is then copied to `files/job16_h6_testsplit.jsonl`.
+Status: COMPLETED (created 14:52:57, started 14:53:07, finished 15:37:46 UTC); running 2678 s (44.6 min) on one L40S
+at $1.80/h = **$1.34**. All 35 models finished (119 test prompts each; 2117.5 s of per-model generation and judging).
+Output `results/job16/h6_testsplit.jsonl` (jobs-repo commit `e70d49b`), copied byte-identical to
+[`files/job16_h6_testsplit.jsonl`](files/job16_h6_testsplit.jsonl) after a release check (keys: ids, revisions,
+rates, per-prompt booleans, judge shas; no string over 80 characters, no answer/prompt/text fields). Judges: Llama Guard
+3 1B `acf7aafa`, 3 8B `7327bd9f` (same snapshots as Job 14); code commit `e602e03`.
+
+Analysis: `tools/h6_testsplit_analysis.py` → [`docs/report/h6_testsplit.md`](../../../docs/report/h6_testsplit.md) /
+`.json` (deterministic: two runs byte-identical). Exploratory; the pre-registered H6 verdict (Job 9, 1B, dev) stays
+**refuted**. With Job 9's `cis_sep` and the frozen thresholds, H6 under the §2 rule is refuted for every judge × prompt
+set: unsafe drifted models flagged 11/12 (1B test, 1B pooled, 8B test, 8B pooled; 8B dev 12/13), FAIL on safe recovered
+models 5/11 (1B test), 4/9 (1B pooled), 4/9 (8B test), 5/10 (8B pooled), against 3/8 pre-registered. Unsafe labels that
+change against the dev split: 1B 3/31 (test) and 1/31 (pooled); 8B 5/31 (test) and 4/31 (pooled). Every change is
+unsafe to safe except `llama31-8b-code-dpo-recover` (8B test, ΔASR +0.101, 12/119 vs 0/119); the only drifted model
+that changes is `gemma3-4b-gsm8k-sft-drift` (8B: unsafe on dev, safe on test and pooled). 1B vs 8B on the test split: agreement 0.912 (4165 judgements),
+kappa 0.784. Caveat: dev flags (Jobs 9, 14) and test flags (Job 16) come from separate jobs whose library versions
+(torch, transformers) are resolved at job start and may differ.
 
 ## Job 17 · Third, independent judge on the H6 answers: ShieldGemma 9B (2026-11-22, exploratory)
 
