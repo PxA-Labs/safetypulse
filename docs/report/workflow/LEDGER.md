@@ -353,3 +353,107 @@ nothing pushed yet are marked so and are filled in under "Round 3 results".
 At plan time `hf jobs ps -a --namespace pxaLabs-lexsi` shows one new job: Job 24 `6b03471f8d268c0fbd228a21`
 (created 2026-11-22 19:48:47 UTC, SCHEDULING; lane 10 records `--timeout 75m`, max $2.25). Job 23a/23b not created yet;
 the lane-12 amendment (`e59ca1b`, committed 2026-11-22T19:50:38Z) precedes any Job 23 launch.
+
+## Round 3 results
+
+**Interim, not final.** Polled 2026-11-22 19:56 UTC (2026-11-23 01:26 IST), about 6 minutes after the tracker started. The
+tracker was made to return at that point, before the planned 150-minute polling window, so Jobs 23a and 24 were still
+SCHEDULING and Job 23b had not been created. Their final `running_secs` and cost must be collected by the next round
+(`hf jobs inspect <id>`, field `durations.running_secs`). Sources: `hf jobs ps -a --namespace pxaLabs-lexsi`,
+`git ls-remote origin`, read-only `HfApi` listings.
+
+### GPU spend, all workflow jobs (15-24)
+
+Cost = running_secs x $1.80/h. For a job that is not terminal the committed amount is its recorded `--timeout` x $1.80/h.
+
+| Round | Lane | Job | Job id | Flavor | `--timeout` (max) | Status at poll | `running_secs` | Cost |
+|---|---|---|---|---|---|---|---|---|
+| 1 | 1 | 15 | `6b030376130a00b5aa8063fc` | l40sx1 | 80m ($2.40) | COMPLETED | 274 | $0.14 |
+| 1 | 2 | 16 | `6b0301c98d268c0fbd21f9c5` | l40sx1 | 110m ($3.30) | COMPLETED | 2678 | $1.34 |
+| 1 | 3 | 17 | `6b0303a0130a00b5aa80649c` | l40sx1 | 80m ($2.40) | COMPLETED | 2761 | $1.38 |
+| 1 | 4 | 18 | `6b03028b8d268c0fbd21fa6f` | l40sx1 | 130m ($3.90) | COMPLETED | 3828 | $1.91 |
+| 1 | 5 | 19 | `6b0305a18d268c0fbd21fffc` | l40sx1 | 100m ($3.00) | COMPLETED | 4154 | $2.08 |
+| 1 | 6 | 20 | `6b0303b18d268c0fbd21fdb7` | l40sx1 | 115m ($3.45) | COMPLETED | 3908 | $1.95 |
+| 2 | 10 | 21 | `6b03238a8d268c0fbd223666` | l40sx1 | 100m ($3.00) | COMPLETED | 3822 | $1.91 |
+| 2 | 11 | 22 | `6b0325c8130a00b5aa80a77b` | l40sx1 | 50m ($1.50) | COMPLETED | 509 | $0.25 |
+| 3 | 12 | 23a | `6b0348a6130a00b5aa8102e9` (created 19:55:18 UTC) | l40sx1 (per amendment) | 75m ($2.25, per amendment `e59ca1b`) | SCHEDULING | - | **committed $2.25** |
+| 3 | 12 | 23b | not created at poll | - | 75m ($2.25, per amendment) | - | - | committed $2.25 if launched |
+| 3 | 10 | 24 | `6b03471f8d268c0fbd228a21` (created 19:48:47 UTC) | l40sx1 | 75m ($2.25, lane-10 RUN_SUMMARY) | SCHEDULING | - | **committed $2.25** |
+| **Total** | | | | | | 8 completed, 2 pending | **21,934** | **spent $10.97** |
+
+- **Spent (completed jobs) $10.97 of $25.** Committed by non-terminal jobs: $4.50 (23a, 24), plus $2.25 for 23b once it
+  launches. Worst case after round 3: $10.97 + $6.75 = **$17.72 of $25**, inside the round-3 cap ($6.75) and the $25 budget.
+- Lane caps: lane 10 has one job of 75m = $2.25 (cap $2.25); lane 12 has 23a and 23b at 75m each = $4.50 (cap $4.50). No
+  completed job exceeded its timeout (rounds 1-2, above). For 23a/23b/24 the check can only be made when they end; the
+  timeout makes exceeding the cap impossible by construction. `inspect_job` does not expose the timeout; the timeouts come
+  from the launch records/amendment.
+- Amendment before launch: Job 24 created 19:48:47 UTC; amendment `eacb3a3` committed 2026-11-22T19:47:07Z, script
+  `bf36c16` 19:48:00Z. Job 23a created 19:55:18 UTC; amendment `e59ca1b` committed 19:50:38Z, scripts `0cc34f0` 19:54:04Z.
+  Commit times only; push-before-launch rests on the lanes' records (lane 5's amendment index checks this).
+- Lane 12 has not yet updated RUN_SUMMARY/docs/10 for Job 23a at poll (its branch head `0cc34f0` adds the scripts only).
+
+### Round 3 lane table
+
+Heads from `git ls-remote origin` at 19:56 UTC. "Pushed" means the branch exists on origin; lanes may push later.
+
+| Lane | Branch | Head | Pushed | Content at poll | HF job (cost) | Repos |
+|---|---|---|---|---|---|---|
+| 1 | `wf/r3-lane1` | `0b78eea` | yes | sp_utils Gemma-2/3 post-norm MLP mean-ablation port + tests | none | none |
+| 2 | `wf/r3-lane2` | - | **no** | nothing pushed | none | none |
+| 3 | `wf/r3-lane3` | `6eed52e` | yes | final citation audit proposal | none | none |
+| 4 | `wf/r2-lane4` | `22b9c16` | yes | r2 review fixes (spot rule `<= 0.96`, card re-uploaded, Hub `77badb0`); Job 21 collected; seeds 7+8 report; proposal | none (Jobs 18/21 earlier) | card on `safetypulse-wf-h3fine-lora-alpaca` (repo head now `2b5c3f76`) |
+| 5 | `wf/r3-lane5` | `64d3999` | yes | amendment index, no violations found | none | none |
+| 6 | `wf/r3-lane6` | `a056ffb` | yes | figure/table reproducibility audit | none | none |
+| 7 | `wf/r3-lane7` | `b696f60` | yes | CI audit on `9d99ae4` | none | none |
+| 8 | `wf/r3-lane8` | `93e9118` | yes | CI lints tools/; h1/h3 ruff cleared; contains `wf/r2-lane14` at `8825007` | none | none |
+| 9 | `wf/r3-lane9` | `96e8c92` | yes | final consolidated paper patch (rounds 1-3) | none | none |
+| 10 | `wf/r3-lane10` | `f1d2482` | yes | amendment `eacb3a3`, Job 24 script `bf36c16`, records RUNNING | Job 24, committed $2.25 | `alpaca-s9/` to `safetypulse-wf-h3fine-lora-alpaca` (when the job runs) |
+| 11 | `wf/r3-lane11` | `e44ce3f` | yes | Job 22 collected, determinism report, records COMPLETED, proposal | none (Job 22 earlier, $0.25) | none |
+| 12 | `wf/r3-lane12` | `0cc34f0` | yes | amendment `e59ca1b`, Job 23a/23b scripts, card | Job 23a committed $2.25; 23b not launched | `pxaLabs-lexsi/safetypulse-wf-expanse-lora-alpaca` (new, private) |
+| 13 | `wf/r2-lane13` | `d676b68` | yes | intervals on exact k/78 counts | none | none |
+| 14 | `wf/r2-lane14` | `608a83e` | yes | exact unsafe rule; tests without pandas | none | none |
+| 15 | `wf/r3-lane15` | `b857b3b` | yes | report-number tests (l02, l03, l05, l06; l04, l11 when present); l15 Wilson fix, xfail dropped | none | none |
+| 16 | `wf/r3-lane16` | `e992505` | yes | REPORT index, README | none | none |
+| 17 | `wf/r3-lane17` | `b46fc43` | yes | check CLI/callback error message, `select_strength` ValueError, ProbeBundle schema major-version check | none | none |
+| 18 | `wf/r3-lane18` | - | **no** | nothing pushed | none | none |
+| 19 | `wf/r3-lane19` | `a8070fb` | yes | release checker extended to notebook outputs and logs; round-3 audit, 0 findings | none | none |
+| 20 | `wf/r3-lane20` | this commit | yes | this ledger, owner decisions | none | none |
+
+### Recommended merge order and known conflicts
+
+1. Independent, no overlap with other lanes: 1, 3, 5, 6, 7, 16, 17, 19 (lane 16's README test count may need a refresh after
+   the others; lane 19's checker should run last on the merged head).
+2. `wf/r2-lane14` **before** `wf/r3-lane8`: lane 8's branch contains lane 14 at `8825007`, but lane 14's head is now
+   `608a83e` (changes `tests/test_unsafe_rule.py`, which lane 8 also touches); merge 14 first, then 8 and resolve
+   `tests/test_unsafe_rule.py` and `tools/h1_analysis.py`/`h3_analysis.py` by hand.
+3. `wf/r2-lane13` (touches only its own files).
+4. Records appends to `kaggle/executed/12_hf_jobs/RUN_SUMMARY.md` and `docs/10_KAGGLE_AND_HF_RESOURCES.md`, in this order:
+   lane 4 (Jobs 18, 21), lane 11 (Job 22), lane 12 (Job 23a/23b section), lane 10 (Job 24 section after Job 23). All four
+   append at the same table end/section end, so each later merge has a textual conflict to resolve by keeping both blocks.
+5. `wf/r3-lane15` after lanes 4 and 11: its tests pin numbers from `docs/report/h3_fine_lead*.json` and
+   `docs/report/determinism_h6.json` (skip when absent); rerun pytest after merging.
+6. `wf/r3-lane9` last among the paper-proposal lanes: its consolidation supersedes individual proposals; check it against
+   lanes 3, 4, 11, 13, 15 proposals merged before it.
+7. `wf/r3-lane20` (ledger) last; jobs 23a/23b/24 results come in a later collect round.
+
+### Repo and collection register (round 3)
+
+Checked read-only at 19:55 UTC with `list_models/list_datasets(author="pxaLabs-lexsi")`, `list_collections(owner=
+"pxaLabs-lexsi")`, `get_collection` and `dataset_info`. Nothing was made public or added to a collection by this lane.
+
+| Item | Type | `private` | Note |
+|---|---|---|---|
+| `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca` | model | True (head `2b5c3f76`, 19:47 UTC) | `alpaca-s7/`, `alpaca-s8/`; `alpaca-s9/` expected from Job 24 |
+| `pxaLabs-lexsi/safetypulse-wf-expanse-lora-alpaca` | model | True (head `ff0cd722`, 19:53 UTC) | **new** (lane 12); base `CohereLabs/aya-expanse-8b` is `cc-by-nc-4.0` (amendment line 25) |
+| `pxaLabs-lexsi/safetypulse-workflow-models-private-6b030dd4c3a7647760ae6f16` | collection | True | 1 item (h3fine repo); unchanged; D1 |
+| `pxaLabs-lexsi/safetypulse-workflow-datasets-private-6b030dd671c703296d096ac3` | collection | True | empty; unchanged; D1 |
+| `purvansh01/safetypulse-jobs` | dataset | True (head `0d5b5a3d`) | `results/job15`..`job22`; no `job23*`/`job24` yet |
+
+No dataset repo exists under `pxaLabs-lexsi`. The Expanse repo is not in any collection.
+
+### Graphify, round 3
+
+- 2026-11-22 19:55 UTC, main checkout on `stage2/wf-integration` at `9d99ae4` (round-3 branches not merged, so not in the
+  graph): `graphify update .`, code-only, no LLM. 1 of 267 scanned files re-extracted. Rebuilt: **3,206 nodes, 6,357 edges,
+  220 communities** (end of round 2: 3,200 / 6,348 / 222). 116 of 383 files have no extractor. 24 communities renamed by
+  hub; `graphify label` not run. Warning: skill 0.9.105 vs package 0.9.103. `graphify-out/` not committed.
