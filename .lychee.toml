@@ -13,6 +13,9 @@ exclude = [
   '^https://huggingface\.co/jobs/',
   # Gated models redirect unauthenticated requests.
   '^https://huggingface\.co/(CohereLabs|meta-llama)/',
+  # DOI links whose publishers (PNAS, Taylor & Francis, OUP, SAGE) answer CI's link checker with 403. Each DOI was
+  # confirmed registered via https://doi.org/api/handles/<doi> (200) on 2026-11-23.
+  '^https://doi\.org/10\.(1073|1080|1093|1177)/',
   # Local placeholders. (file:// is not excluded: CI remaps links to this repository's main onto the checkout.)
   '^https?://localhost',
 ]
