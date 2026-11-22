@@ -1,0 +1,58 @@
+{
+ "layer": 27,
+ "d_model": 2048,
+ "n_pairs": 188,
+ "cos_with_en": {
+  "en": 1.0,
+  "hi": 0.816806,
+  "es": 0.795438,
+  "fr": 0.887425
+ },
+ "random_mean_abs_cos": {
+  "en": 0.018417,
+  "hi": 0.017692,
+  "es": 0.017559,
+  "fr": 0.017721
+ },
+ "random_max_abs_cos": {
+  "en": 0.056228,
+  "hi": 0.051826,
+  "es": 0.050045,
+  "fr": 0.053771
+ },
+ "en_split_half_cos": 0.996506,
+ "en_recomputed_vs_bundle_cos": 0.999983,
+ "cos_matrix": {
+  "en": {
+   "en": 1.0,
+   "hi": 0.816806,
+   "es": 0.795438,
+   "fr": 0.887425
+  },
+  "hi": {
+   "en": 0.816806,
+   "hi": 1.0,
+   "es": 0.793412,
+   "fr": 0.861759
+  },
+  "es": {
+   "en": 0.795438,
+   "hi": 0.793412,
+   "es": 1.0,
+   "fr": 0.90292
+  },
+  "fr": {
+   "en": 0.887425,
+   "hi": 0.861759,
+   "es": 0.90292,
+   "fr": 1.0
+  }
+ },
+ "random_seed": 0,
+ "n_random": 100,
+ "model": "CohereLabs/tiny-aya-global",
+ "revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+ "dtype": "bfloat16",
+ "bundle": "purvansh01/safetypulse-probe-bundle",
+ "bundle_revision": "de9dc195cc8a8d2afca5bf8634ac3686b7d0ce2a"
+}
