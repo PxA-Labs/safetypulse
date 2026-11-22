@@ -19,6 +19,8 @@ ARXIV = {   # key: arXiv id   (venue notes per docs/12_RELATED_WORK.md)
     # added after the related-work check (abstract pages verified 2026-11-21)
     "tsatsos2026probes": "2610.35586", "gao2026alarm": "2610.04575", "hurtado2026abliterated": "2607.01854",
     "bao2026trace": "2610.07518", "vishnubhotla2026grounded": "2606.03648",
+    # suggested in an internal review (abstract pages verified 2026-11-22)
+    "zou2023repe": "2310.01405", "peng2024landscape": "2405.17374",
 }
 MANUAL = r"""
 @misc{taori2023alpaca,
