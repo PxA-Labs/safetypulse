@@ -65,10 +65,32 @@ tokenizer is `tokenizer.json`-based and Llama-3.1-8B reproduces); (c) GPU-memory
 resident, Job 14 had Llama Guard 3 8B). HF Job 22 (amendment `docs/prereg_amendments/2026-11-22-l11-determinism.md`)
 tests (a) directly: same environment as Job 14 with torch and transformers pinned, two generation passes in one job.
 
-## Check from HF Job 22 (added after launch)
+## Check from HF Job 22 (added after launch; completed, collected round 3)
 
 Job 22 pins `torch==2.15.0` and `transformers==5.24.0`. Its uv log shows the same wheel sizes as Jobs 14 and 17
 (torch 514.2 MiB, transformers 12.9 MiB, tokenizers 3.2 MiB, nvidia-cublas 386.1 MiB; 60 packages installed, as Job 14),
 which supports the inference above. Job 22 prints its environment: torch `2.15.0+cu132`, transformers `5.24.0`,
 tokenizers `0.23.3`, CUDA `13.2`, cuDNN `92600`, driver `620.70.06`, GPU `NVIDIA L40S`, Python `3.12.12`. Jobs 9, 14
 and 17 most likely ran the same torch/CUDA/cuDNN builds; their driver is unknown.
+
+Job 22 completed (`6b0325c8130a00b5aa80a77b`, 509 s, $0.25). Versions as printed by the job and stored in its
+environment row (`kaggle/executed/12_hf_jobs/files/job22_determinism.jsonl`, jobs-repo commit `ded5ec4e`):
+
+| package / item | Job 22 (printed) | Jobs 14 and 17 (inferred from wheel sizes above) |
+|---|---|---|
+| torch | `2.15.0+cu132` | 2.15.0 (CUDA 13 wheels) |
+| transformers | `5.24.0` | 5.24.0 |
+| tokenizers | `0.23.3` | same wheel size (3.2 MiB) |
+| CUDA (torch build) | `13.2` | not printed |
+| cuDNN | `92600` | not printed (same 495.1 MiB `nvidia-cudnn-cu13` wheel) |
+| driver | `620.70.06` | not printed |
+| GPU | `NVIDIA L40S` | NVIDIA L40S (stored in output rows) |
+| Python | `3.12.12` | same image `ghcr.io/astral-sh/uv:python3.12-bookworm` |
+| sentencepiece | not installed | Job 14 no, Job 17 0.2.3 |
+
+Outcome (`docs/report/determinism_h6.md`): pass A == pass B on 8/8 models (flags and answer strings), and both equal
+**Job 17's** flags on 8/8 and Job 9's / Job 14's on 0/8. So with Job 14's library versions and without sentencepiece,
+the generation reproduced Job 17, not Job 14: the version and sentencepiece explanations are not supported, nor is
+ShieldGemma being resident (Job 22 had no second model loaded). Generation is repeatable within a job; across jobs,
+Jobs 9/14 (2026-11-21) and Jobs 17/22 (2026-11-22) form two groups. What differs between them (physical device,
+driver) cannot be checked, because Jobs 9, 14 and 17 did not print it.
