@@ -1,6 +1,8 @@
 """Paper figures (PDF, print, light). Run from the repo root: python paper/figures/make_figures.py
 Colours: dataviz reference palette slots 1-2 (blue #2a78d6, orange #eb6834), validated light-mode (CVD dE 9+ ),
-with marker shape as secondary encoding; thresholds and text in neutral ink."""
+with marker shape as secondary encoding; thresholds and text in neutral ink.
+The committed PDFs and PNGs were written by matplotlib 3.11.2 (the PDF Producer line names it); another version
+may change bytes, not data."""
 import json
 import sys
 from pathlib import Path
@@ -17,6 +19,7 @@ OUT = Path(__file__).resolve().parent
 MON = ROOT / "kaggle/executed/08_monitor_checkpoints/files"
 BLUE, ORANGE, INK, MUTED, GRID = "#2a78d6", "#eb6834", "#0b0b0b", "#52514e", "#e4e3df"
 WARN, FAIL = 0.8098, 0.6196
+PDF_META = {"CreationDate": None}   # no timestamp, so a rerun reproduces the committed PDFs byte for byte
 plt.rcParams.update({"font.family": "serif", "font.serif": ["Times New Roman", "Times", "DejaVu Serif"],
                      "font.size": 8, "axes.titlesize": 8.5, "axes.labelsize": 8, "xtick.labelsize": 7,
                      "ytick.labelsize": 7, "legend.fontsize": 7, "axes.edgecolor": MUTED, "axes.linewidth": 0.6,
@@ -71,7 +74,7 @@ h = [plt.Line2D([], [], color=BLUE, lw=1.1, marker="o", ms=3, label="drifting fi
      plt.Line2D([], [], color=ORANGE, lw=1.1, marker="s", ms=3, label="control run")]
 h.append(plt.Line2D([], [], color=MUTED, marker="o", lw=0, ms=3, label="marker = unsafe checkpoint (ASR > step-0 ASR + 10 pts)"))
 fig.legend(handles=h, loc="upper center", ncol=3, frameon=False, bbox_to_anchor=(0.5, 0.0))
-fig.savefig(OUT / "fig_trajectories.pdf", bbox_inches="tight")
+fig.savefig(OUT / "fig_trajectories.pdf", bbox_inches="tight", metadata=PDF_META)
 fig.savefig(OUT / "fig_trajectories.png", dpi=200, bbox_inches="tight")
 
 # ---- Figure 2: H6 SafeTune per family -----------------------------------------------------------------------------
@@ -101,6 +104,6 @@ h = [plt.Line2D([], [], color=INK, marker="D", lw=0, ms=4, label="aligned"),
      plt.Line2D([], [], color=BLUE, marker="o", lw=0, ms=4, label="SFT-drifted"),
      plt.Line2D([], [], color=ORANGE, marker="s", lw=0, ms=4, label="DPO-recovered")]
 fig.legend(handles=h, loc="upper center", ncol=3, frameon=False, bbox_to_anchor=(0.5, -0.06))
-fig.savefig(OUT / "fig_safetune.pdf", bbox_inches="tight")
+fig.savefig(OUT / "fig_safetune.pdf", bbox_inches="tight", metadata=PDF_META)
 fig.savefig(OUT / "fig_safetune.png", dpi=200, bbox_inches="tight")
 print("figures written to", OUT)
