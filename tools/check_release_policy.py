@@ -24,16 +24,21 @@ Rules:
   - executed notebooks (*.ipynb): a stream, display_data or execute_result output line of free prose (more than
     LONG_TEXT characters, at least PROSE_MIN_WORDS words, mostly letters) fails unless it starts like a log message
     (LOG_LINE: warnings, notes, errors, the pipeline's own status lines);
+  - compliance openers (COMPLIANCE_OPENERS, e.g. "Sure, here", "Step 1:") in those notebook output lines;
+  - run logs (*.log / *.txt under kaggle/executed/): the same compliance-opener and free-text line rules;
+  - access tokens (TOKEN_PATTERNS: hf_, KGAT_, ghp_, github_pat_) in any UTF-8 text file, notebook source or output;
   - any file larger than MAX_BYTES (data and models live on Kaggle / the Hugging Face Hub).
-Content rules report field names, cell numbers and line numbers and never print field values or output text.
+Content rules report field names, cell numbers, line and column numbers and never print field values, output text or
+token values. Line rules also print `sha256 <hex>`, the hash of the stripped line (snippet_sha256).
 Exit code 1 lists each offending path, the rule it broke and, for content rules, the field or cell and the line.
-A maintainer who has reviewed a false positive can apply
-the `release-policy-reviewed` label to the pull request, which skips the CI job, or list the path in ALLOWED.
+A maintainer who has reviewed a false positive can apply the `release-policy-reviewed` label to the pull request,
+which skips the CI job, list the path in ALLOWED, or, for a line rule, add (path, hash) to ALLOWED_SNIPPETS.
 """
 from __future__ import annotations
 
 import csv
 import fnmatch
+import hashlib
 import json
 import re
 import subprocess
@@ -84,8 +89,28 @@ LOG_LINE = re.compile(
     re.IGNORECASE)
 NOTEBOOK_MIMES = ("text/plain", "text/markdown")
 
+# Access tokens (Hugging Face, Kaggle, GitHub). A match is reported by its kind, file and position, never its value.
+TOKEN_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("hf_", re.compile(r"(?<![A-Za-z0-9])hf_[A-Za-z0-9]{30,}")),
+    ("KGAT_", re.compile(r"(?<![A-Za-z0-9])KGAT_[A-Za-z0-9]{16,}")),
+    ("ghp_", re.compile(r"(?<![A-Za-z0-9])ghp_[A-Za-z0-9]{30,}")),
+    ("github_pat_", re.compile(r"(?<![A-Za-z0-9])github_pat_[A-Za-z0-9_]{30,}")),
+)
+# Phrases that open a compliant answer to a harmful request. The first four are the D3 phrase scan
+# (docs/report/workflow/owner_decisions.md); matching ignores case and treats a curly apostrophe as a straight one.
+COMPLIANCE_OPENERS: tuple[str, ...] = (
+    "Sure, here", "Step 1:", "here's how to", "Here is how",
+    "Sure! Here", "Certainly, here", "Certainly! Here", "Of course, here", "Absolutely, here", "Absolutely! Here",
+)
+_OPENER = re.compile("|".join(re.escape(p) for p in COMPLIANCE_OPENERS), re.IGNORECASE)
+# Plain-text run logs (.log / .txt) under kaggle/executed get the notebook-output rules.
+RUN_LOG = re.compile(r"(?:^|/)kaggle/executed/.+\.(log|txt)$", re.IGNORECASE)
+
 # Paths a maintainer has reviewed and accepted (exact repository-relative paths).
 ALLOWED: frozenset[str] = frozenset()
+# Reviewed false positives of the line rules (tokens, openers, free text): (path, snippet_sha256(line)).
+# The key is a hash of the stripped line, so the allowlist never holds the text itself; every finding prints it.
+ALLOWED_SNIPPETS: frozenset[tuple[str, str]] = frozenset()
 
 
 def _path_reason(p: str) -> str | None:
@@ -292,22 +317,76 @@ def _output_texts(o: dict) -> list[tuple[str, str]]:
     return [(label, "".join(map(str, t)) if isinstance(t, list) else str(t)) for label, t in parts]
 
 
-def notebook_prose_outputs(path: Path) -> list[tuple[int, str, int]]:
-    """(cell number from 1, output kind, line in that output) for each free-text output line; text is not returned."""
+def snippet_sha256(text: str) -> str:
+    """Allowlist key of a reported line: SHA-256 of the stripped line (UTF-8)."""
+    return hashlib.sha256(text.strip().encode("utf-8")).hexdigest()
+
+
+def token_hits(line: str) -> list[tuple[str, int]]:
+    """(token kind, column from 1) for each token-like string in a line; the value is not returned."""
+    return sorted(((kind, m.start() + 1) for kind, pat in TOKEN_PATTERNS for m in pat.finditer(line)),
+                  key=lambda kv: kv[1])
+
+
+def has_compliance_opener(line: str) -> bool:
+    return bool(_OPENER.search(line.replace("’", "'")))
+
+
+def line_findings(line: str, text_rules: bool = True) -> list[tuple[str, int | None]]:
+    """(rule, column or None) for one line: tokens always; with text_rules, a compliance opener or else free text."""
+    found: list[tuple[str, int | None]] = [(f"token-like string ({k})", col) for k, col in token_hits(line)]
+    if text_rules:
+        if has_compliance_opener(line):
+            found.append(("compliance opener", None))
+        elif is_prose(line):
+            found.append(("free text", None))
+    return found
+
+
+def _lines_report(text: str, where: str, loc: str, text_rules: bool) -> list[tuple[str, str]]:
+    """(snippet hash, reason) for each finding in a block of text; `loc` prefixes the line position."""
+    out = []
+    for n, line in enumerate(text.splitlines(), 1):
+        for rule, col in line_findings(line, text_rules):
+            pos = f"{loc}line {n}" + (f", col {col}" if col else "")
+            digest = snippet_sha256(line)
+            out.append((digest, f"{rule} in {where} ({pos}; sha256 {digest})"))
+    return out
+
+
+def notebook_findings(path: Path) -> list[tuple[str, str]]:
+    """(snippet hash, reason) for every hit in a notebook: tokens, compliance openers and free text in the text
+    outputs (stream, execute_result / display_data text/plain and text/markdown; images and errors are skipped), and
+    tokens in cell sources. Reasons give the cell, output kind, line and column, never the text."""
     try:
         nb = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError):
         return []
     hits = []
     for c, cell in enumerate(nb.get("cells", []) if isinstance(nb, dict) else [], 1):
-        for o in cell.get("outputs", []) if isinstance(cell, dict) else []:
+        if not isinstance(cell, dict):
+            continue
+        src = cell.get("source", "")
+        src = "".join(map(str, src)) if isinstance(src, list) else str(src)
+        hits += _lines_report(src, "notebook source", f"cell {c}, ", text_rules=False)
+        for o in cell.get("outputs", []) or []:
             if not isinstance(o, dict):
                 continue
             for kind, text in _output_texts(o):
-                for n, line in enumerate(text.splitlines(), 1):
-                    if is_prose(line):
-                        hits.append((c, kind, n))
+                hits += _lines_report(text, "notebook output", f"cell {c}, {kind}, ", text_rules=True)
     return hits
+
+
+def text_file_findings(path: Path, run_log: bool) -> list[tuple[str, str]]:
+    """(snippet hash, reason) for a plain text file: tokens in any file; for a run log also openers and free text.
+    Files that are not UTF-8 text are skipped (binary files cannot hold a readable token or answer)."""
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return []
+    if "\x00" in text:
+        return []
+    return _lines_report(text, "log" if run_log else "file", "", text_rules=run_log)
 
 
 def content_violations(paths: list[str], root: Path = Path(".")) -> list[tuple[str, str]]:
@@ -315,12 +394,14 @@ def content_violations(paths: list[str], root: Path = Path(".")) -> list[tuple[s
     for p in paths:
         f = root / p
         low = p.lower()
-        if p in ALLOWED or not low.endswith((*CONTENT_SUFFIXES, ".ipynb")) or not f.is_file() \
-                or f.stat().st_size > MAX_BYTES:
+        if p in ALLOWED or not f.is_file() or f.stat().st_size > MAX_BYTES:
             continue
         if low.endswith(".ipynb"):
-            for cell, kind, line in notebook_prose_outputs(f):
-                out.append((p, f"free text in notebook output (cell {cell}, {kind}, line {line})"))
+            hits = notebook_findings(f)
+        else:
+            hits = text_file_findings(f, run_log=bool(RUN_LOG.search(PurePosixPath(p).as_posix())))
+        out += [(p, reason) for digest, reason in hits if (p, digest) not in ALLOWED_SNIPPETS]
+        if not low.endswith(CONTENT_SUFFIXES):
             continue
         for field, line in answer_text_fields(f):
             out.append((p, f"answer text in field '{field}' (line {line})"))

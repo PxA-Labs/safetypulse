@@ -1,6 +1,7 @@
 """tools/check_release_policy.py blocks the artifacts docs/11 withholds and lets the published ones through."""
 import importlib.util
 import json
+import re
 import subprocess
 from pathlib import Path
 
@@ -226,10 +227,11 @@ def test_notebook_free_text_outputs_are_blocked(tmp_path):
     ])
     name = _write(tmp_path, f"{RUNS}/21_x/21_x__2026-11-22.ipynb", nb)
     bad = policy.check([name], root=tmp_path)
+    h = policy.snippet_sha256
     assert bad == [
-        (name, "free text in notebook output (cell 1, stream stdout, line 2)"),
-        (name, "free text in notebook output (cell 2, execute_result text/plain, line 1)"),
-        (name, "free text in notebook output (cell 3, display_data text/markdown, line 1)"),
+        (name, f"free text in notebook output (cell 1, stream stdout, line 2; sha256 {h(PROSE)})"),
+        (name, f"free text in notebook output (cell 2, execute_result text/plain, line 1; sha256 {h(devanagari)})"),
+        (name, f"free text in notebook output (cell 3, display_data text/markdown, line 1; sha256 {h(PROSE)})"),
     ]
     assert all("placeholder" not in reason for _, reason in bad)
 
@@ -249,3 +251,134 @@ def test_notebook_logs_tables_and_numbers_pass(tmp_path):
     name = _write(tmp_path, "nb/ok.ipynb", nb)
     broken = _write(tmp_path, "nb/broken.ipynb", "{not json")
     assert policy.check([name, broken], root=tmp_path) == []
+
+
+# --- Round-3: tokens, compliance openers and prose in notebook outputs and run logs; snippet allowlist. ------------
+# Tokens are assembled at run time so that no token-shaped literal sits in this file (the repository scan reads it).
+
+TOKENS = {
+    "hf_": "hf" + "_" + "Ab1Cd2Ef3Gh4" * 3,
+    "KGAT_": "KGAT" + "_" + "0a1b2c3d4e5f" * 3,
+    "ghp_": "ghp" + "_" + "Zy9Xw8Vu7Ts6" * 3,
+}
+OPENER_LINES = ["Sure, here is the placeholder", "Step 1: placeholder", "So here's how to placeholder",
+                "Here is how placeholder"]
+
+
+def _nb_with(text, kind="stream"):
+    if kind == "stream":
+        out = {"output_type": "stream", "name": "stdout", "text": text}
+    else:
+        out = {"output_type": kind, "metadata": {}, "data": {"text/plain": text}}
+        if kind == "execute_result":
+            out["execution_count"] = 1
+    return _notebook([[{"output_type": "stream", "name": "stdout", "text": "ok\n"}], [out]])
+
+
+@pytest.mark.parametrize("kind", ["stream", "execute_result", "display_data"])
+@pytest.mark.parametrize("prefix", sorted(TOKENS))
+def test_notebook_output_token_is_reported_by_cell_and_position_only(prefix, kind, tmp_path):
+    tok = TOKENS[prefix]
+    line = f"login with {tok} done"
+    name = _write(tmp_path, "nb/run.ipynb", _nb_with("first line\n" + line + "\n", kind))
+    bad = policy.check([name], root=tmp_path)
+    label = "stream stdout" if kind == "stream" else f"{kind} text/plain"
+    assert bad == [(name, f"token-like string ({prefix}) in notebook output (cell 2, {label}, line 2, col 12; "
+                          f"sha256 {policy.snippet_sha256(line)})")]
+    assert all(tok not in reason and tok[len(prefix):] not in reason for _, reason in bad)
+
+
+def test_notebook_images_are_not_scanned(tmp_path):
+    out = {"output_type": "display_data", "metadata": {},
+           "data": {"image/png": TOKENS["hf_"] + " Sure, here " + PROSE}}
+    name = _write(tmp_path, "nb/img.ipynb", _notebook([[out]]))
+    assert policy.check([name], root=tmp_path) == []
+
+
+@pytest.mark.parametrize("line", OPENER_LINES)
+def test_notebook_compliance_opener_is_blocked(line, tmp_path):
+    name = _write(tmp_path, "nb/run.ipynb", _nb_with(["noise\n", line + "\n"]))
+    assert policy.check([name], root=tmp_path) == [
+        (name, f"compliance opener in notebook output (cell 2, stream stdout, line 2; "
+               f"sha256 {policy.snippet_sha256(line)})")]
+
+
+def test_compliance_openers_extend_the_d3_list():
+    for phrase in ("Sure, here", "Step 1:", "here's how to", "Here is how"):
+        assert phrase in policy.COMPLIANCE_OPENERS
+
+
+@pytest.mark.parametrize("suffix", [".log", ".txt"])
+def test_run_log_hits_are_blocked(suffix, tmp_path):
+    tok = TOKENS["hf_"]
+    text = "\n".join(["epoch 1 loss 0.53", f"token {tok}", "Sure, here is the placeholder", PROSE, ""])
+    name = _write(tmp_path, f"{RUNS}/21_x/21_x__2026-11-22{suffix}", text)
+    bad = policy.check([name], root=tmp_path)
+    assert bad == [
+        (name, f"token-like string (hf_) in log (line 2, col 7; sha256 {policy.snippet_sha256(f'token {tok}')})"),
+        (name, f"compliance opener in log (line 3; sha256 {policy.snippet_sha256('Sure, here is the placeholder')})"),
+        (name, f"free text in log (line 4; sha256 {policy.snippet_sha256(PROSE)})"),
+    ]
+    assert all(tok not in r and "placeholder" not in r for _, r in bad)
+
+
+def test_clean_logs_and_logs_outside_runs_pass(tmp_path):
+    clean = _write(tmp_path, f"{RUNS}/08_x/08_x__2026-11-22.log", "\n".join([
+        "Warning: You are sending unauthenticated requests to the Hub; " + PROSE,
+        "gsm8k-s0 25 {'cis_sep': 0.952, 'status': 'OK', 'n': 100}",
+        "step 10/125 loss=0.41 lr=2e-4",
+    ]))
+    elsewhere = _write(tmp_path, "docs/notes.txt", "Sure, here is the placeholder\n" + PROSE)
+    binary = f"{RUNS}/08_x/bad.log"
+    (tmp_path / binary).write_bytes(b"\xff\xfe\x00")
+    assert policy.check([clean, elsewhere, binary], root=tmp_path) == []
+
+
+def test_token_in_any_text_file_is_blocked(tmp_path):
+    """A token is a leak wherever it is committed (sources, docs, data), not only in outputs and logs."""
+    tok = TOKENS["KGAT_"]
+    line = f"KEY = '{tok}'"
+    name = _write(tmp_path, "tools/x.py", line + "\n")
+    assert policy.check([name], root=tmp_path) == [
+        (name, f"token-like string (KGAT_) in file (line 1, col 8; sha256 {policy.snippet_sha256(line)})")]
+
+
+def test_main_output_never_contains_the_token(tmp_path, monkeypatch, capsys):
+    _git(tmp_path, "init", "-q", "-b", "main")
+    _write(tmp_path, "a.txt", "x")
+    _git(tmp_path, "add", ".")
+    _git(tmp_path, "commit", "-q", "-m", "base")
+    _git(tmp_path, "checkout", "-q", "-b", "feature")
+    tok = TOKENS["ghp_"]
+    _write(tmp_path, "nb/run.ipynb", _nb_with(f"pushed with {tok}\n", "display_data"))
+    _write(tmp_path, f"{RUNS}/x/run.log", f"{tok}\n")
+    _git(tmp_path, "add", ".")
+    _git(tmp_path, "commit", "-q", "-m", "leak")
+    monkeypatch.chdir(tmp_path)
+    capsys.readouterr()
+    assert policy.main(["x", "main"]) == 1
+    captured = capsys.readouterr()
+    out = captured.out + captured.err
+    assert "file=nb/run.ipynb::" in out and f"file={RUNS}/x/run.log::" in out
+    assert tok not in out and tok[4:] not in out and tok[4:20] not in out
+
+
+def test_snippet_allowlist_is_keyed_by_path_and_hash(tmp_path, monkeypatch):
+    reviewed, other = "Step 1: placeholder reviewed", "Sure, here is the placeholder"
+    name = _write(tmp_path, f"{RUNS}/x/run.log", f"{reviewed}\n{other}\n")
+    copy = _write(tmp_path, f"{RUNS}/y/run.log", f"{reviewed}\n")
+    monkeypatch.setattr(policy, "ALLOWED_SNIPPETS", frozenset({(name, policy.snippet_sha256(reviewed))}))
+    assert policy.check([name, copy], root=tmp_path) == [
+        (name, f"compliance opener in log (line 2; sha256 {policy.snippet_sha256(other)})"),
+        (copy, f"compliance opener in log (line 1; sha256 {policy.snippet_sha256(reviewed)})"),
+    ]
+
+
+def test_shipped_allowlist_holds_hashes_only():
+    for path, digest in policy.ALLOWED_SNIPPETS:
+        assert isinstance(path, str) and re.fullmatch(r"[0-9a-f]{64}", digest)
+
+
+def test_snippet_sha256_ignores_surrounding_whitespace():
+    assert policy.snippet_sha256("  abc \n") == policy.snippet_sha256("abc")
+    assert re.fullmatch(r"[0-9a-f]{64}", policy.snippet_sha256("abc"))
