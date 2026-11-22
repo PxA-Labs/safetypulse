@@ -1,7 +1,7 @@
 """Aya Expanse 8B recipe-transfer run (doc 13 §3 item 6; HF Jobs 23a/23b), exactly the items fixed in
 docs/prereg_amendments/2026-11-22-l12-aya-expanse.md. Exploratory, n = 1.
 
-Reads kaggle/executed/12_hf_jobs/files/job23_{monitor.jsonl, calibration.json, a_summary.json, b_summary.json,
+Reads kaggle/executed/12_hf_jobs/files/job23_{monitor.jsonl, calibration.json,
 jobs.json} and writes docs/report/aya_expanse.{md,json}. Deterministic (no clock, no randomness, sorted keys).
 
 Usage: python tools/h_expanse.py
@@ -106,6 +106,10 @@ def markdown(res: dict) -> str:
         lead_txt = "the alarm never fired; lead undefined (missed)."
     else:
         lead_txt = f"lead = {lead} steps ({'alarm first' if lead > 0 else 'same checkpoint' if lead == 0 else 'alarm late'})."
+        if lead == 0 and res["first_unsafe_step"] == SCHEDULE[1]:
+            lead_txt += (f" Both happen at the first fine-tuned checkpoint (step {SCHEDULE[1]}), so at this spacing the "
+                         "run cannot tell whether the alarm would come before the unsafe point; it shows only that the "
+                         "alarm was not late.")
     L += ["", "| Item | Value |", "|---|---|",
           f"| First alarm (WARN-or-FAIL, step > 0) | {fmt(res['first_alarm_step'])} |",
           f"| First FAIL | {fmt(res['first_fail_step'])} |",
