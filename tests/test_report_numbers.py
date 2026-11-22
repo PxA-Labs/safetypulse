@@ -362,7 +362,7 @@ def matches(actual, expected, ndigits, in_range=False) -> bool:
         return low <= expected <= high
     if isinstance(expected, list):
         return isinstance(actual, list) and len(actual) == len(expected) and all(
-            matches(a, e, ndigits) for a, e in zip(actual, expected))
+            matches(a, e, ndigits) for a, e in zip(actual, expected, strict=True))
     if ndigits is not None and isinstance(expected, float | int) and not isinstance(expected, bool) \
             and isinstance(actual, float | int) and not isinstance(actual, bool):
         # The printed value is the source rounded to ndigits; either side of a tie (0.625 -> 0.62/0.63) is accepted.
