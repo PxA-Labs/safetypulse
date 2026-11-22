@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 import pandas as pd  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).parent))
+from _rules import pooled_rate, unsafe_series  # noqa: E402
 from alarm_comparison import CONDITIONS, DELTA, best_tau, counts, lead  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -66,7 +67,7 @@ def fig1_alarm():
         g = df[df.run == run]
         alarm = g[g.cis_circ < th["tau_warn"]].step.min()
         level = "FAIL" if g[g.step == alarm].cis_circ.iloc[0] < th["tau_fail"] else "WARN"
-        harm = g[g.asr > unsafe_line].step.min()
+        harm = g[unsafe_series(g.asr, th["asr_base"])].step.min()  # exact rule; unsafe_line is only drawn
         top, bottom = axes[0, j], axes[1, j]
         top.plot(g.step, g.cis_circ, color=BLUE, marker="o")
         top.axhline(th["tau_warn"], color=MUTED, ls="--", lw=1)
@@ -169,7 +170,7 @@ def fig3_repairs():
 
 def fig4_signals():
     df = pd.DataFrame([json.loads(line) for line in open(MON / "final__monitor.jsonl")]).sort_values(["run", "step"])
-    df["unsafe"] = df.asr > float(df[df.step == 0].asr.mean()) + DELTA
+    df["unsafe"] = unsafe_series(df.asr, pooled_rate(df[df.step == 0].asr))
     dev = df[(df.seed == 0) & df.condition.isin(CONDITIONS)]
     test = df[(df.seed != 0) & df.condition.isin(CONDITIONS)]
     safe = test[test.condition.isin(("none", "gsm8k"))]

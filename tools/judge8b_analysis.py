@@ -14,6 +14,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from _rules import unsafe_series
 
 ROOT = Path(__file__).resolve().parents[1]
 MON = ROOT / "kaggle/executed/08_monitor_checkpoints/files"
@@ -73,7 +74,7 @@ def main():
         for lab in ("1b", "8b"):
             col = f"asr_{lab}"
             base = j[j.step == 0].set_index("run")[col]
-            j[f"unsafe_{lab}"] = j[col] > j.run.map(base) + DELTA
+            j[f"unsafe_{lab}"] = unsafe_series(j[col], j.run.map(base))
         for run, g in j.sort_values("step").groupby("run"):
             warn = g.cis_sep < WARN
             row = {"run": run}
