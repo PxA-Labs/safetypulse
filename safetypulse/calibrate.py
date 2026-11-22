@@ -117,7 +117,59 @@ def resolve_token_sets(token_sets: dict | str | Path | None, tok, model_name: st
     if bad:
         raise ValueError(f"token IDs {bad} are outside the tokenizer's vocabulary (size {len(tok)}); "
                          "the token sets were made for another tokenizer")
+    # A token in both sets adds the same log-prob to both logsumexps and partly cancels the logit difference.
+    # Only new calibrations pass through here (a saved bundle is read by ProbeBundle.load), and no bundle or
+    # token_sets.json in the repo has an overlap (tests/test_calibrate_guards.py), so this cannot break one.
+    both = sorted(set(ts["refuse"]) & set(ts["comply"]))
+    if both:
+        raise ValueError(f"token IDs {both} are in both the refuse and comply sets, which partly cancels the "
+                         "refusal logit difference; remove them from one set (default_token_sets counts such a "
+                         "token as refusal only)")
     return ts
+
+
+# ---------------------------------------------------------------------------------------------
+# Chat templates with a thinking switch (Qwen3)
+# ---------------------------------------------------------------------------------------------
+
+THINKING_KEY = "enable_thinking"
+_H6_NOTE = ("the H6 jobs score Qwen3 with enable_thinking=False (doc 13 §3d amendment; "
+            "tools/hf_jobs/job9_safetune_h6.py), while format_chat applies the template's default, which for Qwen3 "
+            "puts the model in thinking mode, so the scored last token differs from H6's")
+
+
+def chat_thinking_setting(tok):
+    """The thinking setting format_chat will use with `tok`: None if the chat template has no `enable_thinking`
+    switch; True/False if apply_chat_template has it bound (functools.partial, as the H6 jobs patch it);
+    "template_default" if the switch exists but nothing sets it."""
+    if THINKING_KEY not in str(getattr(tok, "chat_template", None) or ""):
+        return None
+    keywords = getattr(getattr(tok, "apply_chat_template", None), "keywords", None) or {}
+    return bool(keywords[THINKING_KEY]) if THINKING_KEY in keywords else "template_default"
+
+
+def warn_thinking_setting(tok, bundle_provenance: dict | None = None) -> None:
+    """Warn (never change scoring) when a template's thinking switch may make scores incomparable.
+
+    bundle_provenance=None (calibrate): warn if the switch is left at the template default. A dict (check, the
+    bundle's provenance): warn if the bundle does not record a thinking setting, or records a different one."""
+    setting = chat_thinking_setting(tok)
+    if setting is None:
+        return
+    if bundle_provenance is None:
+        if setting == "template_default":
+            warnings.warn(f"the tokenizer's chat template has an {THINKING_KEY} switch and it is left at the "
+                          f"template's default; {_H6_NOTE}. To match H6, bind enable_thinking=False on "
+                          "tok.apply_chat_template before calibrating", stacklevel=3)
+        return
+    if THINKING_KEY not in bundle_provenance:
+        warnings.warn(f"the tokenizer's chat template has an {THINKING_KEY} switch (current setting: {setting}) but "
+                      f"the probe bundle does not record a thinking setting; {_H6_NOTE}. Scores are comparable "
+                      "only if the bundle was calibrated with the same setting", stacklevel=3)
+    elif bundle_provenance[THINKING_KEY] != setting:
+        warnings.warn(f"the probe bundle was calibrated with {THINKING_KEY}={bundle_provenance[THINKING_KEY]} but "
+                      f"the tokenizer now uses {setting}; scores are not comparable to the bundle's reference",
+                      stacklevel=3)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -301,6 +353,8 @@ def calibrate(model, tok, pairs: Sequence[dict] | str | Path, token_sets: dict |
     if not base_model:
         raise ValueError("pass base_model= (the name check() loads LoRA checkpoints onto)")
     token_sets = resolve_token_sets(token_sets, tok, base_model)
+    warn_thinking_setting(tok)
+    thinking = chat_thinking_setting(tok)
 
     directions = refusal_directions(model, tok, calib, config.batch_size)
     sel = select_layer(model, tok, val, directions, token_sets, config.max_layer_frac, config.batch_size)
@@ -344,7 +398,9 @@ def calibrate(model, tok, pairs: Sequence[dict] | str | Path, token_sets: dict |
                                  n_pairs={s: len(v) for s, v in splits.items()},
                                  # The tokens behind token_sets' IDs, so a set from another tokenizer is visible.
                                  token_strings={k: tok.convert_ids_to_tokens(v) for k, v in token_sets.items()},
-                                 dtype=str(next(model.parameters()).dtype).removeprefix("torch.")),
+                                 dtype=str(next(model.parameters()).dtype).removeprefix("torch."),
+                                 # Only for templates with a thinking switch, so other bundles are unchanged.
+                                 **({THINKING_KEY: thinking} if thinking is not None else {})),
     }).with_tensors(directions, ref["probe_diff"])
     if out_dir is not None:
         bundle.save(out_dir, probe_pairs=probe)
