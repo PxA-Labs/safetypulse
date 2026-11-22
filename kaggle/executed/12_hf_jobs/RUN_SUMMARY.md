@@ -259,4 +259,6 @@ Llama Guard 3 8B `7327bd9f`, pairs `47f888c4`, bundle `de9dc195` (layer 27), H3 
 `e602e03b`. 18 checkpoints (seeds 4–6 × steps 0–250 by 50) × en/hi/es/fr × 119 test prompts.
 Outputs (flags, rates, cosines, sha256 of translations; no text) → `results/job20/` in the private
 `purvansh01/safetypulse-jobs`; copy to `files/` when finished. Translations and answers stay in the job's memory.
-Result: pending.
+Launch check (~25 min in): `translations.json` (no truncated, capped or empty lines) and `directions.json` uploaded;
+first checkpoint (seed 4, step 0) scored in all four languages at ~46 s per language, so ~3 min per checkpoint and
+~65 min in total, inside the timeout. Result: pending.
