@@ -3,6 +3,11 @@
 Status: Draft v0.1. Describes how SafetyPulse is used outside of our experiments — as a tool a team
 plugs into its fine-tuning pipeline.
 
+> **Thresholds are per base model.** Calibrate a bundle and set thresholds from your own dev runs for each base
+> model (step 1 below). Tiny Aya Global's frozen `cis_sep` thresholds did not transfer to Llama-3.2, Qwen3,
+> Gemma-3 or Llama-3.1 (Stage 2 H6, refuted: [report/h6_safetune.md](report/h6_safetune.md)); they did carry over
+> to the sibling Tiny Aya Earth at WARN (H1, [report/h1_earth.md](report/h1_earth.md)).
+
 ---
 
 ## 1. Deployment model
