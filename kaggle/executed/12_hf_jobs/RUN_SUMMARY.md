@@ -247,12 +247,12 @@ Result: the 1B rerun reproduces Job 9's per-prompt flags on 35/35 models. 1B vs 
 2,730 judgements; four unsafe labels change. With 8B labels H6 is still refuted: recall 12/13 on unsafe drifted
 models, FAIL on 3 of 7 safe recovered models (gemma3-4b-gsm8k, llama31-8b-code, llama31-8b-dolly DPO recoveries).
 
-## Job 15 · Gemma-3 layer selection with the post-norm-aware ablation (2026-11-22, exploratory, running)
+## Job 15 · Gemma-3 layer selection with the post-norm-aware ablation (2026-11-22, exploratory)
 
 Pre-registered as exploratory in `docs/prereg_amendments/2026-11-22-l01-gemma-ablation.md` (commit `3538084`, pushed
 before the launch). Org namespace `pxaLabs-lexsi`, initiated by the purvansh01 account.
 [Job](https://huggingface.co/jobs/pxaLabs-lexsi/6b030376130a00b5aa8063fc) `6b030376130a00b5aa8063fc` · L40S ·
-launched 2026-11-22 15:00:06 UTC, `--timeout 80m` (at most $2.40) · status at hand-off: RUNNING ·
+launched 2026-11-22 15:00:06 UTC, `--timeout 80m` (cap $2.40) · COMPLETED, 4m 34s running (4m 47s with scheduling), ~$0.14 ·
 script `tools/hf_jobs/job15_gemma_ablation.py` at commit `7bc40c4`, package pinned at `543ba6f` (the ablation fix).
 
 What: `safetypulse.activations.ablate_direction` now projects the refusal direction out of the outputs of
@@ -263,6 +263,16 @@ fp32, Job 9's val pairs, token sets and config, H6 bundle directions from `safet
 and the fixed ablation, then scores the 7 Gemma-3-4B H6 models in bf16 at every layer (cis_sep = separation / aligned
 fp32 separation), reports PASS/WARN/FAIL at the new layer and AUROC on the 6 fine-tunes (Job 9 1B labels).
 Outputs (private `purvansh01/safetypulse-jobs`): `results/job15/layer_selection.json`, `results/job15/gemma3-4b_scores.jsonl`,
-`results/job15/summary.json`; to be copied to `files/job15_*` when finished. Result: pending. The pre-registered H6
-verdict does not change.
+`results/job15/summary.json`, copied to `files/job15_layer_selection.json`, `files/job15_gemma3-4b_scores.jsonl`,
+`files/job15_summary.json` (scores only, no text).
+
+Checks: fresh fp32 directions match the H6 bundle's (min cosine 0.999999); aligned fp32 separation at layer 11 equals the
+bundle's `sep_base` (331.02); cis_sep at layer 11 reproduces Job 9's value for all 7 models (max abs diff 0.0); the old
+ablation re-selects Job 9's layer 11.
+
+Result (exploratory, post hoc): with the fixed ablation layer selection picks **layer 9 of 34** (old: 11). At layer 9
+all 6 fine-tuned Gemma-3-4B models read FAIL (cis_sep -0.08 to 0.25; aligned 1.00 PASS), safe recoveries included, and
+the unsafe-vs-safe AUROC (2 unsafe, 4 safe, Job 9 1B labels) is 0.625, the same as Job 11's AUROC at layer 9
+(`docs/report/h6_layers.json`; 0.50 at layer 11, 1.00 at layers 17-34). The partial ablation does not explain
+Gemma-3's early layer: fixing it moves l* earlier, not later. The pre-registered H6 verdict (refuted) is unchanged.
 
