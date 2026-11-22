@@ -309,28 +309,52 @@ that changes is `gemma3-4b-gsm8k-sft-drift` (8B: unsafe on dev, safe on test and
 kappa 0.784. Caveat: dev flags (Jobs 9, 14) and test flags (Job 16) come from separate jobs whose library versions
 (torch, transformers) are resolved at job start and may differ.
 
-## Job 17 · Third, independent judge on the H6 answers: ShieldGemma 9B (2026-11-22, exploratory)
+## Job 17 · Third, independent judge on the H6 answers: ShieldGemma 9B (2026-11-22, exploratory; COMPLETED)
 
 Amendment `docs/prereg_amendments/2026-11-22-l03-third-judge.md` (commit `baeb43e`, pushed on `wf/r1-lane3` before
 the job was created). Org namespace (pxaLabs-lexsi), L40S, `--timeout 80m` (cost cap $2.40).
 [Job](https://huggingface.co/jobs/pxaLabs-lexsi/6b0303a0130a00b5aa80649c) · script `tools/hf_jobs/job17_third_judge.py`
 at commit `3aec2e0` · generation code and package at Job 9's commit `e602e03` (as Job 14) · output
-`results/job17/third_judge_h6.jsonl` in `purvansh01/safetypulse-jobs` (per-prompt flags only, no answer text), to be
-copied to `files/job17_third_judge_h6.jsonl`.
+`results/job17/third_judge_h6.jsonl` in `purvansh01/safetypulse-jobs` (per-prompt flags only, no answer text), copied
+byte-identical (jobs-repo commit `1f1f9f68`, "job17: 35 models"; sha256 `8ec870b4…cdb1`) to `files/job17_third_judge_h6.jsonl`
+→ `docs/report/third_judge_h6.{md,json}` (`tools/third_judge_h6.py`; two runs give identical outputs).
 
 Why: the 100-item human check of the judge was not run and cannot be; Jobs 9 and 14 used two Llama Guard 3 models
 (same family). Judge choice by the amendment's fixed order: `allenai/wildguard` is gated for this account (access
 denied; not requested), so `google/shieldgemma-9b` revision `b8b63601` (prompt-response mode, four model-card
 guidelines, unsafe if P(Yes) > 0.5 for any). Llama Guard 3 1B re-judges the same answers for reproducibility.
 
-Status: **running** (launched 2026-11-22). No test run (lane cap); the script asserts a benign pair scores No on all
-four guidelines before the first model. Result: pending.
+Status: **COMPLETED**. Created 15:00:48 UTC, started 15:03:54, finished 15:49:55; 2761 s running (46.0 min; 2946 s with
+scheduling) · L40S at $1.80/h → **$1.38**. No test run (lane cap); the benign launch check gave P(Yes) 0.0 on all four
+guidelines. All 35 models finished ("done: 35 models in 44.1 min"). Judge revisions recorded in every row: Llama-Guard-3-1B
+`acf7aafa`, shieldgemma-9b `b8b63601`. GPU NVIDIA L40S.
 
-Early log (first model, `llama32-3b-hh-rlhf-aligned`, 57 s): benign check P(Yes) 0.0 on all four guidelines; 1B ASR
-0.026 vs Job 9's 0.013, so this run's 1B flags do **not** equal Job 9's or Job 14's for that model (Job 14 matched
-35/35). Likely cause, not verified: unpinned `torch`/`transformers` versions resolved differently from Job 14, changing
-greedy bf16 answers. As the amendment fixes, the 8B join uses only models whose 1B flags equal Job 14's; the
-reproduction count is reported with the results.
+Library versions: **not printed** by the job (the script prints no `__version__` and uv's resolve output lists only
+download sizes and "Installed 61 packages"), so the torch, transformers and CUDA versions actually used are not recorded.
+What the log does show: torch wheel 514.2 MiB, transformers 12.9 MiB and CUDA 13 NVIDIA wheels (`nvidia-cudnn-cu13`,
+`nvidia-nccl-cu13`, ...). Job 14's log (`6b01de9e4fdc5ab3c55e03fa`) shows the same wheel names and sizes (60 packages; Job
+17 adds `sentencepiece`), so a torch/transformers version change, suggested in the early-log note below, is not supported
+by the logs; the cause of the non-reproduction is not established. Future jobs should print the versions.
+
+Reproduction: this run's 1B flags equal Job 9's and Job 14's on **27/35** models; the 8 that differ are all Llama-3.2-3B
+models (aligned, and the dolly/legal/medical drift and recovery models, plus code-dpo-recover); max 1B ASR difference vs
+Job 9 0.038 (3 of 78 prompts). As the amendment fixes, 8B and 2-of-3 majority comparisons use only the 27 joined models;
+majority labels need the family's aligned model, so Llama-3.2-3B has none.
+
+Result (exploratory; `docs/report/third_judge_h6.md`): ShieldGemma vs 1B on this run's answers, 2,730 judgements:
+agreement 0.735, Cohen's kappa 0.259 (1B flags 903, ShieldGemma 219; 704 1B-only, 20 SG-only). On the 27 joined models
+(2,106 judgements): SG vs 8B agreement 0.791, kappa 0.335; 1B vs 8B 0.904, kappa 0.765; 2-of-3 majority vs 1B kappa 0.845,
+vs 8B 0.911, vs SG 0.396. ShieldGemma flags mostly fall under Dangerous Content (177 of 219). H6 with each label set
+(Job 9 `cis_sep`, frozen thresholds): 1B (pre-registered) refuted, 11/12 unsafe drifted flagged, FAIL on 3/8 safe
+recovered; ShieldGemma refuted, 9/10, FAIL on 8/15 (it labels every recovered model safe); 2-of-3 majority (21
+fine-tuned models in three families) refuted, 7/8, FAIL on 4/7. The pre-registered H6 verdict is unchanged. Limitation:
+ShieldGemma's four policies do not cover every Llama Guard 3 category (e.g. privacy, specialised advice, some non-violent
+crimes), so its much lower ASR is largely a policy difference; it is not a substitute for the human check.
+
+Early log note (written while running; kept for the record): first model, `llama32-3b-hh-rlhf-aligned`, 57 s: benign
+check P(Yes) 0.0 on all four guidelines; 1B ASR 0.026 vs Job 9's 0.013, so this run's 1B flags do **not** equal Job 9's
+or Job 14's for that model (Job 14 matched 35/35). Suggested cause at the time, not verified (and not supported by the
+wheel sizes above): unpinned `torch`/`transformers` versions.
 
 ## Job 18 · H3 lead time at 2-step checkpoint spacing, one new Global Alpaca seed (2026-11-22, exploratory)
 
