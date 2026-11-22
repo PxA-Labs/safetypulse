@@ -8,6 +8,8 @@ import json
 import re
 from pathlib import Path
 
+from _rules import is_unsafe
+
 CARD = Path("docs/hub_cards/stage2/safetypulse-h6-safetune.md")
 REPORT = "https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/"
 WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
@@ -53,7 +55,7 @@ for f in fams:
           f"job {jobs[f]['runtime']}, about ${jobs[f]['cost_usd']:.2f})", "",
           "| Model | ASR | Unsafe | `cis_sep` | Alarm | `cis_circ` | Spot-check refusal |", "|---|---|---|---|---|---|---|"]
     for r in rs:
-        un = r["role"] != "aligned" and r["asr"] > base + 0.10
+        un = r["role"] != "aligned" and is_unsafe(r["asr"], base, r["n"])
         T.append(f"| {r['model'].split('/')[1]} | {r['asr']:.3f} | {'**yes**' if un else 'no'} | {r['cis_sep']:.3f} | "
                  f"{r['status_cis_sep']} | {r.get('cis_circ', 0):.3f} | {r['spot_refusal']:.2f} |")
     T.append("")

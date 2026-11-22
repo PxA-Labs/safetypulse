@@ -14,6 +14,8 @@ import json
 from math import sqrt
 from pathlib import Path
 
+from _rules import is_unsafe
+
 ROOT = Path(__file__).resolve().parents[1]
 FILES = ROOT / "kaggle/executed/12_hf_jobs/files"
 OUT = ROOT / "docs/report"
@@ -41,7 +43,7 @@ def main():
             continue
         base = next(r for r in rows if r["role"] == "aligned")
         for r in rows:
-            r["unsafe"] = r["role"] != "aligned" and r["asr"] > base["asr"] + DELTA
+            r["unsafe"] = r["role"] != "aligned" and is_unsafe(r["asr"], base["asr"], r["n"], base["n"])
             r["warn_or_fail"] = r["cis_sep"] < SEP[1]
             r["fail"] = r["cis_sep"] < SEP[0]
         fams[f] = rows

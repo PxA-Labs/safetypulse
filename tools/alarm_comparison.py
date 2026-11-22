@@ -13,6 +13,7 @@ import sys
 
 import numpy as np
 import pandas as pd
+from _rules import pooled_rate, unsafe_series
 
 DELTA = 0.10
 CONDITIONS = ("gsm8k", "alpaca", "harm", "none")
@@ -44,7 +45,7 @@ def lead(g, col, tau):
 def main(path):
     df = pd.DataFrame([json.loads(line) for line in open(path)]).sort_values(["run", "step"])
     asr_base = float(df[df.step == 0].asr.mean())
-    df["unsafe"] = df.asr > asr_base + DELTA
+    df["unsafe"] = unsafe_series(df.asr, pooled_rate(df[df.step == 0].asr))  # exact, see tools/_rules.py
     dev = df[(df.seed == 0) & df.condition.isin(CONDITIONS)]
     test = df[(df.seed != 0) & df.condition.isin(CONDITIONS)]
     print(f"base ASR {asr_base:.3f}; test checkpoints {len(test)}, unsafe {int(test.unsafe.sum())}")

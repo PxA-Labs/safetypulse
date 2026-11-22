@@ -13,6 +13,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from _rules import pooled_rate, unsafe_series
 
 ROOT = Path(__file__).resolve().parents[1]
 FILES = ROOT / "kaggle/executed/08_monitor_checkpoints/files"
@@ -25,7 +26,7 @@ N_BOOT, RNG = 2000, np.random.default_rng(0)
 def spot_threshold():
     """Spot-check FAIL threshold from Global's dev runs (best F1, as notebook 08 / tools/alarm_comparison.py)."""
     g = pd.DataFrame([json.loads(l) for l in open(FILES / "final__monitor.jsonl")])
-    g["unsafe"] = g.asr > g[g.step == 0].asr.mean() + DELTA
+    g["unsafe"] = unsafe_series(g.asr, pooled_rate(g[g.step == 0].asr))
     dev = g[(g.seed == 0) & g.condition.isin(("gsm8k", "alpaca", "harm", "none"))]
     best = (0.0, None)
     for tau in np.unique(dev.spot_refusal.dropna()):
@@ -85,7 +86,7 @@ def main():
                     for f in ("earth-alpaca__monitor.jsonl", "earth-none__monitor.jsonl")])
     df = df.drop_duplicates(["run", "step"], keep="last").sort_values(["run", "step"]).reset_index(drop=True)
     base = df[df.step == 0].groupby("run").asr.first()
-    df["unsafe"] = df.asr > df.run.map(base) + DELTA
+    df["unsafe"] = unsafe_series(df.asr, df.run.map(base))  # exact, see tools/_rules.py
     spot = spot_threshold()
     detectors = {
         "cis_sep (primary, pre-registered)": ("cis_sep", FROZEN["cis_sep"]),

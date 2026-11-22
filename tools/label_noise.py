@@ -22,6 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 import h2_analysis  # noqa: E402
 import h3_analysis  # noqa: E402
+from _rules import unsafe_counts_array, unsafe_series  # noqa: E402
 
 JOBS = ROOT / "kaggle/executed/12_hf_jobs/files"
 MON = ROOT / "kaggle/executed/08_monitor_checkpoints/files"
@@ -44,7 +45,7 @@ def load_traj():
     h1 = pd.concat([pd.DataFrame([json.loads(line) for line in open(MON / f)])
                     for f in ("earth-alpaca__monitor.jsonl", "earth-none__monitor.jsonl")])
     h1 = h1.drop_duplicates(["run", "step"], keep="last").assign(exp="h1")
-    h1["unsafe"] = h1.asr > h1.run.map(h1[h1.step == 0].groupby("run").asr.first()) + DELTA
+    h1["unsafe"] = unsafe_series(h1.asr, h1.run.map(h1[h1.step == 0].groupby("run").asr.first()))
     h3, _ = h3_analysis.load()
     h2 = h2_analysis.load("h2", "alpacalist", (1, 2, 3))
     mon = pd.concat([h1, h2.assign(exp="h2"), h3.assign(exp="h3")])[["exp", "run", "step", "cis_sep", "asr", "unsafe"]]
@@ -132,9 +133,9 @@ def rule_h6(t, unsafe):
 
 # ---------------------------------------------------------------- bootstrap
 
-def asr_matrix(flags, weights):
-    """flags (n, 78) bool, weights (R, 78) prompt counts -> ASR (n, R)."""
-    return flags.astype(np.int64) @ weights.T.astype(np.int64) / N_PROMPTS
+def count_matrix(flags, weights):
+    """flags (n, 78) bool, weights (R, 78) prompt counts -> unsafe-answer counts (n, R); ASR = counts / 78."""
+    return flags.astype(np.int64) @ weights.T.astype(np.int64)
 
 
 def median_peak(t, a):
@@ -168,8 +169,9 @@ def main():
     sets["H6"] = (h6, h6.family.map(al).to_numpy())
 
     def labels(t, ref, judge, w):
-        a = asr_matrix(np.array(t[f"flags_{judge}"].to_list(), bool), w)
-        return a, a > a[ref] + DELTA, a - a[ref]
+        k = count_matrix(np.array(t[f"flags_{judge}"].to_list(), bool), w)
+        a = k / N_PROMPTS
+        return a, unsafe_counts_array(k, k[ref], N_PROMPTS), a - a[ref]
 
     def apply(name, t, u):
         if name == "H1":

@@ -16,6 +16,8 @@ from itertools import combinations
 from math import comb, sqrt
 from pathlib import Path
 
+from _rules import is_unsafe
+
 ROOT = Path(__file__).resolve().parents[1]
 FILES = ROOT / "kaggle/executed/12_hf_jobs/files"
 FAMS = ("llama32-3b", "qwen3-4b", "gemma3-4b", "llama31-8b")
@@ -53,8 +55,8 @@ def load():
                          "cis_sep": r["cis_sep"], "cis_circ": r["cis_circ"], "spot_refusal": r["spot_refusal"],
                          "spot_rel": r["spot_refusal"] / al["spot_refusal"],
                          "rel_cis_sep": r["cis_sep"] / al["cis_sep"], "rel_cis_circ": r["cis_circ"] / al["cis_circ"],
-                         "unsafe_1b": r["asr"] > al["asr"] + DELTA,
-                         "unsafe_8b": j14[r["model"]]["asr_8b"] > a8 + DELTA})
+                         "unsafe_1b": is_unsafe(r["asr"], al["asr"], r["n"], al["n"]),
+                         "unsafe_8b": is_unsafe(j14[r["model"]]["asr_8b"], a8, j14[r["model"]]["n"], j14[al["model"]]["n"])})
     return aligned, rows
 
 
