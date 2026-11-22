@@ -21,7 +21,7 @@ O14). The answers below are updated for these results; **(r3)** marks every chan
 | H5 localisation (Job 19) | 0 of 72 single-block restores exceed the Wilson half-width (10.6 points); top-k not clearly better than random sets of equal energy | `docs/report/h5_localise.md` §2, `h5_localise.json` (`single`, `topk`) | A1 |
 | Determinism (Job 22) | two greedy passes in one job identical on 8/8 Llama-3.2-3B models (0 of 624 answers differ), equal to Job 17 and not Job 14; no H6 label changes; printed torch 2.15.0+cu132, transformers 5.24.0, CUDA 13.2 | `origin/wf/r3-lane11:docs/report/determinism_h6.md` / `.json` (commit `2438f30`, **not merged** at this poll); `docs/report/workflow/determinism_versions.md` | C3, C4 |
 | 2-step lead time (Jobs 18, 21) | ‖ΔW‖ alarmed 8 and 6 steps before `cis_sep` WARN (seeds 7, 8) | `origin/wf/r2-lane4:docs/report/h3_fine_lead_seeds.json` (not merged) | C1 |
-| Compute | workflow Jobs 15-22: 21,934 s = 6.09 GPU-h, $10.97; Job 23 not launched; Job 24 scheduled, not finished at this poll | `docs/report/workflow/LEDGER.md` ("GPU spend, all workflow jobs"); Job 24: `hf jobs inspect 6b03471f8d268c0fbd228a21` (stage SCHEDULING, `running_secs` none, 2026-11-22 19:51 UTC) | C1 |
+| Compute | workflow Jobs 15-24: 27,271 s = 7.58 GPU-h, $13.64 (final check 2026-11-23) | `docs/report/workflow/LEDGER.md`; Jobs 23a/23b/24: `HfApi.inspect_job` `durations.running_secs` | C1 |
 | Licences | Hub `license` tags re-read 2026-11-22: ShieldGemma `gemma`; NLLB-200 distilled 600M `cc-by-nc-4.0`; Aya Expanse 8B `cc-by-nc-4.0` (gated, not used: lane 12 blocked); SafeTune checkpoints `other` / `lsal-1.2` | `HfApi.model_info(...).card_data` | B2 |
 
 ## Source of the questions
@@ -138,7 +138,7 @@ Evidence (licence of each artifact; checked on the Hub API `https://huggingface.
 | LLM-LAT/harmful-dataset | none stated on the card | Hub API (no `license:` tag); ARTICLE.md:307 |
 | ShieldGemma 9B (Job 17, exploratory) | gemma (gated) | Hub API; re-read 2026-11-22 (r3) |
 | NLLB-200 distilled 600M (Job 20, exploratory) | cc-by-nc-4.0 | amendment `edda1dd` (`docs/prereg_amendments/2026-11-22-l06-h4-multilingual.md`); Hub API re-read 2026-11-22 (r3) |
-| CohereLabs/aya-expanse-8b (planned Job 23, **not run**) | cc-by-nc-4.0 (gated; the account had not accepted the terms, HTTP 403) | Hub API (r3); LEDGER round 2, lane 12 |
+| CohereLabs/aya-expanse-8b (Job 23a/23b; adapters in the private repo `pxaLabs-lexsi/safetypulse-wf-expanse-lora-alpaca`) | cc-by-nc-4.0 (gated; terms accepted 2026-11-22 before Job 23) | Hub API; RUN_SUMMARY Job 23 |
 | SafeTune checkpoint Hub tag (example `Lexsi/llama32-3b-hh-rlhf-aligned`) | `other`, `license_name: lsal-1.2` | Hub API (r3) |
 | `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca` (ours, private) | cc-by-nc-4.0 | live card front matter (r3) |
 | Our code / adapters and data | Apache-2.0 / CC BY-NC 4.0 | `README.md:233-234`; `docs/adr/0004-licensing.md:23` |
@@ -205,10 +205,10 @@ branches when this was written and are not counted; add them at freeze. Proposed
 | Block | Runtime | Cost | Source |
 |---|---|---|---|
 | HF Jobs 21-22 (workflow round 2, exploratory) | 4,331 s = 1.20 GPU-h (L40S) | $2.17 | `docs/report/workflow/LEDGER.md`, "GPU spend, all workflow jobs (final for rounds 1-2)": Job 21 3,822 s ($1.91), Job 22 509 s ($0.25); cost = s x $1.80/h |
-| HF Job 23 (Aya Expanse, lane 12) | 0 | $0 | not launched: gated model (LEDGER, same table) |
-| HF Job 24 (seed 9 lead time, lane 10, round 3) | **to be filled** | **to be filled** (at most $2.25: `--timeout 75m`) | record on `origin/wf/r3-lane10` (`f1d2482`): launched 2026-11-22 19:48 UTC; `hf jobs inspect` at 19:51 UTC: stage SCHEDULING, no running time yet |
-| **All HF Jobs 1-22** | **13.77 GPU-h** (12.57 + 1.20) | **about $25.52** ($23.35 + $2.17) | sum of the round-2 total and the row above |
-| of which workflow Jobs 15-22 | 21,934 s = 6.09 GPU-h | $10.97 | LEDGER, total row |
+| HF Job 23 (Aya Expanse, lane 12: failed first attempt 124 s, 23a 1,142 s, 23b 792 s) | 2,058 s = 0.57 GPU-h | $1.03 | `HfApi.inspect_job` `durations.running_secs`; RUN_SUMMARY Job 23 |
+| HF Job 24 (seed 9 lead time, lane 10, round 3) | 3,279 s = 0.91 GPU-h | $1.64 | `HfApi.inspect_job` `durations.running_secs`; RUN_SUMMARY Job 24 |
+| **All HF Jobs 1-24** | **15.25 GPU-h** (12.57 + 1.20 + 0.57 + 0.91) | **about $28.19** ($23.35 + $2.17 + $1.03 + $1.64) | sum of the round-2 total and the three rows above |
+| of which workflow Jobs 15-24 | 27,271 s = 7.58 GPU-h | $13.64 | LEDGER, total row |
 
 The 12.57 h / $23.35 base is this lane's round-2 sum (table above), not re-derived in round 3. Add Job 24's
 `running_secs` x $1.80/h when lane 10 collects it. Proposed text: X5b.

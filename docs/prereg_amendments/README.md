@@ -108,3 +108,22 @@ All times UTC, 2026-11-22.
     stronger evidence. Both are negative for every row.
 
 Counts: 13 amendment files (8 job-tied, 4 analysis-only, 1 erratum); 8 HF jobs matched; 0 violations.
+
+## Addendum: final check after round 3 (2026-11-23)
+
+Rows the round-3 index could not include, because they were added after it was built. Commit times come from `git log`,
+job times from `HfApi.inspect_job` (namespace `pxaLabs-lexsi`). The workers reported each amendment as pushed before launch,
+but the GitHub first-push times were not re-checked here.
+
+| File | Lane | Amendment commit (UTC) | Job(s) | Job created_at (UTC) | Δ commit − created | Running time, cost |
+|---|---|---|---|---|---|---|
+| `2026-11-22-l10-fine-lead-seed9.md` | 10 | `eacb3a3` (19:47:07) | Job 24 `6b03471f8d268c0fbd228a21` | 19:48:47.7 | −100.7 s | 3279 s, $1.64 |
+| `2026-11-22-l12-aya-expanse.md` | 12 | `e59ca1b` (19:50:38) | Job 23a, first attempt, `6b0348a6130a00b5aa8102e9` (ERROR: script bug, before any download) | 19:55:18.7 | −280.7 s | 124 s, $0.06 |
+| | | | Job 23a `6b0350768d268c0fbd22a37a` | 20:28:38.9 | −2280.9 s | 1142 s, $0.57 |
+| | | | Job 23b `6b03560f130a00b5aa812202` | 20:52:31.7 | −3713.7 s | 792 s, $0.40 |
+
+Rows l10-fine-lead-seed8 (Job 21) and l11-determinism (Job 22) above say "not yet collected". Both have since been
+collected: see `docs/report/h3_fine_lead_seeds.md`, `docs/report/determinism_h6.md` and RUN_SUMMARY Jobs 21 and 22.
+
+Updated counts: 15 amendment files (11 job-tied, 3 analysis-only, 1 erratum); 11 HF jobs matched, plus 1 failed attempt.
+Every job's amendment was committed before the job was created; 0 violations.

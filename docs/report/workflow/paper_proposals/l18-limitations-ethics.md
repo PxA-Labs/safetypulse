@@ -14,7 +14,7 @@ merged the round-2 edits below with lanes 2, 3, 5 and 6:
 | X2 (AI disclosure) | N6, conservative wording (lane 9 §5 item 1) | Job 24 (2026-11-22 19:48 UTC) is also a "follow-up dated 2026-11-22", so N6's wording covers it |
 | X3 (Ethics risks) | N4, without the PII sentence (owner item) | unchanged |
 | X4 (licences) | N5 | **add X4b** (ShieldGemma, NLLB-200; both cited by N1) |
-| X5/X6 (App. E) | N7, **without the totals** (owner item 4: "Recompute at freeze") | **X5b** gives the totals through Job 22; Job 24 to be filled |
+| X5/X6 (App. E) | N7, **without the totals** (owner item 4: "Recompute at freeze") | **X5b** gives the final totals through Job 24 |
 | X7 (GSM8K) | N8 + B3 | unchanged |
 
 Apply lane 9's patch first; X4b, X5b and X8 below are written against its **new** text (their old strings occur once
@@ -61,17 +61,12 @@ ran on Kaggle T4 GPUs and Hugging Face Jobs (A100, A10G, L4 and L40S GPUs, and o
 New:
 ```
 ran on Kaggle T4 GPUs (about 72 hours of notebook sessions) and Hugging Face Jobs (A100, A10G, L4 and L40S GPUs, and
-one CPU job; 13.8 GPU-hours and about \$26 in total, of which 6.1 hours and \$11 for the exploratory follow-ups of
+one CPU job; 15.3 GPU-hours and about \$28 in total, of which 7.6 hours and \$14 for the exploratory follow-ups of
 2026-11-22); each H6 family took 9--22
 ```
-Sources: `l18-checklist.md` C1, "(r3) Updated totals": HF Jobs 1-22 = 12.57 + 1.20 = 13.77 GPU-h and $23.35 + $2.17 =
-$25.52; workflow Jobs 15-22 = 21,934 s = 6.09 GPU-h, $10.97 (`docs/report/workflow/LEDGER.md`, "GPU spend, all workflow
-jobs"); Kaggle about 72 h: round-2 estimate (X5 below). **Job 24 (seed 9, lane 10) is to be filled**: it was SCHEDULING
-at 2026-11-22 19:51 UTC (`hf jobs inspect 6b03471f8d268c0fbd228a21`), at most $2.25 (`--timeout 75m`, its record on
-`origin/wf/r3-lane10`). When lane 10 collects it, add `running_secs`/3600 to both hour figures and `running_secs` x
-$1.80/3600 to both dollar figures, then round as above (if Job 24 costs more than about $0.50, "about \$26" becomes
-"about \$27" or more). If Job 24's result is not in the paper, keep it in the totals anyway (the checklist asks for all
-compute) or say "Jobs 1--22".
+Sources: `l18-checklist.md` C1 (final check 2026-11-23): HF Jobs 1-24 = 12.57 + 1.20 + 0.57 + 0.91 = 15.25 GPU-h and
+$23.35 + $2.17 + $1.03 + $1.64 = $28.19; workflow Jobs 15-24 = 27,271 s = 7.58 GPU-h, $13.64 (`HfApi.inspect_job`
+`running_secs`, $1.80/h); Kaggle about 72 h: round-2 estimate (X5 below).
 
 ### X8. App. A: the determinism clause in N2 (optional; only with lane 11's Edit 1) - gap G12
 
