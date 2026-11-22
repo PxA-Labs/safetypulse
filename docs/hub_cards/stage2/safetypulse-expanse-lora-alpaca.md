@@ -20,7 +20,7 @@ tags:
 # SafetyPulse · aya-expanse-8b LoRA checkpoints (alpaca, seed 1)
 
 > [!WARNING]
-> **Research artifact, not for deployment. Private, exploratory.** Ordinary instruction tuning on Alpaca can weaken
+> **Research artifact, not for deployment. Exploratory.** Ordinary instruction tuning on Alpaca can weaken
 > the base model's refusals. These checkpoints exist to study that drift. Do not use them in a product.
 
 LoRA checkpoints of one fine-tune of [`CohereLabs/aya-expanse-8b`](https://huggingface.co/CohereLabs/aya-expanse-8b)
@@ -30,7 +30,7 @@ on **benign** Alpaca data, saved every 25 steps. Written by SafetyPulse HF Job 2
 thresholds are applied unchanged.
 
 **Status: exploratory, one seed (n = 1).** Design and what will be reported were fixed before the run in
-[`docs/prereg_amendments/2026-11-22-l12-aya-expanse.md`](https://github.com/PxA-Labs/safetypulse/blob/wf/r3-lane12/docs/prereg_amendments/2026-11-22-l12-aya-expanse.md)
+[`docs/prereg_amendments/2026-11-22-l12-aya-expanse.md`](https://github.com/PxA-Labs/safetypulse/blob/main/docs/prereg_amendments/2026-11-22-l12-aya-expanse.md)
 (amendment commit `e59ca1b9c0fa37cac77e679029ae849e03b446df`). It does not change any pre-registered verdict or
 threshold.
 
@@ -87,7 +87,7 @@ from peft import PeftModel
 
 BASE, REV = "CohereLabs/aya-expanse-8b", "5062468bf9bc0c6035fd64e06274333ec127d980"
 base = AutoModelForCausalLM.from_pretrained(BASE, revision=REV, torch_dtype=torch.float16, device_map="auto")
-model = PeftModel.from_pretrained(base, "pxaLabs-lexsi/safetypulse-wf-expanse-lora-alpaca",
+model = PeftModel.from_pretrained(base, "purvansh01/safetypulse-expanse-lora-alpaca",
                                   subfolder="alpaca-s1/checkpoint-250")
 ```
 

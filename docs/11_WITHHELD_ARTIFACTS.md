@@ -64,6 +64,16 @@ adapter config was rewritten to name the Hub base model (`tools/hub_stage2_relea
 in memory and store verdicts only. `safetypulse-earth-probe-bundle` stays private for now; its probe pairs are the
 same 50 pairs already public in `safetypulse-probe-bundle`.
 
+### Follow-up release (2026-11-23)
+
+The exploratory follow-ups of 2026-11-22 (HF Jobs 15–24) also trained no harmful condition and are public under the
+same policy: `safetypulse-h3fine-lora-alpaca` (benign Alpaca adapters, seeds 7–9), `safetypulse-expanse-lora-alpaca`
+(benign Alpaca adapters of Aya Expanse 8B, CC BY-NC 4.0 like its base model) and `safetypulse-followups` (the files of
+`kaggle/executed/12_hf_jobs/files/job15_*`–`job24_*` and their reports, already checked by
+`tools/check_release_policy.py`; Job 20 keeps only hashes and length statistics of its translations). Every adapter
+config names its Hub base model. `purvansh01/safetypulse-jobs` stays private: it holds the evaluation prompts and the
+raw job outputs.
+
 ## 5. Access for judges and reviewers
 
 The withheld artifacts are kept in a private Hugging Face repository. **Judges, organisers and reviewers who want
