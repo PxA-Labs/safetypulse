@@ -3,6 +3,67 @@
 _Version 1.0, 2026-11-11. Lexsi Labs AI Safety & Alignment Hackathon, Track 2b. Every number is traceable to a
 `kaggle/executed/<notebook>/RUN_SUMMARY.md` (HF Jobs: `kaggle/executed/12_hf_jobs/`, `13_curatorkit_alpaca/`)._
 
+## Stage 2 results index
+
+_Added 2026-11-23. Sections 1–9 below are the Stage 1 report (version 1.0, 2026-11-11) and are not changed; its §5
+numbers hypotheses H1–H5 in Stage 1's own scheme, which is not the Stage 2 scheme used here. Stage 2 hypotheses are
+pre-registered in [docs/13_PREREGISTRATION.md](../13_PREREGISTRATION.md) with thresholds frozen on Tiny Aya Global
+(`cis_sep` WARN < 0.8098, FAIL < 0.6196)._
+
+**Pre-registered verdicts (unchanged by every exploratory report below):** H1 confirmed, H2 confirmed, H3 refuted,
+H6 refuted. H4 and H5 have no pass mark (doc 13 §2) and are exploratory, as is every amendment-based analysis, the
+Aya Expanse run included.
+
+Each line: the question, the generating tool, the amendment (exploratory reports) and one result copied from the
+report itself. Reports not yet on this branch say "pending merge of" their branch instead of a result.
+
+**Pre-registered tests**
+
+| Report | Question | Tool | Pre-registration / amendment | Result (copied from the report) |
+|---|---|---|---|---|
+| [h1_earth.md](h1_earth.md) | H1: do Global's frozen thresholds transfer to Tiny Aya Earth? | `tools/h1_analysis.py` | doc 13 §2 H1, §3a | "Verdict (doc 13 rule): **confirmed**"; `cis_sep` WARN-or-FAIL recall 1.00 [1.00, 1.00], 0 / 50 alarms on `none` runs. |
+| [h2_lists.md](h2_lists.md) | H2: is list-formatted Alpaca a second drift source that `cis_sep` flags? | `tools/h2_analysis.py` | doc 13 §2 H2, §3c | "Verdict: confirmed (recall >= 0.8). Recall 1.00 on 65 unsafe checkpoints (Wilson 95% [0.944, 1.0])." |
+| [h3_lead.md](h3_lead.md) | H3: at 10-step spacing, does `cis_sep` warn earlier than ‖ΔW‖? | `tools/h3_analysis.py` | doc 13 §2 H3, §3b | "Verdict: refuted (median cis_sep lead 20 <= median \|\|dW\|\| lead 20)." |
+| [h6_safetune.md](h6_safetune.md) | H6: do the thresholds transfer to 35 SafeTune checkpoints from four families? | `tools/h6_analysis.py` (HF Job 9) | doc 13 §2 H6, §3d | "Verdict: refuted": `cis_sep` WARN-or-FAIL recall 0.917 on 12 unsafe drifted models; "FAIL on safe recovered models: 3 of 8." |
+
+**Exploratory without a pass mark (H4, H5)**
+
+| Report | Question | Tool | Amendment | Result (copied from the report) |
+|---|---|---|---|---|
+| [h4_multilingual.md](h4_multilingual.md) | H4: does the English alarm catch drift in Hindi, Spanish and French? (HF Job 20) | `tools/h4_multilingual.py` | [l06-h4-multilingual](../prereg_amendments/2026-11-22-l06-h4-multilingual.md) | "on these runs the alarm does not discriminate between checkpoints, so recall here says only that the English alarm did not miss non-English drift, not that it tracks it." |
+| [h5_localise.md](h5_localise.md) | H5: is the drift stored in a few blocks? (block-wise restore, HF Job 19) | `tools/h5_localise.py` | [l05-h5-localise](../prereg_amendments/2026-11-22-l05-h5-localise.md) | "So the data do not show the drift sitting in a few blocks; the most that can be said is that restoring about 29% of the LoRA energy (in-sample top 16, or random sets of similar energy) brings ASR back near base on this checkpoint." |
+
+**Exploratory follow-ups to the pre-registered tests**
+
+| Report | Question | Tool | Amendment | Result (copied from the report) |
+|---|---|---|---|---|
+| [judge8b.md](judge8b.md) | Do H1 and H3 depend on the 1B judge? (Llama Guard 3 8B, HF Job 8) | `tools/judge8b_analysis.py` | none ("Not pre-registered: the H1/H3 verdicts use the 1B judge and stand") | 1B–8B agreement 0.926 (κ 0.831) on H3 and 0.954 (κ 0.863) on H1; with 8B labels the median `cis_sep` WARN lead is 20 vs ‖ΔW‖ 20. |
+| [judge8b_h2.md](judge8b_h2.md) | Does H2 depend on the 1B judge? (HF Job 10) | `tools/judge8b_h2.py` | doc 13 §3e | "Agreement 1B vs 8B: 0.920 over 6084 prompt judgements, Cohen's kappa 0.820"; "`cis_sep` WARN-or-FAIL recall 1.00 on 43 unsafe checkpoints, 29 alarms on safe checkpoints." |
+| [judge8b_h6.md](judge8b_h6.md) | Does H6 depend on the 1B judge? (HF Job 14) | `tools/judge8b_h6.py` | doc 13 §3g | 8B labels: 12/13 unsafe drifted flagged, FAIL on 3/7 safe recovered, §2 verdict refuted; agreement 0.896, κ 0.760. |
+| [third_judge_h6.md](third_judge_h6.md) | Third judge: H6 answers judged by ShieldGemma 9B (HF Job 17) | `tools/third_judge_h6.py` | [l03-third-judge](../prereg_amendments/2026-11-22-l03-third-judge.md) | 1B vs ShieldGemma agreement 0.735, κ 0.259; with ShieldGemma labels 9/10 unsafe drifted flagged, FAIL on 8/15 safe recovered, §2 rule refuted. |
+| [h6_testsplit.md](h6_testsplit.md) | Test split: H6 labels on the 119 held-out prompts (HF Job 16) | `tools/h6_testsplit_analysis.py` | [l02-h6-testsplit](../prereg_amendments/2026-11-22-l02-h6-testsplit.md) | "The pre-registered H6 verdict stays the Job 9 result (1B judge, dev split): refuted."; all six judge × split rows give "refuted" under the §2 rule. |
+| [h6_lodo.md](h6_lodo.md) | H6: thresholds or signal? (AUROC, leave-one-domain-out) | `tools/h6_lodo.py` | doc 13 §3e | Pooled AUROC `cis_sep` 0.83, `cis_circ` 0.94, spot-check 0.91; leave-one-domain-out `cis_sep` (accuracy rule) flags 14/19 unsafe and 2/12 safe. |
+| [h6_layers.md](h6_layers.md) | H6: does the calibrated layer explain Gemma-3-4B? (HF Job 11) | `tools/h6_layers.py` | doc 13 §3e | gemma3-4b: AUROC 0.50 at the calibrated layer (11 of 34), AUROC ≥ 0.9 on 18 of 34 layers (17–34). |
+| [h6_threshold_transfer.md](h6_threshold_transfer.md) | H6: do thresholds learned on other families transfer? | `tools/h6_threshold_transfer.py` | [l15-threshold-transfer](../prereg_amendments/2026-11-22-l15-threshold-transfer.md) | `cis_sep` FAIL: frozen 16/19 unsafe and 4/12 safe flagged, leave-one-family-out (F1 rule) 15/19 and 4/12; "H6 stays refuted." |
+| [specificity_control.md](specificity_control.md) | Is `cis_sep` specific to refusal or generic change? (HF Job 13) | `tools/specificity_analysis.py` | doc 13 §3f | AUROC (unsafe lower) `cis_sep` 0.99 vs `cis_fr` 0.94 and `cis_word` 0.74 on H1; 0.83 vs 0.67 and 0.59 on H6. |
+| [stage2_robustness.md](stage2_robustness.md) | Do the verdicts depend on the 10-point unsafe margin? | `tools/stage2_robustness.py` | none (10 points pre-registered; 5 and 15 are sensitivity checks) | H6 verdict "refuted" at 5, 10 and 15 points; H1 recall 0.96–1.00 with 0 of 2 control runs alarmed, H2 recall 1.00. |
+| [review_followups.md](review_followups.md) | Intervals, refusal-token baseline (`cis_logit`), drifted vs recovered pairs | `tools/review_followups.py` | doc 13 §3h | H6 alarms on safe models: `cis_sep` 10/12, spot-check 3/12, `cis_logit` 12/12; FAIL on safe recovered 3/8, 2/8, 8/8. |
+| [label_noise.md](label_noise.md) | How stable are the verdicts under prompt resampling of the unsafe labels? | `tools/label_noise.py` | [l14-label-noise](../prereg_amendments/2026-11-22-l14-label-noise.md) | Verdicts over 2000 resamples (1B): H1 confirmed 1999/2000, H2 confirmed 2000/2000, H3 refuted 1911/2000 (untested 89), H6 refuted 2000/2000. |
+| [two_stage_alarm.md](two_stage_alarm.md) | Does a `cis_sep` screen confirmed by the spot-check keep both advantages? | `tools/two_stage_alarm.py` | [l17-two-stage](../prereg_amendments/2026-11-22-l17-two-stage.md) | "A two-stage alarm therefore trades the early warning that is `cis_sep`'s advantage for the spot-check's specificity; it does not keep both." |
+
+**Reports on branches not yet merged here** (checked 2026-11-23 against `origin/stage2/wf-integration` at `9d99ae4`)
+
+| Report | Question | Tool | Amendment | Result |
+|---|---|---|---|---|
+| `h3_fine_lead.md` | Lead time at 2-step spacing, one seed (`alpaca-s7`, HF Job 18) | `tools/h3_fine_lead.py` | [l04-fine-lead](../prereg_amendments/2026-11-22-l04-fine-lead.md) | pending merge of `wf/r2-lane4` |
+| `intervals.md` | Interval estimates for the headline numbers | `tools/intervals.py` | `2026-11-22-l13-intervals.md` (on that branch) | pending merge of `wf/r2-lane13` |
+| `determinism_h6.md` | Generation determinism of the H6 answers (HF Job 22) | `tools/determinism_h6.py` | [l11-determinism](../prereg_amendments/2026-11-22-l11-determinism.md) | pending merge of `wf/r3-lane11` |
+| `h3_fine_lead_s9.md` | Lead time at fine spacing, third seed (seed 9, HF Job 24) | not yet pushed | `2026-11-22-l10-fine-lead-seed9.md` (on that branch) | pending merge of `wf/r3-lane10` |
+| `aya_expanse.md` | Aya Expanse (HF Job 23) | not yet pushed | not yet pushed | pending merge of `wf/r3-lane12` |
+
+The seed-8 replication of the 2-step lead-time run (HF Job 21, amendment
+[l10-fine-lead-seed8](../prereg_amendments/2026-11-22-l10-fine-lead-seed8.md)) has no report yet.
+
 ## Abstract
 
 Fine-tuning an aligned model on ordinary, harmless data can quietly weaken its refusal behaviour. Detecting this

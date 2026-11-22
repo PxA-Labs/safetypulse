@@ -15,7 +15,7 @@
   <a href="https://github.com/PxA-Labs/safetypulse/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License: Apache-2.0"></a>
   <a href="https://pypi.org/project/safetypulse/"><img src="https://img.shields.io/pypi/v/safetypulse?logo=pypi&logoColor=white&color=3776AB" alt="PyPI"></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white" alt="Python 3.10+">
-  <img src="https://img.shields.io/badge/tests-538-2ea44f" alt="538 tests">
+  <img src="https://img.shields.io/badge/tests-606-2ea44f" alt="606 tests">
   <a href="https://github.com/PxA-Labs/safetypulse/actions/workflows/codeql.yml"><img src="https://github.com/PxA-Labs/safetypulse/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
   <a href="https://scorecard.dev/viewer/?uri=github.com/PxA-Labs/safetypulse"><img src="https://api.scorecard.dev/projects/github.com/PxA-Labs/safetypulse/badge" alt="OpenSSF Scorecard"></a>
   <br>
@@ -95,8 +95,19 @@ experiments, with `cis_sep` and its WARN / FAIL thresholds frozen on Tiny Aya Gl
 Doc 13 also lists two exploratory tests without a pass mark: **H4** (English calibration vs non-English drift) and
 **H5** (where the drift is stored). Both ran on 2026-11-22 as HF Jobs 20 and 19 (amendments
 [`2026-11-22-l06-h4-multilingual`](https://github.com/PxA-Labs/safetypulse/blob/main/docs/prereg_amendments/2026-11-22-l06-h4-multilingual.md),
-[`2026-11-22-l05-h5-localise`](https://github.com/PxA-Labs/safetypulse/blob/main/docs/prereg_amendments/2026-11-22-l05-h5-localise.md));
-their results are not yet analysed or reported.
+[`2026-11-22-l05-h5-localise`](https://github.com/PxA-Labs/safetypulse/blob/main/docs/prereg_amendments/2026-11-22-l05-h5-localise.md))
+and are reported as exploratory, with no verdict:
+
+- **H4** ([report](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/h4_multilingual.md)): the English
+  `cis_sep` alarm fired on every checkpoint after step 0, so it did not miss drift in Hindi, Spanish or French, but on
+  these runs it does not discriminate between checkpoints and cannot show that it tracks non-English drift.
+- **H5** ([report](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/h5_localise.md)): no single block's
+  restore moves ASR beyond the resolution of 78 prompts; the data do not show the drift sitting in a few blocks
+  (one checkpoint, one seed).
+
+Every Stage 2 report, with its tool, amendment and result (including the third judge, the 119-prompt test split,
+finer-spaced lead time, label noise and the two-stage alarm, and reports still on unmerged branches), is indexed in
+[REPORT.md · Stage 2 results index](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/REPORT.md#stage-2-results-index).
 
 What the tests and the baselines show (paper Table 2):
 
@@ -116,6 +127,11 @@ What the tests and the baselines show (paper Table 2):
   (lists drift more than plain Alpaca) reverses ([H1/H3](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/judge8b.md),
   [H2](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/judge8b_h2.md),
   [H6](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/judge8b_h6.md)).
+- **A third judge (exploratory):** ShieldGemma 9B flags 219 of the 2,730 H6 answers unsafe where the 1B
+  judge flags 903 (κ 0.259) and, with its labels, H6 is still refuted under the §2 rule
+  ([third judge](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/third_judge_h6.md)). On the 119
+  held-out test prompts, every judge × split combination gives the same H6 verdict
+  ([test split](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/h6_testsplit.md)).
 - **Partly specific to safety (exploratory):** directions unrelated to safety ("Respond in French.", "Answer in one
   word.") also move under fine-tuning, but the refusal direction ranks unsafe checkpoints best (H1 AUROC 0.99 vs
   0.94 / 0.74; H6 0.83 vs 0.67 / 0.59) ([specificity control](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/specificity_control.md)).
@@ -212,13 +228,14 @@ Every experiment is a notebook within [`kaggle/notebooks/`](https://github.com/P
 | SafeTune → AuditKIT before/after | 11 | `kaggle/executed/11_*` |
 | Larger-GPU runs (CircuitKIT, 8B judge, CuratorKIT fine-tune) | [`tools/hf_jobs/`](https://github.com/PxA-Labs/safetypulse/tree/main/tools/hf_jobs) | `safetypulse-logs/hf_jobs` |
 | Stage 2 H1–H3: fine-tunes and monitoring at 10-step spacing, Hub backup, ‖ΔW‖ baseline | 07, 08, 18, 19 | `safetypulse-earth-*`, `-h2-*`, `-h3-*` |
-| Stage 2 H6 and follow-ups (SafeTune checkpoints, 8B judge, layer diagnosis, ‖ΔW‖, specificity control) | HF Jobs 8–14 in [`tools/hf_jobs/`](https://github.com/PxA-Labs/safetypulse/tree/main/tools/hf_jobs) | `safetypulse-h6-safetune`, `safetypulse-judge8b` |
-| Stage 2 analysis (pre-registered verdicts, robustness, layers) | `tools/h1_analysis.py`, `h2_analysis.py`, `h3_analysis.py`, `h6_analysis.py`, `stage2_robustness.py`, `h6_layers.py`, `h6_lodo.py`, `specificity_analysis.py`, `judge8b_h2.py`, `judge8b_h6.py`, `review_followups.py` | [`docs/report/`](https://github.com/PxA-Labs/safetypulse/tree/main/docs/report) |
+| Stage 2 H6 and follow-ups (SafeTune checkpoints, 8B judge, layer diagnosis, ‖ΔW‖, specificity control, test split, third judge, H5, H4) | HF Jobs 8–14, 16, 17, 19, 20 in [`tools/hf_jobs/`](https://github.com/PxA-Labs/safetypulse/tree/main/tools/hf_jobs) | `safetypulse-h6-safetune`, `safetypulse-judge8b` |
+| Stage 2 analysis (pre-registered verdicts, robustness, layers) | `tools/h1_analysis.py`, `h2_analysis.py`, `h3_analysis.py`, `h6_analysis.py`, `stage2_robustness.py`, `h6_layers.py`, `h6_lodo.py`, `specificity_analysis.py`, `judge8b_h2.py`, `judge8b_h6.py`, `review_followups.py`, `h4_multilingual.py`, `h5_localise.py`, `h6_testsplit_analysis.py`, `third_judge_h6.py`, `h6_threshold_transfer.py`, `label_noise.py`, `two_stage_alarm.py` (index: [REPORT.md](https://github.com/PxA-Labs/safetypulse/blob/main/docs/report/REPORT.md#stage-2-results-index)) | [`docs/report/`](https://github.com/PxA-Labs/safetypulse/tree/main/docs/report) |
 
 Fixed choices: seed 0 for data splits; fine-tune seeds 0 (dev) and 1–3 (test); dev and test runs never overlap;
 thresholds and repair strengths are chosen on dev only, then applied unchanged to test. Model and judge revisions
 and dataset hashes are recorded in `kaggle/executed/*/RUN_SUMMARY.md` and `safetypulse-eval/manifest.json`.
-Package tests, from a clone: `pip install -e ".[dev,peft]" && pytest` (538 tests, run in CI on Python 3.10–3.12).
+Package tests, from a clone: `pip install -e ".[dev,peft]" && pytest` (606 tests as of commit `9d99ae4`, counted with
+`pytest --collect-only -q`; run in CI on Python 3.10–3.12).
 
 ## Documentation
 
