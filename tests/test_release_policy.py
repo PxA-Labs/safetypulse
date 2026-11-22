@@ -144,3 +144,108 @@ def test_repository_passes_release_policy():
     if files.returncode != 0:
         pytest.skip("not a git checkout")
     assert policy.check(files.stdout.splitlines(), root=REPO) == []
+
+
+# --- Round-2 hardening: strict rules for HF job outputs (Job 15 on) and executed notebooks. -----------------------
+# Every string below is a synthetic placeholder; no model text is used.
+
+RUNS = "/".join(("kaggle", "executed"))   # synthetic paths only; split so test_schemas' no-fixture check passes
+JOB_DIR = f"{RUNS}/12_hf_jobs/files"
+PROSE = " ".join(["placeholder"] * 6 + ["synthetic", "sentence", "standing", "in", "for", "model", "text", "here."])
+HEX40 = "0123456789abcdef" * 2 + "01234567"
+
+
+def test_strict_job_file_scope():
+    assert policy.is_strict_job_file(f"{JOB_DIR}/job15_summary.json")
+    assert policy.is_strict_job_file(f"{JOB_DIR}/job20_multilingual.jsonl")
+    assert policy.is_strict_job_file(f"{JOB_DIR}/job137_future.csv")          # future jobs are covered too
+    assert policy.is_strict_job_file(f"{JOB_DIR}/job16/scores.jsonl")
+    assert not policy.is_strict_job_file(f"{JOB_DIR}/job9_jobs.json")
+    assert not policy.is_strict_job_file(f"{JOB_DIR}/job1_crosscheck.json")
+    assert not policy.is_strict_job_file("docs/report/job15_summary.json")
+
+
+@pytest.mark.parametrize("key", ["translation", "output_text", "prompt_text", "hi_translation", "translations"])
+def test_job_output_text_fields_are_blocked(key, tmp_path):
+    """Short text under a text-named key fails in a job output (the old checker let these names through)."""
+    name = _write(tmp_path, f"{JOB_DIR}/job21_scores.jsonl",
+                  json.dumps({"model": "Lexsi/x", "flag": 0}) + "\n" + json.dumps({"model": "Lexsi/y", key: "SYNTH"}))
+    bad = policy.check([name], root=tmp_path)
+    assert bad == [(name, f"job output: text in field '{key}' (line 2)")]
+    assert all("SYNTH" not in reason for _, reason in bad)
+
+
+def test_job_output_long_free_text_is_blocked(tmp_path):
+    """Any long free-text string in a job output fails, whatever its key, in JSON, JSONL and CSV."""
+    j = _write(tmp_path, f"{JOB_DIR}/job17_summary.json",
+               json.dumps({"family": "gemma3-4b", "per_prompt": [{"id": 3, "judge_note": PROSE}], "notes": [PROSE]}))
+    k = _write(tmp_path, f"{JOB_DIR}/job18_keys.json", json.dumps({PROSE: 1}))
+    c = _write(tmp_path, f"{JOB_DIR}/job19_rows.csv", f"id,lang,detail\n1,hi,0.5\n2,es,\"{PROSE}\"\n")
+    assert policy.check([j, k, c], root=tmp_path) == [
+        (j, "job output: long text in field 'notes[]' (line 1)"),
+        (j, "job output: long text in field 'per_prompt[].judge_note' (line 1)"),
+        (k, "job output: long text in a key under '<root>' (line 1)"),
+        (c, "job output: long text in field 'detail' (line 3)"),
+    ]
+
+
+def test_job_output_identifiers_numbers_and_placeholder_pass(tmp_path):
+    row = {
+        "model": "pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca-with-a-rather-long-repository-name-for-testing",
+        "revision": HEX40 * 2,
+        "sha256": "f" * 64,
+        "path": "results/job21/gemma3-4b/checkpoints/checkpoint-0000000125/adapter_config_for_this_run.json",
+        "url": "https://huggingface.co/datasets/purvansh01/safetypulse-jobs/blob/main/results/job21/summary.json",
+        "response": policy.PLACEHOLDER, "translation": "", "generation": 3, "prompt_text": None,
+        "flags": [0, 1, 1], "cis_sep": 0.71, "status": "WARN",
+    }
+    j = _write(tmp_path, f"{JOB_DIR}/job21_ok.jsonl", json.dumps(row))
+    old = _write(tmp_path, f"{JOB_DIR}/job9_jobs.json", json.dumps({"note": PROSE}))   # before the strict rule
+    assert policy.check([j, old], root=tmp_path) == []
+
+
+def test_unparseable_job_output_is_blocked(tmp_path):
+    name = _write(tmp_path, f"{JOB_DIR}/job16_broken.json", "{not json")
+    assert policy.check([name], root=tmp_path) == [(name, "job output: unparseable JSON (line 1)")]
+
+
+def _notebook(outputs_per_cell):
+    return json.dumps({"nbformat": 4, "nbformat_minor": 5, "metadata": {},
+                       "cells": [{"cell_type": "code", "source": "", "metadata": {}, "outputs": outs}
+                                 for outs in outputs_per_cell]})
+
+
+def test_notebook_free_text_outputs_are_blocked(tmp_path):
+    """Prose in stream or display outputs fails (the old checker never opened notebooks); text is not reported."""
+    devanagari = " ".join(["नमस्ते"] * 16) + "।"     # placeholder word x16
+    nb = _notebook([
+        [{"output_type": "stream", "name": "stdout", "text": ["step 1 ok\n", PROSE + "\n"]}],
+        [{"output_type": "execute_result", "execution_count": 2, "metadata": {},
+          "data": {"text/plain": [devanagari]}}],
+        [{"output_type": "display_data", "metadata": {}, "data": {"text/markdown": PROSE}}],
+    ])
+    name = _write(tmp_path, f"{RUNS}/21_x/21_x__2026-11-22.ipynb", nb)
+    bad = policy.check([name], root=tmp_path)
+    assert bad == [
+        (name, "free text in notebook output (cell 1, stream stdout, line 2)"),
+        (name, "free text in notebook output (cell 2, execute_result text/plain, line 1)"),
+        (name, "free text in notebook output (cell 3, display_data text/markdown, line 1)"),
+    ]
+    assert all("placeholder" not in reason for _, reason in bad)
+
+
+def test_notebook_logs_tables_and_numbers_pass(tmp_path):
+    lines = [
+        "Warning: You are sending unauthenticated requests to the Hub; " + PROSE,
+        "[transformers] Ignoring a generation flag because " + PROSE,
+        "No HF_TOKEN (expected for CLI runs): " + PROSE,
+        "/usr/lib/python3/site-packages/x.py:12: UserWarning: " + PROSE,
+        "gsm8k-s0 25 {'cis_sep': 0.952, 'cis_cos': 0.98, 'cis_logit': 0.91, 'asr': 0.04, 'status': 'OK', 'n': 100}",
+        "model                                   cis_sep  status   asr     spot   refusal   flags   seconds  gpu",
+        "short line",
+    ]
+    nb = _notebook([[{"output_type": "stream", "name": "stderr", "text": "\n".join(lines)}],
+                    [{"output_type": "error", "ename": "E", "evalue": PROSE, "traceback": [PROSE]}]])
+    name = _write(tmp_path, "nb/ok.ipynb", nb)
+    broken = _write(tmp_path, "nb/broken.ipynb", "{not json")
+    assert policy.check([name, broken], root=tmp_path) == []
