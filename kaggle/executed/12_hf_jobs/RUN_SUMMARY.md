@@ -480,7 +480,9 @@ base model at layer 27: cos with English hi 0.817, es 0.795, fr 0.887; random di
 
 ## Job 21 · Second seed of the 2-step lead-time run, Global Alpaca seed 8 (2026-11-22, exploratory)
 
-**Status:** RUNNING (launched 2026-11-22, detached; results collected next round). Pre-registered as exploratory in
+**Status:** COMPLETED (2026-11-22, 17:17:02–18:20:45 UTC): 3822 s running (63.7 min), **$1.91** at $1.80/h
+(cap $3.00; `hf jobs inspect` `durations.running_secs`, checked 2026-11-23); all 41 checkpoints monitored
+(`files/job21_summary.json`; fine-tune 14.5 min per `files/job21_train_log.json`). Pre-registered as exploratory in
 `docs/prereg_amendments/2026-11-22-l10-fine-lead-seed8.md` (commit `e2fb4a14afc67e1f40c003c53f2d097484784a1a`,
 committed 17:13:59 UTC and pushed on `wf/r2-lane10` before the job was created at 17:16:58 UTC). A replication of
 Job 18 (seed 7) with seed 8 only; H3 stays refuted whatever this shows; thresholds unchanged.
@@ -500,9 +502,29 @@ Job 18 (seed 7) with seed 8 only; H3 stays refuted whatever this shows; threshol
   (threshold 3.344).
 - Outputs: adapters → private `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca`, subfolder `alpaca-s8/` (card owned
   by lane 4, unchanged); `monitor.jsonl` (scores only), `dw.jsonl`, `train_log.json`, `job21_summary.json`, executed
-  notebooks → `results/job21/` in `purvansh01/safetypulse-jobs`. To copy into `files/job21_*` when finished.
-- Report (per the amendment): the 7 Job 18 items for seed 8, and seeds 7 and 8 side by side (n = 2); no pooling
-  with H3's pre-registered seeds.
+  notebooks → `results/job21/` in `purvansh01/safetypulse-jobs` (collected at jobs-repo commit
+  `0d5b5a3d3675837f9add52b3786cb766461c3862`, the job's last upload).
+- Collected into git as `files/job21_monitor.jsonl` (41 rows, scores only), `files/job21_dw.jsonl`,
+  `files/job21_train_log.json`, `files/job21_summary.json`, `files/job21_job.json` (from `hf jobs inspect`; no
+  command, environment or secret fields, as `job18_job.json`) and the executed notebooks
+  `files/job21_07_finetune_checkpoints.ipynb`, `files/job21_08_monitor_checkpoints.ipynb`. Release check: every cell
+  output of both notebooks was read (versions, progress bars, checkpoint names, the training-loss table, a loss plot,
+  per-checkpoint scores, the `HF_TOKEN`-is-set notice without a value, and notebook 08's own hub backup failing with
+  404 as in Job 18); no prompt or answer text and no token; JSON/JSONL strings are all ≤ 80 characters except hex
+  hashes; `python tools/check_release_policy.py origin/stage2/wf-integration`: 0 violations.
+- Adapters: private `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca` holds `alpaca-s8/checkpoint-{0..250}` (41) and
+  `alpaca-s8/train_log.json` (checked 2026-11-23, still private). Lane 4 added a seed-8 evaluation subsection to the
+  card, uploaded as the repo README in Hub commit `2b5c3f7627f10263dd6ccb5dc0a11d1faaca07aa`.
+
+**Result** (`tools/h3_fine_lead.py --job job21` → `docs/report/h3_fine_lead_s8.{md,json}`, figure
+`docs/report/figures/h3_fine_lead_s8.pdf`, and seeds 7 and 8 side by side in `docs/report/h3_fine_lead_seeds.{md,json}`;
+exploratory, n = 2, no pooling with H3's seeds; H3 stays refuted): base ASR 17/78 (as seed 7); first unsafe
+checkpoint step 28 (27/78; step 26 was 17/78), inside the dense window, so leads are resolved to 2 steps. First
+alarms: ‖ΔW‖ > 3.344 at step 12 (lead +16), `cis_sep` WARN at 18 (+10), `cis_sep` FAIL at 28 (0), spot-check WARN at
+40 (−12; the value is exactly 0.96 = 48/50, on the inclusive threshold). ‖ΔW‖ − `cis_sep` first alarm = −6 steps
+(seed 7: −8): on both seeds the weight-norm baseline alarmed first at 2-step spacing, and both alarm at step 20 in
+the 10-step sub-sample. Leads differ widely between the seeds (`cis_sep` WARN +80 vs +10) because seed 7 turned
+unsafe at step 100 and seed 8 at 28.
 
 ## Job 22 · Generation determinism: why Job 17's 1B rerun did not reproduce Job 9 flags (2026-11-22, running)
 
