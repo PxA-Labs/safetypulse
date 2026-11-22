@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+JOBS_REV = "e93a955bff0f9d598b7f126b32de13aeff311488"   # jobs-repo commit whose copy is byte-identical to the file committed here
 FILES = ROOT / "kaggle/executed/12_hf_jobs/files"
 FAMS = ["llama32-3b", "qwen3-4b", "gemma3-4b", "llama31-8b"]
 
@@ -29,7 +30,7 @@ def main():
         if not p.exists():
             from huggingface_hub import hf_hub_download
             p.write_text(Path(hf_hub_download("purvansh01/safetypulse-jobs", f"results/job11/{f}.jsonl",
-                                              repo_type="dataset")).read_text())
+                                              repo_type="dataset", revision=JOBS_REV)).read_text())
         rs = [json.loads(l) for l in open(p)]
         al = next(r for r in rs if r["role"] == "aligned")
         ft = [r for r in rs if r["role"] != "aligned"]

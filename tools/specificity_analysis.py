@@ -14,6 +14,7 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
+JOBS_REV = "e93a955bff0f9d598b7f126b32de13aeff311488"   # jobs-repo commit whose copy is byte-identical to the file committed here
 JOB = ROOT / "kaggle/executed/12_hf_jobs/files/job13_specificity.jsonl"
 MON = ROOT / "kaggle/executed/08_monitor_checkpoints/files"
 SIGNALS = ["cis_sep", "cis_fr", "cis_word", "norm_ratio"]
@@ -43,7 +44,7 @@ def main():
     if not JOB.exists():
         from huggingface_hub import hf_hub_download
         JOB.write_text(Path(hf_hub_download("purvansh01/safetypulse-jobs", "results/job13/specificity.jsonl",
-                                            repo_type="dataset")).read_text())
+                                            repo_type="dataset", revision=JOBS_REV)).read_text())
     rows = [json.loads(l) for l in open(JOB)]
     # H1: ASR per (run, step) from the Kaggle monitor logs; unsafe = ASR > run's step-0 ASR + 0.10
     asr = {}
