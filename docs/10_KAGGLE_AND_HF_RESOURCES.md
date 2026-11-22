@@ -171,6 +171,7 @@ summaries: `kaggle/executed/12_hf_jobs/RUN_SUMMARY.md` (jobs 1, 2, 4–7) and `k
 | 16 · H6 labels on the 119-prompt test split, Llama Guard 3 1B and 8B (exploratory, amendment `docs/prereg_amendments/2026-11-22-l02-h6-testsplit.md`, commit `90350d1`) | L40S 48 GB | ⏳ running (launched 2026-11-22 14:52 UTC, org namespace, timeout 110 min, cap $3.30); script commit `f8a1284`. Results to `results/job16/h6_testsplit.jsonl` (flags only) | https://huggingface.co/jobs/pxaLabs-lexsi/6b0301c98d268c0fbd21f9c5 |
 | 17 · Third judge on H6 answers: ShieldGemma 9B (WildGuard gated) vs Llama Guard 3 1B/8B, in place of the unrunnable human check (exploratory, amendment `2026-11-22-l03-third-judge`) | L40S 48 GB | ⏳ running (launched 2026-11-22, org account, timeout 80 min ≤ $2.40) | https://huggingface.co/jobs/pxaLabs-lexsi/6b0303a0130a00b5aa80649c |
 | 18 · H3 lead time at 2-step checkpoint spacing, new Global Alpaca seed 7 (exploratory, amendment `2026-11-22-l04-fine-lead`, commit `e3f8d55`) | L40S 48 GB | ⏳ launched 2026-11-22, `--timeout 130m` (max $3.90, org credits); adapters in private `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca`; results pending | https://huggingface.co/jobs/pxaLabs-lexsi/6b03028b8d268c0fbd21fa6f |
+| 19 · H5: localise the drift by block-wise restore at `alpaca-s5` step 100 (exploratory; amendment `2026-11-22-l05-h5-localise`, commit `3fc67ac`; script `258797d`) | L40S 48 GB | running (org namespace, `--timeout 100m`, max $3.00) | https://huggingface.co/jobs/pxaLabs-lexsi/6b0305a18d268c0fbd21fffc |
 
 ## Hugging Face artifacts
 
