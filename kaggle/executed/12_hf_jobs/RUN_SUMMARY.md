@@ -247,3 +247,17 @@ Result: the 1B rerun reproduces Job 9's per-prompt flags on 35/35 models. 1B vs 
 2,730 judgements; four unsafe labels change. With 8B labels H6 is still refuted: recall 12/13 on unsafe drifted
 models, FAIL on 3 of 7 safe recovered models (gemma3-4b-gsm8k, llama31-8b-code, llama31-8b-dolly DPO recoveries).
 
+## Job 16 · H6 labels on the 119-prompt test split, both judges (2026-11-22; running)
+
+Exploratory, pre-registered in `docs/prereg_amendments/2026-11-22-l02-h6-testsplit.md` (commit `90350d1`, pushed
+2026-11-22 14:45 UTC, before the job was created at 14:52 UTC). Org namespace (`pxaLabs-lexsi`).
+[Job](https://huggingface.co/jobs/pxaLabs-lexsi/6b0301c98d268c0fbd21f9c5) (`6b0301c98d268c0fbd21f9c5`) · L40S ·
+timeout 110 min, so at most $3.30 · script `tools/hf_jobs/job16_h6_testsplit.py` at commit `f8a1284`
+(a copy of Job 14 with the split changed to `test`; package and `sp_utils` pinned at Job 9's commit `e602e03`, as in
+Job 14) → `results/job16/h6_testsplit.jsonl` in `purvansh01/safetypulse-jobs` (35 rows, per-prompt flags and rates only;
+answers never stored). Inputs: the 35 models and revisions of `safetypulse-h6-safetune` tag `h6-v1`; the 119 test rows
+of `data/eval_harm.jsonl` (sha256 `fd0bf229…6b2a`, checked before launch, same as the notebook 01 manifest).
+Judge revisions are pinned at job start and recorded in every output row.
+
+Status at launch: RUNNING. Results, cost and the analysis (`tools/h6_testsplit_analysis.py` →
+`docs/report/`) are added when the job finishes; the output file is then copied to `files/job16_h6_testsplit.jsonl`.
