@@ -234,7 +234,7 @@ Llama-3.1-8B. The activation norm rises rather than falls. Partial specificity.
 
 ## Job 14 · H6 re-judged with Llama Guard 3 8B (2026-11-21/22)
 
-Pre-registered as exploratory in `docs/13_PREREGISTRATION.md` §3g (commit `82ad2d6`, before the run). Team account.
+Pre-registered as exploratory in `docs/13_PREREGISTRATION.md` §3g (commit `8e3d75b`, before the run). Personal account (purvansh01).
 [Job](https://huggingface.co/jobs/purvansh01/6b01de9e4fdc5ab3c55e03fa) · L40S · 34m 52s, evicted after 34 of 35 models
 (local disk over 380 GB; the script now deletes each model after use) · resumed in
 [job](https://huggingface.co/jobs/purvansh01/6b01e6ee4fdc5ab3c55e127f) for the last model (3m 48s) · ~$1.27 in total, test run included ·
