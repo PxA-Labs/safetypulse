@@ -506,3 +506,25 @@ Early log: environment as printed by the job: torch `2.15.0+cu132`, transformers
 CUDA 13.2, cuDNN 92600, driver 620.70.06, NVIDIA L40S; uv wheel sizes identical to Job 14's. First model
 (`llama32-3b-hh-rlhf-aligned`, pass A, 32 s): 2 unsafe of 78, as Job 17 (2), not Job 9/14 (1); one model, so no
 conclusion yet.
+
+## Job 24 · Third seed of the lead-time run, Global Alpaca seed 9, 2-step to 40 then 5-step to 140 (2026-11-22 UTC, exploratory)
+
+**Status:** RUNNING (launched 2026-11-22 19:48 UTC, detached). Pre-registered as exploratory in
+`docs/prereg_amendments/2026-11-22-l10-fine-lead-seed9.md` (commit `eacb3a3f516a76c87a93883e8d62e6859b5735d0`,
+committed 19:47:07 UTC and pushed on `wf/r3-lane10` before the job was created at 19:48:47 UTC). H3 stays refuted
+whatever this shows; thresholds unchanged.
+
+- Job: https://huggingface.co/jobs/pxaLabs-lexsi/6b03471f8d268c0fbd228a21 (`6b03471f8d268c0fbd228a21`, org
+  namespace `pxaLabs-lexsi`, `l40sx1`, `--timeout 75m`, `SP_TIMEOUT_MIN=75`, max cost $2.25).
+- Script: `tools/hf_jobs/job24_fine_lead_s9.py` at commit `bf36c16` (launched from that file), a copy of
+  `job21_fine_lead_s8.py`; code pin `eacb3a3` (`sp_utils.py`, notebooks 07/08 byte-identical to Job 21's `e2fb4a1`);
+  torch 2.15.0, transformers 5.20.2, peft 0.21.2 as Job 21.
+- Run `alpaca-s9`: Tiny Aya Global @ `af89d219`, `ft_alpaca.jsonl` @ `15ac4436`, recipe of notebook 07 (fp16 base
+  and autocast forced), training stopped at step 140 with the 250-step cosine schedule kept; checkpoints at
+  0, 2, …, 40, 45, 50, …, 140 (41), set by an in-memory substitution of notebook 07's save callback (amendment).
+- Monitoring: notebook 08 to `## Analysis` (bundle `f898d4c6`, spot-check, ASR on 78 dev prompts with Llama Guard 3
+  1B @ `acf7aafa`), step order, time guard 6 min before the timeout, `monitor.jsonl` uploaded after every checkpoint;
+  ‖ΔW‖ of every adapter (threshold 3.344).
+- Predicted runtime ≈ 59.0 min (≈ $1.77), from Job 21's measured phases (amendment).
+- Outputs: adapters → private `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca`, subfolder `alpaca-s9/` (card owned
+  by lane 4, unchanged); scores-only results → `results/job24/` in `purvansh01/safetypulse-jobs`.
