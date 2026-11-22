@@ -160,6 +160,15 @@ class ProbeBundle(_Open):
     _tensors: dict[str, torch.Tensor] = PrivateAttr(default_factory=dict)
     _root: Path | None = PrivateAttr(default=None)
 
+    @field_validator("schema_version")
+    @classmethod
+    def _known_major_version(cls, v):
+        # A different major version may give the same field names another meaning; minor versions only add fields.
+        if v.split(".")[0] != SCHEMA_VERSION.split(".")[0]:
+            raise ValueError(f"probe bundle schema_version {v!r} is not readable by this safetypulse (reads "
+                             f"{SCHEMA_VERSION.split('.')[0]}.x); upgrade safetypulse or re-run calibrate")
+        return v
+
     @model_validator(mode="after")
     def _circ_reference(self):
         if self.components and self.reference.circ_base is None:
