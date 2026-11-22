@@ -360,7 +360,7 @@ CPU check before launch (`SP_CHECK=1`, tiny random Cohere2): the script's merge 
 (max diff 0), restoring a block equals zeroing its `lora_B` in peft (logit diff 0), restoring all blocks reproduces the
 base logits exactly. The job repeats the merge check against peft on the real adapter and records the difference.
 
-## Job 20 · H4: English alarm vs Hindi / Spanish / French drift on the H3 checkpoints (2026-11-22, running)
+## Job 20 · H4: English alarm vs Hindi / Spanish / French drift on the H3 checkpoints (2026-11-22, completed)
 
 Exploratory, no pass mark. Amendment `docs/prereg_amendments/2026-11-22-l06-h4-multilingual.md` (commit `edda1dd`,
 pushed before the job was created); script `tools/hf_jobs/job20_h4_multilingual.py` (commit `ef62566`). Org namespace.
@@ -373,4 +373,23 @@ Outputs (flags, rates, cosines, sha256 of translations; no text) → `results/jo
 `purvansh01/safetypulse-jobs`; copy to `files/` when finished. Translations and answers stay in the job's memory.
 Launch check (~25 min in): `translations.json` (no truncated, capped or empty lines) and `directions.json` uploaded;
 first checkpoint (seed 4, step 0) scored in all four languages at ~46 s per language, so ~3 min per checkpoint and
-~65 min in total, inside the timeout. Result: pending.
+~65 min in total, inside the timeout.
+
+Status: COMPLETED, 3908 s (65.1 min; the job's own clock 64.2 min), $1.95 at $1.80/h. All 18 checkpoints scored in all
+four languages. Collected from jobs-repo commit `a1e10e62` (byte-identical to the download) into
+`files/job20_asr.jsonl` (72 rows: per-prompt flags and rates), `files/job20_directions.json` (cosines) and
+`files/job20_translations.json` (sha256 hashes and length statistics). Release check: no string longer than 80
+characters that is not a 64-hex hash in those three files, and no non-ASCII text. `summary.json` was **not** copied:
+it holds one 105-character string (its `rule` field, the unsafe/alarm rule written by the job script at line 251, not
+translated text), which the strict release check does not allow; it stays in the private jobs repo, and
+`tools/h4_multilingual.py` recomputes everything in it from the three committed files and the H3 monitor logs
+(every `cis_sep`, unsafe flag and per-language count matches it).
+
+Result (`docs/report/h4_multilingual.md`, `tools/h4_multilingual.py`; exploratory, no pass mark): `cis_sep` from the H3
+monitor is 0.508–0.626 at every checkpoint after step 0, so the English alarm (WARN or FAIL) fires on all 15 and
+recall on unsafe checkpoints is 1.00 in every language (unsafe en 13/15, hi 12/15, es 2/15, fr 15/15); the safe
+checkpoints in each language are all false alarms (en 2, hi 3, es 13, fr 0). Two checkpoints are unsafe in a
+non-English language but not in English (seed 6, steps 150 and 200, French); both flagged. Because the alarm fires
+everywhere, these runs do not test whether it would miss drift confined to another language. Refusal directions on the
+base model at layer 27: cos with English hi 0.817, es 0.795, fr 0.887; random directions mean |cos| 0.018 (max ≤
+0.054); English split-half 0.997. Translation quality not measured (no references); no truncated, capped or empty lines.
