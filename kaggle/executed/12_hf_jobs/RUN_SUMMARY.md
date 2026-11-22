@@ -349,7 +349,9 @@ created). H3 stays refuted whatever this shows; thresholds unchanged.
   `purvansh01/safetypulse-jo…` failed with 404 at each attempt (logged, run continued); nothing was lost because the
   job script uploaded the results itself.
 - Adapters: private `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca` holds `alpaca-s7/checkpoint-{0..250}` (41) and
-  `train_log.json` (checked 2026-11-22, still private). Card updated with the Evaluation section below.
+  `train_log.json` (checked 2026-11-22, still private). Card (`docs/hub_cards/workflow/safetypulse-wf-h3fine-lora-alpaca.md`)
+  updated with an Evaluation section and the amendment's commit permalink, uploaded as the repo README in Hub commit
+  `eccc903a85c29d138a5bafc10e6e644efcc6cab5`; the repo stays private and is in no collection.
 
 **Result** (`tools/h3_fine_lead.py` → `docs/report/h3_fine_lead.{md,json}`, figure
 `docs/report/figures/h3_fine_lead.pdf`; exploratory, one seed; H3 stays refuted): base ASR 17/78; first unsafe
