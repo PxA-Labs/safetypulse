@@ -20,7 +20,6 @@ from safetypulse.models import decoder_layers, head_geometry
 from safetypulse.prompts import encode, format_chat
 from safetypulse.utils import batched
 
-
 # --- the implementation before the fix (hooks o_proj input and mlp output on every layout) -------------------
 
 @torch.no_grad()
