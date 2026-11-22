@@ -279,7 +279,7 @@ the unsafe-vs-safe AUROC (2 unsafe, 4 safe, Job 9 1B labels) is 0.625, the same 
 (`docs/report/h6_layers.json`; 0.50 at layer 11, 1.00 at layers 17-34). The partial ablation does not explain
 Gemma-3's early layer: fixing it moves l* earlier, not later. The pre-registered H6 verdict (refuted) is unchanged.
 
-## Job 16 · H6 labels on the 119-prompt test split, both judges (2026-11-22; running)
+## Job 16 · H6 labels on the 119-prompt test split, both judges (2026-11-22; completed)
 
 Exploratory, pre-registered in `docs/prereg_amendments/2026-11-22-l02-h6-testsplit.md` (commit `90350d1`, pushed
 2026-11-22 14:45 UTC, before the job was created at 14:52 UTC). Org namespace (`pxaLabs-lexsi`).
@@ -291,31 +291,70 @@ answers never stored). Inputs: the 35 models and revisions of `safetypulse-h6-sa
 of `data/eval_harm.jsonl` (sha256 `fd0bf229…6b2a`, checked before launch, same as the notebook 01 manifest).
 Judge revisions are pinned at job start and recorded in every output row.
 
-Status at launch: RUNNING. Results, cost and the analysis (`tools/h6_testsplit_analysis.py` →
-`docs/report/`) are added when the job finishes; the output file is then copied to `files/job16_h6_testsplit.jsonl`.
+Status: COMPLETED (created 14:52:57, started 14:53:07, finished 15:37:46 UTC); running 2678 s (44.6 min) on one L40S
+at $1.80/h = **$1.34**. All 35 models finished (119 test prompts each; 2117.5 s of per-model generation and judging).
+Output `results/job16/h6_testsplit.jsonl` (jobs-repo commit `e70d49b`), copied byte-identical to
+[`files/job16_h6_testsplit.jsonl`](files/job16_h6_testsplit.jsonl) after a release check (keys: ids, revisions,
+rates, per-prompt booleans, judge shas; no string over 80 characters, no answer/prompt/text fields). Judges: Llama Guard
+3 1B `acf7aafa`, 3 8B `7327bd9f` (same snapshots as Job 14); code commit `e602e03`.
 
-## Job 17 · Third, independent judge on the H6 answers: ShieldGemma 9B (2026-11-22, exploratory)
+Analysis: `tools/h6_testsplit_analysis.py` → [`docs/report/h6_testsplit.md`](../../../docs/report/h6_testsplit.md) /
+`.json` (deterministic: two runs byte-identical). Exploratory; the pre-registered H6 verdict (Job 9, 1B, dev) stays
+**refuted**. With Job 9's `cis_sep` and the frozen thresholds, H6 under the §2 rule is refuted for every judge × prompt
+set: unsafe drifted models flagged 11/12 (1B test, 1B pooled, 8B test, 8B pooled; 8B dev 12/13), FAIL on safe recovered
+models 5/11 (1B test), 4/9 (1B pooled), 4/9 (8B test), 5/10 (8B pooled), against 3/8 pre-registered. Unsafe labels that
+change against the dev split: 1B 3/31 (test) and 1/31 (pooled); 8B 5/31 (test) and 4/31 (pooled). Every change is
+unsafe to safe except `llama31-8b-code-dpo-recover` (8B test, ΔASR +0.101, 12/119 vs 0/119); the only drifted model
+that changes is `gemma3-4b-gsm8k-sft-drift` (8B: unsafe on dev, safe on test and pooled). 1B vs 8B on the test split: agreement 0.912 (4165 judgements),
+kappa 0.784. Caveat: dev flags (Jobs 9, 14) and test flags (Job 16) come from separate jobs whose library versions
+(torch, transformers) are resolved at job start and may differ.
+
+## Job 17 · Third, independent judge on the H6 answers: ShieldGemma 9B (2026-11-22, exploratory; COMPLETED)
 
 Amendment `docs/prereg_amendments/2026-11-22-l03-third-judge.md` (commit `baeb43e`, pushed on `wf/r1-lane3` before
 the job was created). Org namespace (pxaLabs-lexsi), L40S, `--timeout 80m` (cost cap $2.40).
 [Job](https://huggingface.co/jobs/pxaLabs-lexsi/6b0303a0130a00b5aa80649c) · script `tools/hf_jobs/job17_third_judge.py`
 at commit `3aec2e0` · generation code and package at Job 9's commit `e602e03` (as Job 14) · output
-`results/job17/third_judge_h6.jsonl` in `purvansh01/safetypulse-jobs` (per-prompt flags only, no answer text), to be
-copied to `files/job17_third_judge_h6.jsonl`.
+`results/job17/third_judge_h6.jsonl` in `purvansh01/safetypulse-jobs` (per-prompt flags only, no answer text), copied
+byte-identical (jobs-repo commit `1f1f9f68`, "job17: 35 models"; sha256 `8ec870b4…cdb1`) to `files/job17_third_judge_h6.jsonl`
+→ `docs/report/third_judge_h6.{md,json}` (`tools/third_judge_h6.py`; two runs give identical outputs).
 
 Why: the 100-item human check of the judge was not run and cannot be; Jobs 9 and 14 used two Llama Guard 3 models
 (same family). Judge choice by the amendment's fixed order: `allenai/wildguard` is gated for this account (access
 denied; not requested), so `google/shieldgemma-9b` revision `b8b63601` (prompt-response mode, four model-card
 guidelines, unsafe if P(Yes) > 0.5 for any). Llama Guard 3 1B re-judges the same answers for reproducibility.
 
-Status: **running** (launched 2026-11-22). No test run (lane cap); the script asserts a benign pair scores No on all
-four guidelines before the first model. Result: pending.
+Status: **COMPLETED**. Created 15:00:48 UTC, started 15:03:54, finished 15:49:55; 2761 s running (46.0 min; 2946 s with
+scheduling) · L40S at $1.80/h → **$1.38**. No test run (lane cap); the benign launch check gave P(Yes) 0.0 on all four
+guidelines. All 35 models finished ("done: 35 models in 44.1 min"). Judge revisions recorded in every row: Llama-Guard-3-1B
+`acf7aafa`, shieldgemma-9b `b8b63601`. GPU NVIDIA L40S.
 
-Early log (first model, `llama32-3b-hh-rlhf-aligned`, 57 s): benign check P(Yes) 0.0 on all four guidelines; 1B ASR
-0.026 vs Job 9's 0.013, so this run's 1B flags do **not** equal Job 9's or Job 14's for that model (Job 14 matched
-35/35). Likely cause, not verified: unpinned `torch`/`transformers` versions resolved differently from Job 14, changing
-greedy bf16 answers. As the amendment fixes, the 8B join uses only models whose 1B flags equal Job 14's; the
-reproduction count is reported with the results.
+Library versions: **not printed** by the job (the script prints no `__version__` and uv's resolve output lists only
+download sizes and "Installed 61 packages"), so the torch, transformers and CUDA versions actually used are not recorded.
+What the log does show: torch wheel 514.2 MiB, transformers 12.9 MiB and CUDA 13 NVIDIA wheels (`nvidia-cudnn-cu13`,
+`nvidia-nccl-cu13`, ...). Job 14's log (`6b01de9e4fdc5ab3c55e03fa`) shows the same wheel names and sizes (60 packages; Job
+17 adds `sentencepiece`), so a torch/transformers version change, suggested in the early-log note below, is not supported
+by the logs; the cause of the non-reproduction is not established. Future jobs should print the versions.
+
+Reproduction: this run's 1B flags equal Job 9's and Job 14's on **27/35** models; the 8 that differ are all Llama-3.2-3B
+models (aligned, and the dolly/legal/medical drift and recovery models, plus code-dpo-recover); max 1B ASR difference vs
+Job 9 0.038 (3 of 78 prompts). As the amendment fixes, 8B and 2-of-3 majority comparisons use only the 27 joined models;
+majority labels need the family's aligned model, so Llama-3.2-3B has none.
+
+Result (exploratory; `docs/report/third_judge_h6.md`): ShieldGemma vs 1B on this run's answers, 2,730 judgements:
+agreement 0.735, Cohen's kappa 0.259 (1B flags 903, ShieldGemma 219; 704 1B-only, 20 SG-only). On the 27 joined models
+(2,106 judgements): SG vs 8B agreement 0.791, kappa 0.335; 1B vs 8B 0.904, kappa 0.765; 2-of-3 majority vs 1B kappa 0.845,
+vs 8B 0.911, vs SG 0.396. ShieldGemma flags mostly fall under Dangerous Content (177 of 219). H6 with each label set
+(Job 9 `cis_sep`, frozen thresholds): 1B (pre-registered) refuted, 11/12 unsafe drifted flagged, FAIL on 3/8 safe
+recovered; ShieldGemma refuted, 9/10, FAIL on 8/15 (it labels every recovered model safe); 2-of-3 majority (21
+fine-tuned models in three families) refuted, 7/8, FAIL on 4/7. The pre-registered H6 verdict is unchanged. Limitation:
+ShieldGemma's four policies do not cover every Llama Guard 3 category (e.g. privacy, specialised advice, some non-violent
+crimes), so its much lower ASR is largely a policy difference; it is not a substitute for the human check.
+
+Early log note (written while running; kept for the record): first model, `llama32-3b-hh-rlhf-aligned`, 57 s: benign
+check P(Yes) 0.0 on all four guidelines; 1B ASR 0.026 vs Job 9's 0.013, so this run's 1B flags do **not** equal Job 9's
+or Job 14's for that model (Job 14 matched 35/35). Suggested cause at the time, not verified (and not supported by the
+wheel sizes above): unpinned `torch`/`transformers` versions.
 
 ## Job 18 · H3 lead time at 2-step checkpoint spacing, one new Global Alpaca seed (2026-11-22, exploratory)
 
@@ -368,7 +407,9 @@ first unsafe step lies in the 20-step-spaced part, so leads are resolved only to
 
 ## Job 19 · H5: localising the drift by block-wise restore (2026-11-22)
 
-**Status:** running (launched 2026-11-22, detached; results collected next round). Exploratory, no verdict.
+**Status:** COMPLETED (2026-11-22 15:09:26 to 16:18:40 UTC, 4154 s = 69.2 min, ~$2.08 at $1.80/h; 111/111
+configurations, held-out phase included; final log has no traceback; script merge vs peft on the real adapter: max
+|diff| 0). Exploratory, no verdict.
 Amendment `docs/prereg_amendments/2026-11-22-l05-h5-localise.md` (commit `3fc67ac`, pushed before the job was created) ·
 script `tools/hf_jobs/job19_h5_localise.py` at commit `258797d` (launched from that file, unmodified; `sp_utils` pinned to
 Job 8's `50091f0`) · org namespace `pxaLabs-lexsi` ·
@@ -386,7 +427,24 @@ CPU check before launch (`SP_CHECK=1`, tiny random Cohere2): the script's merge 
 (max diff 0), restoring a block equals zeroing its `lora_B` in peft (logit diff 0), restoring all blocks reproduces the
 base logits exactly. The job repeats the merge check against peft on the real adapter and records the difference.
 
-## Job 20 · H4: English alarm vs Hindi / Spanish / French drift on the H3 checkpoints (2026-11-22, running)
+Result (`files/job19_h5_localise.jsonl`, release-checked: per-prompt booleans, rates and ids only, longest string 40
+chars; analysis `tools/h5_localise.py` -> `docs/report/h5_localise.{md,json}`, deterministic):
+- In-job references (dev, n = 78): base 15/78 = 19.2% [12.0, 29.3], drifted 31/78 = 39.7% [29.6, 50.8]; the monitor's
+  16/78 and 33/78 lie inside these intervals.
+- Single blocks: 50/72 lower ASR when restored, dASR from -3 to +8 prompts; **0/72** exceed the drifted interval's
+  half-width (10.6 points, ~8 prompts). Top block `attn:0` (+8 prompts).
+- Top-k vs weight-fraction-matched random (dev, in-sample for top-k): top-k ASR 29.5 / 30.8 / 29.5 / 24.4 / 15.4% for
+  k = 1/2/4/8/16 (frac 0.004 to 0.286) vs random means 38.0 / 38.0 / 33.9 / 31.8 / 22.1%; below all 5 random sets at
+  every k, but each gap (at most 8.5 points) is within one Wilson half-width. The plan's point check (ASR <= base + 2
+  with frac < 0.40) holds only at k = 16; the Wilson-upper check holds at no k.
+- Held out (test, n = 119): base 14.3%, drifted 26.1%, top-1/2/4/8/16 28.6 / 25.2 / 22.7 / 17.6 / 13.5% (no random
+  comparator on test).
+- `cis_sep` vs ASR across the 104 dev configurations: Spearman -0.73 (cis_sep vs frac +0.58); only the base model is
+  PASS; top-16 reaches base-level ASR at `cis_sep` 0.797 (WARN).
+- Reading: no evidence that the drift sits in a few blocks; restoring ~29% of the LoRA energy (top 16 or random sets of
+  similar energy) brings ASR near base on this one checkpoint.
+
+## Job 20 · H4: English alarm vs Hindi / Spanish / French drift on the H3 checkpoints (2026-11-22, completed)
 
 Exploratory, no pass mark. Amendment `docs/prereg_amendments/2026-11-22-l06-h4-multilingual.md` (commit `edda1dd`,
 pushed before the job was created); script `tools/hf_jobs/job20_h4_multilingual.py` (commit `ef62566`). Org namespace.
@@ -399,4 +457,78 @@ Outputs (flags, rates, cosines, sha256 of translations; no text) → `results/jo
 `purvansh01/safetypulse-jobs`; copy to `files/` when finished. Translations and answers stay in the job's memory.
 Launch check (~25 min in): `translations.json` (no truncated, capped or empty lines) and `directions.json` uploaded;
 first checkpoint (seed 4, step 0) scored in all four languages at ~46 s per language, so ~3 min per checkpoint and
-~65 min in total, inside the timeout. Result: pending.
+~65 min in total, inside the timeout.
+
+Status: COMPLETED, 3908 s (65.1 min; the job's own clock 64.2 min), $1.95 at $1.80/h. All 18 checkpoints scored in all
+four languages. Collected from jobs-repo commit `a1e10e62` (byte-identical to the download) into
+`files/job20_asr.jsonl` (72 rows: per-prompt flags and rates), `files/job20_directions.json` (cosines) and
+`files/job20_translations.json` (sha256 hashes and length statistics). Release check: no string longer than 80
+characters that is not a 64-hex hash in those three files, and no non-ASCII text. `summary.json` was **not** copied:
+it holds one 105-character string (its `rule` field, the unsafe/alarm rule written by the job script at line 251, not
+translated text), which the strict release check does not allow; it stays in the private jobs repo, and
+`tools/h4_multilingual.py` recomputes everything in it from the three committed files and the H3 monitor logs
+(every `cis_sep`, unsafe flag and per-language count matches it).
+
+Result (`docs/report/h4_multilingual.md`, `tools/h4_multilingual.py`; exploratory, no pass mark): `cis_sep` from the H3
+monitor is 0.508–0.626 at every checkpoint after step 0, so the English alarm (WARN or FAIL) fires on all 15 and
+recall on unsafe checkpoints is 1.00 in every language (unsafe en 13/15, hi 12/15, es 2/15, fr 15/15); the safe
+checkpoints in each language are all false alarms (en 2, hi 3, es 13, fr 0). Two checkpoints are unsafe in a
+non-English language but not in English (seed 6, steps 150 and 200, French); both flagged. Because the alarm fires
+everywhere, these runs do not test whether it would miss drift confined to another language. Refusal directions on the
+base model at layer 27: cos with English hi 0.817, es 0.795, fr 0.887; random directions mean |cos| 0.018 (max ≤
+0.054); English split-half 0.997. Translation quality not measured (no references); no truncated, capped or empty lines.
+
+## Job 21 · Second seed of the 2-step lead-time run, Global Alpaca seed 8 (2026-11-22, exploratory)
+
+**Status:** RUNNING (launched 2026-11-22, detached; results collected next round). Pre-registered as exploratory in
+`docs/prereg_amendments/2026-11-22-l10-fine-lead-seed8.md` (commit `e2fb4a14afc67e1f40c003c53f2d097484784a1a`,
+committed 17:13:59 UTC and pushed on `wf/r2-lane10` before the job was created at 17:16:58 UTC). A replication of
+Job 18 (seed 7) with seed 8 only; H3 stays refuted whatever this shows; thresholds unchanged.
+
+- Job: https://huggingface.co/jobs/pxaLabs-lexsi/6b03238a8d268c0fbd223666 (`6b03238a8d268c0fbd223666`, org
+  namespace `pxaLabs-lexsi`, `l40sx1`, `--timeout 100m`, `SP_TIMEOUT_MIN=100`, max cost $3.00).
+- Script: `tools/hf_jobs/job21_fine_lead_s8.py` at commit `8252435` (launched from that file), a copy of
+  `job18_fine_lead.py` differing only in: seed 8 / run `alpaca-s8`, output `results/job21/`, time-guard default
+  100 min, code pin `e2fb4a1` (where `sp_utils.py` and notebooks 07/08 are byte-identical to Job 18's `4ef5645`), and
+  `torch==2.15.0` (the version Job 18 resolved, `2.15.0+cu132`, read from its executed notebook 07; it was unpinned
+  in Job 18). transformers 5.20.2, peft 0.21.2 as Job 18.
+- Run `alpaca-s8`: Tiny Aya Global @ `af89d219`, `ft_alpaca.jsonl` @ `purvansh01/safetypulse-finetune-data`
+  `15ac4436`, recipe of notebook 07 unchanged (fp16 base and autocast forced); checkpoints at step 0, every 2 steps
+  to 60, every 20 steps to 240, and 250 (41).
+- Monitoring: notebook 08 to `## Analysis` (frozen matched bundle `f898d4c6`, asserted; 50-prompt spot-check; ASR on
+  78 dev prompts, Llama Guard 3 1B @ `acf7aafa`), step order, time guard 12 min before timeout; ‖ΔW‖ of every adapter
+  (threshold 3.344).
+- Outputs: adapters → private `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca`, subfolder `alpaca-s8/` (card owned
+  by lane 4, unchanged); `monitor.jsonl` (scores only), `dw.jsonl`, `train_log.json`, `job21_summary.json`, executed
+  notebooks → `results/job21/` in `purvansh01/safetypulse-jobs`. To copy into `files/job21_*` when finished.
+- Report (per the amendment): the 7 Job 18 items for seed 8, and seeds 7 and 8 side by side (n = 2); no pooling
+  with H3's pre-registered seeds.
+
+## Job 22 · Generation determinism: why Job 17's 1B rerun did not reproduce Job 9 flags (2026-11-22, running)
+
+Exploratory. Amendment `docs/prereg_amendments/2026-11-22-l11-determinism.md` (commit `a625859`, pushed 2026-11-22
+17:20 UTC on `wf/r2-lane11`, before the job was created at 17:26 UTC). Org namespace (`pxaLabs-lexsi`), L40S,
+`--timeout 50m` (at most $1.50). [Job](https://huggingface.co/jobs/pxaLabs-lexsi/6b0325c8130a00b5aa80a77b)
+`6b0325c8130a00b5aa80a77b` · script `tools/hf_jobs/job22_determinism.py` at commit `4f6db77` · `sp_utils` and package
+at Job 9's commit `e602e03` (as Jobs 14 and 17) · output `results/job22/determinism.jsonl` in
+`purvansh01/safetypulse-jobs` (flags, equality booleans and counts only; answers never stored), to be copied to
+`files/job22_determinism.jsonl`.
+
+Why: Job 17's 1B rerun matched Job 9/14 flags on 27/35 models; all 8 misses are Llama-3.2-3B. The job logs print no
+versions, but uv's wheel sizes matched against PyPI (`docs/report/workflow/determinism_versions.md`) indicate Jobs 14
+and 17 both used torch 2.15.0 and transformers 5.24.0 on an L40S (Job 9: transformers 5.23.0, and it still matched
+Job 14 on 35/35); Job 17 only added sentencepiece 0.2.3. So the unpinned-version explanation is not supported and the
+hypothesis tested is run-to-run nondeterminism of batched bf16 greedy generation.
+
+What: the 8 non-reproducing models (h6-v1 revisions), torch 2.15.0 / transformers 5.24.0 pinned, no sentencepiece,
+generation exactly as Job 14 (greedy, 256 tokens, bf16, batch 32, 78 dev prompts), pass A over all 8 then pass B
+reloading each; Llama Guard 3 1B at `acf7aafa`. Per model: flags A == B, answer strings A == B (count of differing
+prompts), A/B equal to Jobs 9, 14, 17, unsafe counts and differences. The job prints and stores the actual torch,
+transformers, tokenizers, CUDA, cuDNN, driver and GPU.
+
+Status: **RUNNING** (launched 2026-11-22 17:26 UTC). Results, runtime and cost are collected next round.
+
+Early log: environment as printed by the job: torch `2.15.0+cu132`, transformers `5.24.0`, tokenizers `0.23.3`,
+CUDA 13.2, cuDNN 92600, driver 620.70.06, NVIDIA L40S; uv wheel sizes identical to Job 14's. First model
+(`llama32-3b-hh-rlhf-aligned`, pass A, 32 s): 2 unsafe of 78, as Job 17 (2), not Job 9/14 (1); one model, so no
+conclusion yet.

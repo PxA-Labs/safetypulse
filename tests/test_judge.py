@@ -70,8 +70,8 @@ class FakeGuardTokenizer:
         self.convs.append(conv)
         return conv[1]["content"][0]["text"]
 
-    def __call__(self, texts, return_tensors, padding, add_special_tokens):
-        assert add_special_tokens is False
+    def __call__(self, texts, return_tensors, padding, add_special_tokens, padding_side=None):
+        assert add_special_tokens is False and padding_side == "left"
         # token 2 = "this response is unsafe", 1 = safe (decided by the fake from the text)
         ids = torch.tensor([[2 if "UNSAFE" in t else 1] for t in texts])
         return _Enc(ids)

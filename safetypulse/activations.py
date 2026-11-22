@@ -6,12 +6,14 @@ Residual-stream index convention used everywhere:
 so a model with L layers has L+1 resid positions.
 
 Components are identified as "attn_head:<layer>:<head>" or "mlp:<layer>" (0-based decoder layer). Attention
-components hook `self_attn.o_proj` and MLP components hook `mlp` (Llama/Qwen/Cohere-style module names).
+components hook `self_attn.o_proj` and MLP components hook `mlp` (Llama/Qwen/Cohere-style module names); in
+mean-/zero-ablation, MLPs on post-norm (Gemma-2/3) layers hook `post_feedforward_layernorm` (see ablate_components).
 """
 from __future__ import annotations
 
 import contextlib
 import random
+import warnings
 from collections.abc import Iterable, Sequence
 
 import torch
@@ -108,9 +110,7 @@ def ablate_direction(model, direction: torch.Tensor) -> list:
     pass through post_attention_layernorm / post_feedforward_layernorm before the residual add, and the norm
     weight would re-introduce the projected-out component; there the hooks sit on those two norms' outputs,
     which are exactly what is added to the residual stream. Other layouts (Llama/Qwen/Cohere) hook self_attn
-    and mlp as before. Known limitation, not changed here: ablate_components / component_means mean-ablate
-    the o_proj input and the mlp output, which on Gemma-2/3 are still followed by the post-norms, so
-    component ablation there is not a clean replacement of the residual write either."""
+    and mlp as before. ablate_components / component_means handle the same layout for MLPs (see there)."""
     r = _per_device(unit(direction.float()), next(model.parameters()).dtype)
 
     def proj_out(h):
@@ -186,10 +186,22 @@ def random_components_like(components: Sequence[str], model, rng: random.Random)
     return rng.sample(heads, n_h) + rng.sample(mlps, n_m)
 
 
+def _mlp_write_site(layer):
+    """Module whose output is the MLP's write to the residual stream: post_feedforward_layernorm on post-norm
+    (Gemma-2/3) layers, mlp otherwise."""
+    return layer.post_feedforward_layernorm if has_post_block_norms(layer) else layer.mlp
+
+
 @torch.no_grad()
 def component_means(model, tok, prompts: Sequence[str], batch_size: int = 8, system: str | None = None) -> dict:
-    """Mean o_proj input (all heads) and MLP output per layer over every real token of `prompts`:
-    {"attn": Float[Tensor, "layer d"], "mlp": Float[Tensor, "layer d"]}, used for mean-ablation."""
+    """Mean o_proj input (all heads) and mean MLP residual write per layer over every real token of `prompts`:
+    {"attn": Float[Tensor, "layer d"], "mlp": Float[Tensor, "layer d"], "mlp_post_norm": Bool[Tensor, "layer"]},
+    used for mean-ablation.
+
+    The MLP mean is taken where the MLP writes to the residual stream: the mlp output on Llama/Qwen/Cohere
+    layers, the post_feedforward_layernorm output on post-norm (Gemma-2/3) layers (models.has_post_block_norms),
+    because there mean(norm(mlp(x))) != norm(mean(mlp(x))). "mlp_post_norm" records which site each layer used,
+    so ablate_components can reject means measured at the other site."""
     layers = decoder_layers(model)
     sums = {"attn": [0.0] * len(layers), "mlp": [0.0] * len(layers)}
     mask: list = [None]
@@ -199,10 +211,10 @@ def component_means(model, tok, prompts: Sequence[str], batch_size: int = 8, sys
         sums[kind][k] = sums[kind][k] + (x.float() * mask[0].to(x.device)[..., None]).sum((0, 1)).cpu()
 
     handles = []
-    for k, layer in enumerate(layers):
-        handles.append(layer.self_attn.o_proj.register_forward_pre_hook(lambda m, a, k=k: add("attn", k, a[0])))
-        handles.append(layer.mlp.register_forward_hook(lambda m, i, o, k=k: add("mlp", k, o)))
     try:
+        for k, layer in enumerate(layers):
+            handles.append(layer.self_attn.o_proj.register_forward_pre_hook(lambda m, a, k=k: add("attn", k, a[0])))
+            handles.append(_mlp_write_site(layer).register_forward_hook(lambda m, i, o, k=k: add("mlp", k, o)))
         for batch in batched(format_chat(tok, prompts, system), batch_size):
             enc = encode(tok, batch, model.device)
             mask[0] = enc["attention_mask"].float()
@@ -210,13 +222,29 @@ def component_means(model, tok, prompts: Sequence[str], batch_size: int = 8, sys
             model(**enc, logits_to_keep=1)
     finally:
         remove_hooks(handles)
-    return {kind: torch.stack(v) / n for kind, v in sums.items()}
+    out = {kind: torch.stack(v) / n for kind, v in sums.items()}
+    out["mlp_post_norm"] = torch.tensor([has_post_block_norms(layer) for layer in layers])
+    return out
 
 
 def ablate_components(model, components: Iterable[str], means: dict | None = None) -> list:
-    """Ablate attention heads (their slice of the o_proj input) and whole MLP outputs: replaced by
-    `means` from component_means (mean-ablation) or, without it, by zero. Zero-ablating many MLPs
-    knocks the model off-distribution, so random-component baselines should use means."""
+    """Ablate attention heads (their slice of the o_proj input) and whole MLPs (their residual write): replaced
+    by `means` from component_means (mean-ablation) or, without it, by zero. Zero-ablating many MLPs knocks the
+    model off-distribution, so random-component baselines should use means.
+
+    Post-norm (Gemma-2/3) layers, models.has_post_block_norms:
+    - MLPs are replaced at the post_feedforward_layernorm output, which is exactly what the layer adds to the
+      residual stream, so a mean-ablated MLP writes its mean residual write. Replacing the raw mlp output (the
+      behaviour before this fix) let the RMSNorm re-normalise the mean: norm(mean(mlp(x))) != mean(norm(mlp(x))).
+      The means must come from this version of component_means (it records the site in "mlp_post_norm"); means
+      without that record raise ValueError. Zero-ablation is unchanged in effect (RMSNorm maps 0 to 0).
+    - Attention heads are still replaced at their o_proj input slice, and a UserWarning is issued. That is a
+      valid intervention on the head's output, but post_attention_layernorm normalises the sum of all heads, so
+      the ablated head does not write its mean to the residual stream and the other heads' writes are rescaled
+      as well: a per-head residual write does not exist on this layout, so there is no hook point that would
+      make per-head mean-ablation a clean replacement. We warn instead of raising so that existing Gemma runs
+      remain reproducible; per-head mean-ablation results on Gemma-2/3 carry this caveat.
+    Llama/Qwen/Cohere layers are hooked exactly as before (o_proj input and mlp output)."""
     _, head_dim = head_geometry(model)
     layers = decoder_layers(model)
     heads: dict[int, list[int]] = {}
@@ -227,6 +255,12 @@ def ablate_components(model, components: Iterable[str], means: dict | None = Non
             heads.setdefault(layer, []).append(head)
         else:
             mlps.add(layer)
+    post_norm_heads = sorted(k for k in heads if 0 <= k < len(layers) and has_post_block_norms(layers[k]))
+    if post_norm_heads:
+        warnings.warn(f"ablate_components: attention heads in post-norm layers {post_norm_heads} are replaced at "
+                      "the o_proj input; post_attention_layernorm then normalises the sum of all heads, so an "
+                      "ablated head does not write its mean to the residual stream (see the docstring)",
+                      UserWarning, stacklevel=2)
     handles = []
     try:   # a failure part-way (e.g. a layer index out of range) must not leave the hooks already registered
         for layer, hs in heads.items():
@@ -241,12 +275,17 @@ def ablate_components(model, components: Iterable[str], means: dict | None = Non
 
             handles.append(layers[layer].self_attn.o_proj.register_forward_pre_hook(pre))
         for layer in mlps:
+            site = _mlp_write_site(layers[layer])
             if means is None:
-                handles.append(layers[layer].mlp.register_forward_hook(lambda m, i, o: torch.zeros_like(o)))
-            else:
-                mu = means["mlp"][layer]
-                handles.append(layers[layer].mlp.register_forward_hook(
-                    lambda m, i, o, mu=mu: mu.to(o.device, o.dtype).expand_as(o).clone()))
+                handles.append(site.register_forward_hook(lambda m, i, o: torch.zeros_like(o)))
+                continue
+            recorded = means.get("mlp_post_norm")
+            if has_post_block_norms(layers[layer]) and (recorded is None or not bool(recorded[layer])):
+                raise ValueError(f"means['mlp'][{layer}] was not measured at post_feedforward_layernorm (stale "
+                                 "component_means output?); recompute the means with component_means")
+            mu = means["mlp"][layer]
+            handles.append(site.register_forward_hook(
+                lambda m, i, o, mu=mu: mu.to(o.device, o.dtype).expand_as(o).clone()))
     except BaseException:
         remove_hooks(handles)
         raise

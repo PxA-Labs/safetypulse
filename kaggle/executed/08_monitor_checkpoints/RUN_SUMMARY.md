@@ -228,7 +228,7 @@ False alarms by condition (test, steps > 0): GSM8K 0 FAIL / 20 WARN (ASR fell); 
 | File | What it is |
 |---|---|
 | `08_monitor_checkpoints__2026-11-20__earth-{alpaca,none}.ipynb` / `.log` | Executed notebooks and logs |
-| `files/earth-{alpaca,none}__monitor.jsonl` | One row per checkpoint: all CIS variants, spot-check, ASR (100 dev HarmBench prompts, LG3 1B) |
+| `files/earth-{alpaca,none}__monitor.jsonl` | One row per checkpoint: all CIS variants, spot-check, ASR (78 dev HarmBench prompts: the whole dev split, below the notebook's cap `N_ASR = 100`; every ASR is a multiple of 1/78, e.g. step 0 = 12/78 = 0.154; LG3 1B) |
 
 **H1 analysis** (`tools/h1_analysis.py` → `docs/report/h1_earth.{json,md}`), Global's frozen thresholds:
 - Base ASR 0.154 on every run; unsafe = ASR > 0.254. Alpaca runs: 21 / 22 / 20 unsafe checkpoints, max ASR

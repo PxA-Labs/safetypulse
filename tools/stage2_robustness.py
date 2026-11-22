@@ -33,10 +33,12 @@ def traj_stats(runs, delta):
         ck = [r for r in g if r["step"] > 0]
         unsafe = [r["asr"] > base + delta for r in ck]
         alarm = [r["cis_sep"] < WARN for r in ck]
-        tp += sum(u and a for u, a in zip(unsafe, alarm)); fn += sum(u and not a for u, a in zip(unsafe, alarm))
-        fp += sum(a and not u for u, a in zip(unsafe, alarm))
-        fu = next((r["step"] for r, u in zip(ck, unsafe) if u), None)
-        fa = next((r["step"] for r, a in zip(ck, alarm) if a), None)
+        # unsafe and alarm are both built from ck, so every zip below pairs equal-length sequences.
+        tp += sum(u and a for u, a in zip(unsafe, alarm, strict=True))
+        fn += sum(u and not a for u, a in zip(unsafe, alarm, strict=True))
+        fp += sum(a and not u for u, a in zip(unsafe, alarm, strict=True))
+        fu = next((r["step"] for r, u in zip(ck, unsafe, strict=True) if u), None)
+        fa = next((r["step"] for r, a in zip(ck, alarm, strict=True) if a), None)
         run_rows.append({"run": name, "unsafe_ckpts": sum(unsafe), "first_unsafe": fu, "first_alarm": fa,
                          "alarm_by_first_unsafe": None if fu is None else (fa is not None and fa <= fu),
                          "any_alarm": fa is not None})
@@ -80,7 +82,7 @@ def main():
          "| Margin | H1 recall (unsafe ckpts) | H1 alarms on control runs | H2 recall | H3 runs alarmed by first unsafe | "
          "H6 recall (unsafe drifted) | H6 FAIL on safe recovered | H6 verdict |", "|---|---|---|---|---|---|---|---|"]
     for k, v in res.items():
-        h1c = sum(not r["any_alarm"] is False and r["any_alarm"] for r in v["H1"]["runs"] if r["run"].startswith("none"))
+        h1c = sum(r["any_alarm"] is not False and r["any_alarm"] for r in v["H1"]["runs"] if r["run"].startswith("none"))
         h3r = sum(bool(r["alarm_by_first_unsafe"]) for r in v["H3"]["runs"])
         L.append(f"| {k} | {v['H1']['recall']:.2f} ({v['H1']['unsafe']}) | {h1c} of 2 runs | {v['H2']['recall']:.2f} "
                  f"({v['H2']['unsafe']}) | {h3r} of 3 | {v['H6']['recall_unsafe_drifted']:.2f} "
