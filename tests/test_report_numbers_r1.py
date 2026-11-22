@@ -274,14 +274,17 @@ def test_l15_all_but_one_curve():
     assert (min(c["n"] for c in curve.values()), max(c["n"] for c in curve.values())) == (6, 10)
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "MISMATCH: l15-threshold-transfer.md cites Wilson [0.02, 0.35] for the all-but-one 1/12 false alarms; "
-    "tools/h6_threshold_transfer.py:wilson(1, 12) = [0.0149, 0.3539], i.e. [0.01, 0.35] at two decimals "
-    "(0.02 comes from rounding the stored 3-decimal 0.015 a second time)"))
 def test_l15_all_but_one_false_alarm_interval():
-    """l15-threshold-transfer.md table: all-but-one false alarms 1/12, Wilson [0.02, 0.35].
-    Source: tools/h6_threshold_transfer.py wilson(1, 12) on the counts pinned in test_l15_all_but_one_curve."""
-    assert _tt_wilson2(1, 12) == [0.02, 0.35]
+    """l15-threshold-transfer.md table: all-but-one false alarms 1/12, Wilson [0.01, 0.35].
+    Source: tools/h6_threshold_transfer.py wilson(1, 12) = [0.015, 0.354] (z = 1.96; unrounded 0.01486, 0.35389) on the
+    counts pinned in test_l15_all_but_one_curve. Rounding the stored 0.015 a second time would give the wrong 0.02, so
+    the lower bound is also checked unrounded."""
+    assert _tt_wilson2(1, 12) == [0.01, 0.35]
+    from math import sqrt
+    p, z, n = 1 / 12, 1.96, 12
+    d = 1 + z * z / n
+    c, h = (p + z * z / (2 * n)) / d, z * sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d
+    assert (round(c - h, 2), round(c + h, 2)) == (0.01, 0.35)
 
 
 def test_l15_label_free_spot():
