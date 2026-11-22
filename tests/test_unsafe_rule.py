@@ -10,7 +10,6 @@ from fractions import Fraction
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -80,6 +79,7 @@ def test_non_count_rates_are_refused():
 
 
 def test_unsafe_series_keeps_the_index():
+    pd = pytest.importorskip("pandas")
     s = pd.Series([0.8, 0.9, 0.7], index=[5, 6, 7])
     out = unsafe_series(s, 0.7, n=10)
     assert out.tolist() == [False, True, False] and out.index.tolist() == [5, 6, 7]
@@ -90,8 +90,11 @@ def test_unsafe_series_keeps_the_index():
 def test_old_float_rule_differs_only_at_ties():
     """At n = 78 an exact 10-point gap is impossible (7.8 counts), so on every published file the exact rule and the float
     rule agree; this is why the regenerated docs/report outputs are byte-identical."""
-    mon = ROOT / "kaggle/executed/08_monitor_checkpoints/files"
-    rows = [json.loads(line) for f in ("final__monitor.jsonl", "h3-s4__monitor.jsonl") for line in open(mon / f)]
+    mon = ROOT / "kaggle" / "executed" / "08_monitor_checkpoints" / "files"
+    names = ("final__monitor.jsonl", "h3-s4__monitor.jsonl")
+    if not all((mon / f).is_file() for f in names):
+        pytest.skip("monitor run records not present in this checkout")
+    rows = [json.loads(line) for f in names for line in open(mon / f)]
     base = pooled_rate(r["asr"] for r in rows if r["step"] == 0)
     for r in rows:
         assert is_unsafe(r["asr"], base) == (r["asr"] > float(base) + 0.10)
