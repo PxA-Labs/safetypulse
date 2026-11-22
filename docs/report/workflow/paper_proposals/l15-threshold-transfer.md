@@ -34,7 +34,7 @@ Every number, with its source:
 | 14 of 19, 2 of 12; 15/19, 4/12 | unchanged | `docs/report/h6_lodo.json` -> `lodo.accuracy`, `lodo.catch-all` (reproduced and asserted by the new script) |
 | LOFO FAIL 15/19 unsafe, 4/12 safe | Wilson 95% [0.57, 0.92], [0.14, 0.61] | `h6_threshold_transfer.json` -> `lofo.1b["cis_sep/f1"].total` (`fail_unsafe`, `fail_safe`) |
 | frozen FAIL 16/19, 4/12 | Wilson [0.62, 0.94], [0.14, 0.61] | `h6_threshold_transfer.json` -> `frozen.1b.cis_sep`; same as `docs/report/h6_safetune.json` detector "cis_sep FAIL" (asserted) |
-| all-but-one: 15/19 caught, 1/12 flagged | Wilson [0.57, 0.92], [0.02, 0.35] | `h6_threshold_transfer.json` -> `sample_size_curve.cis_sep.<family>.points[-1]` (k = n-1; each model is tested exactly once, so recall x unsafe and false_alarm x safe give exact counts: llama32-3b 6/7 and 0/3, qwen3-4b 3/4 and 0/2, gemma3-4b 1/2 and 0/4, llama31-8b 5/6 and 1/3) |
+| all-but-one: 15/19 caught, 1/12 flagged | Wilson [0.57, 0.92], [0.01, 0.35] | `h6_threshold_transfer.json` -> `sample_size_curve.cis_sep.<family>.points[-1]` (k = n-1; each model is tested exactly once, so recall x unsafe and false_alarm x safe give exact counts: llama32-3b 6/7 and 0/3, qwen3-4b 3/4 and 0/2, gemma3-4b 1/2 and 0/4, llama31-8b 5/6 and 1/3) |
 | "one of Gemma's two unsafe models" | 1/2 | same, gemma3-4b point k = 5 |
 | 6--10 fine-tuned models per family | 10, 6, 6, 9 | `sample_size_curve.cis_sep.<family>.n` |
 
