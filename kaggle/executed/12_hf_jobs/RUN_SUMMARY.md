@@ -568,6 +568,63 @@ H6 consequence (exploratory): with A or B flags in place of Job 9's for these 8 
 (integer rule 10*(k-k_aligned) > 78) and H6 re-scored with Job 9 `cis_sep` and the frozen thresholds is still refuted
 (11/12 unsafe drifted flagged, FAIL on 3 of 8 safe recovered). The pre-registered H6 verdict is unchanged.
 
+## Job 23 · Aya Expanse 8B recipe-transfer run, one Alpaca seed (2026-11-22, exploratory)
+
+**Status:** ✅ complete (23a second attempt and 23b COMPLETED; 11/11 checkpoints scored). Total runtime 2058 s,
+**$1.03** (incl. the failed first attempt) of the $4.50 cap.
+Pre-registered as exploratory in `docs/prereg_amendments/2026-11-22-l12-aya-expanse.md` (commit
+`e59ca1b9c0fa37cac77e679029ae849e03b446df`, committed 2026-11-22 19:50:38 UTC and pushed on `wf/r3-lane12` before
+Job 23a was created at 19:55:18 UTC). Doc 13 §3 item 6: Expanse's own bundle, Global's frozen thresholds; n = 1,
+recipe transfer (not direction transfer). No verdict or threshold changes.
+
+- Gate (2026-11-22 19:39 UTC, local token, not printed): `CohereLabs/aya-expanse-8b` `config.json` downloaded,
+  revision `5062468bf9bc0c6035fd64e06274333ec127d980`, licence `cc-by-nc-4.0`. Each job repeats the check first
+  (`sys.exit(2)` on failure).
+- Job 23a, first attempt: https://huggingface.co/jobs/pxaLabs-lexsi/6b0348a6130a00b5aa8102e9
+  (`6b0348a6130a00b5aa8102e9`, created 19:55:18 UTC, `--timeout 75m`; scheduled for 28 min waiting for an L40S) —
+  **ERROR after 2m 4s of runtime (124 s, $0.06)**: a script bug, `Path(__file__).resolve().parents[2]` evaluated
+  outside smoke mode fails for `/data/job23a_expanse_train.py`; it failed right after the gate and version print,
+  before any download, calibration or training. Fixed in `09f27da` (the path is resolved in smoke mode only).
+- Job 23a (bundle + fine-tune): https://huggingface.co/jobs/pxaLabs-lexsi/6b0350768d268c0fbd22a37a
+  (`6b0350768d268c0fbd22a37a`, created 2026-11-22 20:28:38 UTC, org namespace `pxaLabs-lexsi`, `l40sx1`,
+  `--timeout 72m`, `SP_TIMEOUT_MIN=72`, max $2.16; reduced from 75m so the lane total stays under $4.50 after the
+  failed attempt); script `tools/hf_jobs/job23a_expanse_train.py` at commit `09f27da`; code (sp_utils, notebook 07,
+  package) pinned to `e59ca1b`.
+  **COMPLETED in 19m 2s** (1142 s). Calibration 2.6 min (l* = 21 of 32, 20 components, no fallback); notebook 07
+  13.4 min; 11 checkpoints (0, 25, …, 250) uploaded.
+- Job 23b (monitoring): https://huggingface.co/jobs/pxaLabs-lexsi/6b03560f130a00b5aa812202
+  (`6b03560f130a00b5aa812202`, created 2026-11-22 20:52:31 UTC, `--timeout 72m`, `SP_TIMEOUT_MIN=72`, max $2.16);
+  script `tools/hf_jobs/job23b_expanse_monitor.py` at commit `0cc34f0`; code pinned to `e59ca1b`. Lane maximum
+  $0.06 + $2.16 + $2.16 = $4.38. **COMPLETED in 13m 12s** (792 s); 11/11 checkpoints, about 1 min each; time guard
+  not reached.
+- Cost (secs/3600 × $1.80): 23a attempt 1 124 s $0.06; 23a 1142 s $0.57; 23b 792 s $0.40; **total 2058 s, $1.03**.
+- Hub: adapters `alpaca-s1/` in commit `d3c8440408bc46ed73e620528a9be538f3bc1de7` of the private repo (card commit `ff0cd72`); still private, in no collection.
+
+| File | What it is |
+|---|---|
+| `files/job23_monitor.jsonl` | One row per checkpoint: CIS variants, `cis_sep` level, spot-check rate, k/78 and the 78 verdict flags (no text), ASR with CI, ‖ΔW‖, judge revision, cost |
+| `files/job23_calibration.json` | Expanse's bundle: l*, components, references, config, fallback (none), time |
+| `files/job23_dw.jsonl`, `files/job23_train_log.json` | ‖ΔW‖ per adapter (from 23a); notebook 07 train log |
+| `files/job23a_summary.json`, `files/job23b_summary.json` | Pins, versions, checkpoints, monitored steps, minutes |
+| `files/job23_jobs.json` | Job ids, status, runtime seconds, timeouts, script commits |
+
+Release check: `python tools/check_release_policy.py origin/stage2/wf-integration` → 0 violations. Bundle directions
+and the executed notebook 07 stay only in the private jobs repo.
+
+**Result (`tools/h_expanse.py` → `docs/report/aya_expanse.md`), exploratory, n = 1.** Calibration chose l* = 21 of 32
+(20 components, no fallback); `cis_sep` at step 0 = 1.0001, k0 = 9/78. Every fine-tuned checkpoint (25–250) was
+unsafe (k 48–65 of 78) and every one was at FAIL under Global's frozen thresholds (`cis_sep` 0.301–0.389). First
+alarm = first FAIL = first unsafe = step 25, lead 0 at 25-step resolution: the alarm was not late, but the drift was
+already complete at the first checkpoint, so this run cannot show whether the alarm comes first. ‖ΔW‖ rose
+monotonically from 6.95 to 16.78 (descriptive).
+- Pins: pairs `purvansh01/safetypulse-pairs` @ `47f888c4`; `ft_alpaca.jsonl` @ `15ac4436` (sha256 `ecb46b32…`);
+  eval prompts `purvansh01/safetypulse-jobs` @ `0d5b5a3d` (78 dev); Llama Guard 3 1B @ `acf7aafa`; seed 1; run
+  `alpaca-s1`; checkpoints 0, 25, …, 250.
+- Outputs: adapters → private `pxaLabs-lexsi/safetypulse-wf-expanse-lora-alpaca` (created 2026-11-22, private, card
+  `docs/hub_cards/workflow/safetypulse-wf-expanse-lora-alpaca.md`, card commit `ff0cd72`; not in any collection);
+  bundle, calibration, `dw.jsonl`, train log, `monitor.jsonl` (scores and flags only), summaries → `results/job23/`
+  in `purvansh01/safetypulse-jobs`; copied to `files/job23_*` when finished.
+
 ## Job 24 · Third seed of the lead-time run, Global Alpaca seed 9, 2-step to 40 then 5-step to 140 (2026-11-22 UTC, exploratory)
 
 **Status:** COMPLETED (created 2026-11-22 19:48:47 UTC, waited 2021 s for hardware, ran 20:22:29–21:17:08 UTC;

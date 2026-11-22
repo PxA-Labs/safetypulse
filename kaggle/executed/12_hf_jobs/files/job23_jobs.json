@@ -1,0 +1,11 @@
+{
+ "secs_source": "hf jobs ps -a runtime column (scheduling excluded)",
+ "usd_per_hour": 1.80,
+ "amendment": "e59ca1b9c0fa37cac77e679029ae849e03b446df",
+ "amendment_committed_utc": "2026-11-22T19:50:38Z",
+ "jobs": [
+  {"part": "a-attempt1", "id": "6b0348a6130a00b5aa8102e9", "created_at": "2026-11-22T19:55:18Z", "status": "ERROR", "secs": 124, "timeout": "75m", "script_commit": "0cc34f0", "error": "script path bug before any computation"},
+  {"part": "a", "id": "6b0350768d268c0fbd22a37a", "created_at": "2026-11-22T20:28:38Z", "status": "COMPLETED", "secs": 1142, "timeout": "72m", "script_commit": "09f27da"},
+  {"part": "b", "id": "6b03560f130a00b5aa812202", "created_at": "2026-11-22T20:52:31Z", "status": "COMPLETED", "secs": 792, "timeout": "72m", "script_commit": "0cc34f0"}
+ ]
+}
