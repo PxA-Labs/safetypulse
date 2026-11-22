@@ -207,7 +207,7 @@ def main():
           "", "## Models whose unsafe label differs between judges", "",
           "Counts are unsafe answers out of 78; `-` = not computable (model or its family's aligned model not joined).", "",
           "| Model | Role | `cis_sep` | Joined | k 1B (J9) | k 1B (rerun) | k 8B | k SG | Unsafe 1B (J9) | "
-          "Unsafe 1B (rerun) | Unsafe 8B | Unsafe SG | Unsafe majority |", "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+          "Unsafe 1B (rerun) | Unsafe 8B | Unsafe SG | Unsafe majority |", "|---" * 13 + "|"]
 
     def b(x):
         return "-" if x is None else ("yes" if x else "no")
