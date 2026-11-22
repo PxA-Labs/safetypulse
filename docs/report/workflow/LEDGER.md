@@ -8,7 +8,10 @@ adapters, ft_harm data, harmdense artifacts or harmful answer text are ever publ
 
 ## GPU spend (running total)
 
-**Spent: $8.80 of $25 (35%). Committed by running jobs: $0.00. Remaining: $16.20.**
+**Running total (round 2 poll, 2026-11-22 17:59 UTC): Spent $9.05 of $25. Committed by running jobs: $3.00 (Job 21 at
+its timeout). Remaining: $12.95.** Per-job round-2 table: see "Round 2" below.
+
+After round 1 (unchanged record): Spent $8.80 of $25 (35%). Committed by running jobs: $0.00. Remaining: $16.20.
 
 Polled 2026-11-22 after round 1 with `hf jobs ps -a --namespace pxaLabs-lexsi` and `HfApi.inspect_job` (field
 `durations.running_secs`). Cost = running_secs x $1.80/h; scheduling time is not billed and not counted.
@@ -106,3 +109,105 @@ Job outputs live in the private dataset `purvansh01/safetypulse-jobs` (checked `
   (100 saved labels, 27 renamed by hub). 115 files (notebooks, config) have no extractor and are not in the graph.
 - `graphify-out/` is never committed. The code-only update does not re-extract docs/papers; community labels may be stale until
   `graphify label` runs.
+
+## Round 2
+
+Polled 2026-11-22 17:59 UTC (`git fetch origin`; `hf jobs ps -a --namespace pxaLabs-lexsi`; `HfApi.inspect_job`, field
+`durations.running_secs`). Branch heads below are the pushed heads at that time; lanes may push later than this poll.
+This section records status only; it does not judge quality (the reviewers do).
+
+### GPU spend, round 2
+
+Cost = running_secs x $1.80/h. For a RUNNING job the committed amount is its recorded `--timeout` x $1.80/h (the most it
+can cost); the accrued part is shown for information and is not added to "spent" until the job ends.
+
+| Lane | Job | Job id | Flavor | `--timeout` (max) | Lane cap | Status | Running time (`running_secs`) | Cost |
+|---|---|---|---|---|---|---|---|---|
+| 10 | 21 (seed-8 lead time) | `6b03238a8d268c0fbd223666` | l40sx1 | 100m ($3.00) | $3.00 | RUNNING | 2566 s (42m46s) so far | accrued $1.28; **committed $3.00** |
+| 11 | 22 (generation determinism) | `6b0325c8130a00b5aa80a77b` | l40sx1 | 50m ($1.50) | $1.50 | COMPLETED | 509 s (8m29s) | **$0.25** |
+| 12 | 23 (Expanse) | none found | - | - | $4.50 | not launched at poll (no job23 in the namespace; no `wf/r2-lane12` branch pushed) | - | $0.00 |
+| other lanes | none | - | - | - | $0 | - | - | $0.00 |
+
+Totals: **spent $9.05** (round 1 $8.80 + Job 22 $0.25); **committed $3.00** (Job 21); **remaining $12.95** of $25.
+Once Job 21 ends, spent = $9.05 + its final cost (at most $3.00).
+
+Checks:
+- Timeouts: Job 21 has run 2566 s of its 6000 s timeout; Job 22 ran 509 s of 3000 s. Neither exceeds its timeout. The
+  timeouts come from the launch records (Job 21: lane 10 RUN_SUMMARY/docs/10, `--timeout 100m`; Job 22: lane 11
+  RUN_SUMMARY/docs/10, `--timeout 50m`), because `inspect_job` does not expose the timeout.
+- Amendment before launch: Job 21 created 17:16:58 UTC; amendment `e2fb4a1` committed 2026-11-22T17:13:59Z
+  (`git log -1 --format=%cI`). Job 22 created 17:26:32 UTC; amendment `a625859` committed 2026-11-22T17:20:37Z. Both
+  amendments precede their jobs. Git records commit time, not push time; the push-before-launch claim rests on the lanes'
+  RUN_SUMMARY statements.
+- Job 22 output `results/job22/determinism.jsonl` is in `purvansh01/safetypulse-jobs`; lane 11's records still say
+  RUNNING (to update when collected). Job 21 has uploaded `results/job21/{dw.jsonl,train_log.json,executed/07_*.ipynb}`
+  so far.
+- No round-2 job ran outside the org namespace (`hf jobs ps -a --namespace pxaLabs-lexsi` lists Jobs 21 and 22 only as new).
+
+### Round 2 lane table
+
+One branch per lane was required. Lane 7 pushed its round-2 work onto the round-1 branch name instead of `wf/r2-lane7`.
+
+| Lane | Item (from the branch's commits) | Status at poll | Branch / head | HF job (cost) | Repos |
+|---|---|---|---|---|---|
+| 1 | Backlog 7: component mean-ablation on Gemma-2/3 post-norm layers | pushed (test first, then fix) | `wf/r2-lane1` / `f19b203` | none | none |
+| 2 | Backlog 2: collect Job 16, H6 test-split analysis, records, paper proposal | pushed | `wf/r2-lane2` / `cf7140a` | none (Job 16 was round 1) | none |
+| 3 | Backlog 3: collect Job 17 (ShieldGemma), analysis, records, paper proposal | pushed | `wf/r2-lane3` / `5e91599` | none (Job 17 was round 1) | none |
+| 4 | Backlog 4: collect Job 18, H3 2-step analysis, records, Hub card, paper proposal | pushed; card uploaded to the private repo (Hub commit `eccc903`) | `wf/r2-lane4` / `52ae95a` | none (Job 18 was round 1) | card update on `safetypulse-wf-h3fine-lora-alpaca` |
+| 5 | Backlog 5: collect Job 19, H5 localisation analysis, records, paper proposal | pushed | `wf/r2-lane5` / `9f07db7` | none (Job 19 was round 1) | none |
+| 6 | Backlog 6: collect Job 20, H4 analysis, records, paper proposal (`summary.json` held back by the release check) | pushed | `wf/r2-lane6` / `a0f5de2` | none (Job 20 was round 1) | none |
+| 7 | Backlog 1: `git_sha` line parsing and exit status | pushed, **wrong branch name**: on `wf/r1-l07-core-audit` (merge of integration into local `r2-l07-local`), no `wf/r2-lane7` | `wf/r1-l07-core-audit` / `bba5494` | none | none |
+| 8 | Backlog 8: ruff errors in tools/ cleared (outputs byte-identical per commits) | pushed | `wf/r2-lane8` / `4b3f58c` | none | none |
+| 9 | Consolidated paper edit list (15 MUST/SHOULD edits as a patch) | pushed | `wf/r2-lane9` / `1f697c0` | none | none |
+| 10 | Job 21: seed-8 replication of the 2-step lead-time run | pushed; job RUNNING | `wf/r2-lane10` / `3cd09bd` (amendment `e2fb4a1`) | Job 21, committed $3.00 | uploads `alpaca-s8/` to `safetypulse-wf-h3fine-lora-alpaca` |
+| 11 | Job 22: generation determinism on 8 Llama-3.2-3B models; version table | pushed; job COMPLETED, records not yet updated | `wf/r2-lane11` / `7214790` (amendment `a625859`) | Job 22, $0.25 | none |
+| 12 | Job 23 (Expanse) | **nothing pushed at poll; no job launched** | - | none | `safetypulse-wf-expanse-lora-alpaca` does not exist |
+| 13 | Interval estimates for headline proportions and AUROCs (analysis only) | pushed | `wf/r2-lane13` / `66e1fe8` (amendment `5b41d6b`) | none | none |
+| 14 | Exact integer-count unsafe rule (`tools/_rules.py`) used by analysis tools | pushed | `wf/r2-lane14` / `8825007` | none | none |
+| 15 | - | **nothing pushed at poll** | - | none | none |
+| 16 | Backlog 10 and records: kaggle/executed README (public), errata, owner-decision list, README test count | pushed | `wf/r2-lane16` / `4a8adc3` | none | none |
+| 17 | calibrate/check: token-set overlap rejected; Qwen3 `enable_thinking` warning | pushed | `wf/r2-lane17` / `738ca1f` | none | none |
+| 18 | ACL Responsible NLP checklist; Limitations/Ethics/Acknowledgements proposals | pushed | `wf/r2-lane18` / `99b8f59` | none | none |
+| 19 | Release audit round 2; strict free-text rules for job outputs | pushed | `wf/r2-lane19` / `93e5838` | none | none |
+| 20 | Tracker: this section, graphify update | pushed with this commit | `wf/r2-lane20` | none | none |
+
+### Repos and collections register (round 2)
+
+Checked read-only with `HfApi.repo_info` / `list_repo_files` / `list_collections` at 17:59 UTC. Nothing was added to a
+collection and no visibility was changed.
+
+| Item | Type | Created/changed by | `private` (verified) | Note |
+|---|---|---|---|---|
+| `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca` | model | lane 4 (round 1); lane 4 card (round 2); Job 21 (lane 10) | True (head `f5d74ac0`) | `alpaca-s8/` present: 41 checkpoint folders (0, 2..60 by 2, 80..240 by 20, 250), 83 files, same count as `alpaca-s7/` |
+| `pxaLabs-lexsi/safetypulse-wf-expanse-lora-alpaca` | model | lane 12 (planned) | - | **not created** (`RepositoryNotFoundError`) |
+| `purvansh01/safetypulse-jobs` | dataset (job outputs) | all jobs | True | new: `results/job21/` (partial), `results/job22/determinism.jsonl` |
+| `pxaLabs-lexsi/safetypulse-workflow-models-private-6b030dd4c3a7647760ae6f16` | collection | tracker, round 0 | True | 1 item, unchanged; owner decision pending (see round 1) |
+| `pxaLabs-lexsi/safetypulse-workflow-datasets-private-6b030dd671c703296d096ac3` | collection | tracker, round 0 | True | empty, unchanged; owner decision pending |
+
+### Round-1 backlog, round-2 status
+
+| # | Item | Round-2 owner | Status at poll |
+|---|---|---|---|
+| 1 | `git_sha` parsing (lane 7 revise) | lane 7 | fix pushed (`45c4ce1`, head `bba5494`) but on `wf/r1-l07-core-audit`, not `wf/r2-lane7`; reviewer to confirm test and uv runs |
+| 2 | Collect Job 16, H6 test split | lane 2 | pushed (`cf7140a`) |
+| 3 | Collect Job 17, third judge; library versions | lane 3 (collect), lane 11 (versions, Job 22) | pushed (`5e91599`); Job 17 records say versions not printed; Job 22 printed its versions, results to collect |
+| 4 | Collect Job 18, H3 analysis, card | lane 4 | pushed (`52ae95a`), card on Hub `eccc903` |
+| 5 | Collect Job 19, H5 analysis | lane 5 | pushed (`9f07db7`) |
+| 6 | Collect Job 20, H4 | lane 6 | pushed (`a0f5de2`) |
+| 7 | Gemma post-norm hooks in `ablate_components` / `component_means` | lane 1 | pushed (`f19b203`) |
+| 8 | Pre-existing ruff errors in tools/ | lane 8 | pushed (`4b3f58c`) |
+| 9 | Process: one branch per lane; uv lock | all lanes | 17 of 20 lanes (including lane 20) on one `wf/r2-laneN` name; lane 7 used the round-1 name; lanes 12 and 15 had not pushed at poll |
+| 10 | `kaggle/executed` described as private while the repo is public | lane 16 (docs); owner | docs corrected and owner-decision list added (`66b5766`, head `4a8adc3`); the owner decision itself is still open |
+
+Open for round 3: collect Job 21 (when it ends) and Job 22 into `kaggle/executed/12_hf_jobs/files/` and update their
+records; lane 12 (Job 23) and lane 15 status; lane 7 to push under one round-2 name; the two private collections and the
+public `kaggle/executed` folder await the owner's decision.
+
+### Graphify, round 2
+
+- 2026-11-22 ~17:42 UTC: `graphify update .` in the main checkout (on `stage2/wf-integration`; round-2 branches are not
+  merged yet, so they are not in the graph). Code-only AST update, no LLM. 1 of 236 scanned files had changed and was
+  re-extracted; "No code-graph topology changes detected; outputs left untouched". Graph: **2,850 nodes, 5,645 edges,
+  203 communities** (counted from `graphify-out/graph.json`), same as after round 1. 115 of 351 files (notebooks, config)
+  have no extractor. Warning printed: skill 0.9.105 vs package 0.9.103 (not upgraded by this lane).
+- `graphify-out/` is not committed. The graph should be updated again after round 2 is merged into the integration branch.
