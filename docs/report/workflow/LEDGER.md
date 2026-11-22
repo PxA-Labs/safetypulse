@@ -318,3 +318,38 @@ No other model or dataset repo exists under `pxaLabs-lexsi`. `safetypulse-wf-exp
   LLM. 54 of 267 scanned files had changed and were re-extracted. Rebuilt: **3,200 nodes, 6,348 edges, 222 communities**
   (up from 2,850 / 5,645 / 203). 116 of 383 files (notebooks, config) have no extractor. 37 communities renamed by hub;
   `graphify label` (LLM) not run. Warning: skill 0.9.105 vs package 0.9.103 (not upgraded). `graphify-out/` not committed.
+
+## Round 3 plan
+
+Written 2026-11-22 19:55 UTC (2026-11-23 IST) on `wf/r3-lane20`, based on `stage2/wf-integration` at `9d99ae4`. GPU caps
+come from the commander's round-3 brief: lane 10 $2.25, lane 12 $4.50, every other lane $0; **round-3 cap $6.75 of the
+$14.03 remaining** (after round 3 at most $10.97 + $6.75 = $17.72 of $25). Titles and file ownership for lanes 1-19 are
+taken from the brief where it names them and otherwise from each lane's pushed commits at the time of writing; lanes with
+nothing pushed yet are marked so and are filled in under "Round 3 results".
+
+| Lane | Title | Kind | GPU cap | Branch | Files owned (from brief / pushed diff) |
+|---|---|---|---|---|---|
+| 1 | Port the Gemma-2/3 post-norm MLP mean-ablation fix to `kaggle/lib/sp_utils.py` (r2 backlog 8) | code + tests | $0 | `wf/r3-lane1` | `kaggle/lib/sp_utils.py`, `tests/test_sp_utils_postnorm.py` |
+| 2 | not pushed at plan time | - | $0 | `wf/r3-lane2` | - |
+| 3 | Final citation audit (custom.bib, main.tex keys, proposal-introduced citations) | audit | $0 | `wf/r3-lane3` | `paper_proposals/l03-citations-final.md` |
+| 4 | Lane 4 revision (r2 review) + collect Job 21, H3 2-step lead time for seeds 7 and 8 (n = 2) | collect + analysis | $0 | `wf/r2-lane4` | `tools/h3_fine_lead.py`, `docs/report/h3_fine_lead*`, `files/job18_*`, `files/job21_*`, Hub card source, `l04-fine-lead.md`, RUN_SUMMARY/docs/10 rows 18 and 21 |
+| 5 | Amendment index: every exploratory amendment vs commit/push time, job creation, outcome | audit | $0 | `wf/r3-lane5` | `docs/prereg_amendments/README.md` |
+| 6 | Figure and table reproducibility audit | audit | $0 | `wf/r3-lane6` | `docs/report/workflow/figure_sources.md` |
+| 7 | CI audit (pytest, ruff, build, twine on `9d99ae4`) | audit | $0 | `wf/r3-lane7` | `docs/report/workflow/ci_audit_r3.md` |
+| 8 | CI lints `tools/` (on top of lane 14's rule change); clear remaining ruff errors in h1/h3 analysis | code | $0 | `wf/r3-lane8` | `.github/workflows/ci.yml`, plus lane 14's files (branch contains `wf/r2-lane14`) |
+| 9 | Final consolidated paper patch (rounds 1-3) | paper proposals | $0 | `wf/r3-lane9` | `paper_proposals/CONSOLIDATED.md`, `consolidated.patch`, `consolidated.main.patch` |
+| 10 | HF Job 24: third seed (9) of the 2-step lead-time run | HF job | **$2.25** | `wf/r3-lane10` | `tools/hf_jobs/job24_fine_lead_s9.py`, amendment `2026-11-22-l10-fine-lead-seed9.md`, RUN_SUMMARY/docs/10 row 24 |
+| 11 | Collect Job 22 (generation determinism), analysis, versions, paper proposal | collect + analysis | $0 | `wf/r3-lane11` | `tools/determinism_h6.py`, `docs/report/determinism_h6.*`, `determinism_versions.md`, `files/job22_*`, `l11-determinism.md`, RUN_SUMMARY/docs/10 row 22 |
+| 12 | HF Jobs 23a/23b: Aya Expanse 8B recipe transfer, one Alpaca seed | HF job | **$4.50** (75m + 75m) | `wf/r3-lane12` | amendment `2026-11-22-l12-aya-expanse.md`, `tools/hf_jobs/job23{a,b}_*.py`, `tools/h_expanse.py`, `docs/report/aya_expanse.*`, RUN_SUMMARY/docs/10 rows 23a/23b, Hub repo `pxaLabs-lexsi/safetypulse-wf-expanse-lora-alpaca` (private) |
+| 13 | Lane 13 revision (r2 review): intervals on exact k/78 counts | analysis | $0 | `wf/r2-lane13` | `tools/intervals.py`, `docs/report/intervals.*`, `l13-intervals.md` |
+| 14 | Lane 14 revision: exact integer-count unsafe rule; tests run without pandas | code + tests | $0 | `wf/r2-lane14` | `tools/_rules.py`, `tests/test_unsafe_rule.py`, analysis tools using the rule |
+| 15 | Pin round-2/3 report numbers in tests; l15 Wilson interval fix, xfail dropped | tests | $0 | `wf/r3-lane15` | `tests/test_report_numbers_r{1,2}.py`, `l15-threshold-transfer.md` |
+| 16 | REPORT index and README refresh | docs | $0 | `wf/r3-lane16` | `README.md`, `docs/report/REPORT.md` |
+| 17 | not pushed at plan time | - | $0 | `wf/r3-lane17` | - |
+| 18 | not pushed at plan time | - | $0 | `wf/r3-lane18` | - |
+| 19 | not pushed at plan time | - | $0 | `wf/r3-lane19` | - |
+| 20 | Tracker: round-3 ledger, GPU spend (Jobs 23-24), lane table, merge order, repo register, owner decisions, graphify | tracker | $0 | `wf/r3-lane20` | `docs/report/workflow/LEDGER.md`, `docs/report/workflow/owner_decisions.md` |
+
+At plan time `hf jobs ps -a --namespace pxaLabs-lexsi` shows one new job: Job 24 `6b03471f8d268c0fbd228a21`
+(created 2026-11-22 19:48:47 UTC, SCHEDULING; lane 10 records `--timeout 75m`, max $2.25). Job 23a/23b not created yet;
+the lane-12 amendment (`e59ca1b`, committed 2026-11-22T19:50:38Z) precedes any Job 23 launch.
