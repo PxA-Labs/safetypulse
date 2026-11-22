@@ -224,6 +224,20 @@ H1–H3 with it, but H6 was judged only with the 1B model. HF Job 14 closes that
 - **Reading:** the pre-registered H6 verdict stays the 1B result; the 8B result is reported beside it either way.
   Team account credits, one L40S.
 
+## 3h. Follow-ups to an internal review (amendment 2026-11-22, written before these analyses; exploratory)
+
+Reason: a co-author's mock review of the paper asked for intervals, a refusal-token baseline, a random-direction
+control, and a closer look at the safe DPO-recovered models that `cis_sep` flags. No new runs; existing logs only.
+- **What (`tools/review_followups.py`):** (1) Wilson 95% intervals on every count of the paper's baseline table, the
+  ASR interval at 78 prompts, and AUROC with bootstrap intervals resampling whole runs (H1; H2+H3) or whole models
+  within each family (H6). (2) `cis_logit`, the refusal-token score the monitor already logged at every checkpoint, as
+  a further baseline, with thresholds chosen on Global's development runs by the spot-check's rule (best F1, WARN at the
+  midpoint), reported beside `cis_sep` and the spot-check on H1, H2, H3 and H6. (3) For each H6 family/domain, the
+  drifted vs DPO-recovered model on `cis_sep`, `cis_logit`, the spot-check and the HF Job 13 non-safety directions.
+- **Not done:** a random-direction control; the two non-safety directions of §3f are the stricter version of it
+  (built from real prompt contrasts at the same layer), so it adds nothing.
+- **Reading:** no verdict changes; the script first reproduces the paper's `cis_sep` and spot-check counts.
+
 ## 4. Reporting
 
 - Every run started is reported, including failed and null runs, with its kernel or job link in
