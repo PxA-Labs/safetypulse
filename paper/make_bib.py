@@ -21,10 +21,14 @@ ARXIV = {   # key: arXiv id   (venue notes per docs/12_RELATED_WORK.md)
     "bao2026trace": "2610.07518", "vishnubhotla2026grounded": "2606.03648",
     # suggested in an internal review (abstract pages verified 2026-11-22)
     "zou2023repe": "2310.01405", "peng2024landscape": "2405.17374",
+    # added for the 2026-11-22 follow-ups and the GSM8K citation (abstract pages verified 2026-11-23)
+    "cobbe2021gsm8k": "2110.14168", "zeng2024shieldgemma": "2407.21772", "nllbteam2022nllb": "2207.04672",
 }
+# names the arXiv API gets wrong (abstract page of 2606.07631: "Hal Daumé III"; ACL Anthology form)
+NAME_FIX = {"Hal Daum{\\'e}": "Daum{\\'e} III, Hal"}
 MANUAL = r"""
 @misc{taori2023alpaca,
-  title = {Stanford Alpaca: An Instruction-following {LLaMA} model},
+  title = {Stanford {Alpaca}: An Instruction-following {LLaMA} model},
   author = {Taori, Rohan and Gulrajani, Ishaan and Zhang, Tianyi and Dubois, Yann and Li, Xuechen and Guestrin, Carlos and Liang, Percy and Hashimoto, Tatsunori B.},
   year = {2023},
   howpublished = {GitHub repository},
@@ -98,8 +102,12 @@ for key, aid in ARXIV.items():
     # group authors ("Gemma Team") are one name: brace them so BibTeX does not split first/last
     authors = " and ".join("{" + tex(a).strip() + "}" if tex(a).strip().endswith("Team") else tex(a).strip()
                            for a in m["authors"])
+    for wrong, right in NAME_FIX.items():
+        authors = authors.replace(wrong, right)
     title = tex(m["title"]).replace("{", "").replace("}", "")
     title = re.sub(r"\b([A-Z][A-Za-z]*[A-Z][A-Za-z0-9]*)\b", r"{\1}", title)   # keep acronyms / CamelCase
+    title = re.sub(r"\b(Llama Guard|Llama|Tiny Aya|Gemma)\b", r"{\1}", title)  # proper names the style lower-cases
+    title = re.sub(r"([?!]) ([A-Z])", r"\1 {\2}", title)                       # capital after a question mark
     out.append(f"@misc{{{key},\n  title = {{{title}}},\n  author = {{{authors}}},\n  year = {{{m['year']}}},\n"
                f"  eprint = {{{aid}}},\n  archivePrefix = {{arXiv}},\n  url = {{https://arxiv.org/abs/{aid}}}\n}}")
 Path(__file__).with_name("custom.bib").write_text("\n".join(out) + "\n" + MANUAL)
