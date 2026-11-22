@@ -247,3 +247,16 @@ Result: the 1B rerun reproduces Job 9's per-prompt flags on 35/35 models. 1B vs 
 2,730 judgements; four unsafe labels change. With 8B labels H6 is still refuted: recall 12/13 on unsafe drifted
 models, FAIL on 3 of 7 safe recovered models (gemma3-4b-gsm8k, llama31-8b-code, llama31-8b-dolly DPO recoveries).
 
+
+## Job 20 · H4: English alarm vs Hindi / Spanish / French drift on the H3 checkpoints (2026-11-22, running)
+
+Exploratory, no pass mark. Amendment `docs/prereg_amendments/2026-11-22-l06-h4-multilingual.md` (commit `edda1dd`,
+pushed before the job was created); script `tools/hf_jobs/job20_h4_multilingual.py` (commit `ef62566`). Org namespace.
+[Job](https://huggingface.co/jobs/pxaLabs-lexsi/6b0303b18d268c0fbd21fdb7) `6b0303b18d268c0fbd21fdb7` · L40S ·
+`--timeout 115m` (at most $3.45) · launched 2026-11-22 ~15:01 UTC.
+Pinned: Tiny Aya Global `af89d219`, H3 adapters `a2efcbd7` (tag `h3-v1.1`), NLLB-200 distilled 600M `f8d333a0`,
+Llama Guard 3 8B `7327bd9f`, pairs `47f888c4`, bundle `de9dc195` (layer 27), H3 monitor `5dd34d5d`, sp_utils/package
+`e602e03b`. 18 checkpoints (seeds 4–6 × steps 0–250 by 50) × en/hi/es/fr × 119 test prompts.
+Outputs (flags, rates, cosines, sha256 of translations; no text) → `results/job20/` in the private
+`purvansh01/safetypulse-jobs`; copy to `files/` when finished. Translations and answers stay in the job's memory.
+Result: pending.

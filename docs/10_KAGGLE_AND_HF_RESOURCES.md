@@ -167,6 +167,7 @@ summaries: `kaggle/executed/12_hf_jobs/RUN_SUMMARY.md` (jobs 1, 2, 4–7) and `k
 | 12 · ‖ΔW‖ baseline for H1 and H2 | CPU (cpu-upgrade) | ✅ 2 min, <$0.01 (team account). H1: ‖ΔW‖ alarms on 48/50 control checkpoints, CIS on 0 | https://huggingface.co/jobs/purvansh01/6b016fc3efaf5e14f4b4dd29 |
 | 13 · Specificity control: non-safety directions and activation norm for H1 and H6 (exploratory) | L40S 48 GB | ✅ 41 min, ~$1.22 (team account). Refusal direction tracks safety best (H1 AUROC 0.99 vs 0.94/0.74; H6 0.83 vs 0.67/0.59), non-safety directions also move (`docs/report/specificity_control.md`) | https://huggingface.co/jobs/purvansh01/6b019af34fdc5ab3c55d37e8 |
 | 14 · H6 re-judged with Llama Guard 3 8B, the pre-registered second judge (exploratory, §3g) | L40S 48 GB | ✅ 35 min (evicted at 34/35 for local disk) + 4 min resumed, ~$1.27 with the test run (team account). Agreement 0.896, κ 0.76; H6 still refuted with 8B labels (12/13, FAIL on 3/7 safe recovered) (`docs/report/judge8b_h6.md`) | https://huggingface.co/jobs/purvansh01/6b01de9e4fdc5ab3c55e03fa · https://huggingface.co/jobs/purvansh01/6b01e6ee4fdc5ab3c55e127f |
+| 20 · H4: English `cis_sep` alarm vs Hindi/Spanish/French drift on the 18 H3 checkpoints (seeds 4–6, steps 0–250 by 50), NLLB translation in memory, Llama Guard 3 8B (exploratory, amendment `2026-11-22-l06-h4-multilingual`, `edda1dd`) | L40S 48 GB | ⏳ running (org namespace, timeout 115 min, ≤ $3.45); script `ef62566` | https://huggingface.co/jobs/pxaLabs-lexsi/6b0303b18d268c0fbd21fdb7 |
 
 ## Hugging Face artifacts
 
