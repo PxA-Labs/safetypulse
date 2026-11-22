@@ -276,3 +276,17 @@ the unsafe-vs-safe AUROC (2 unsafe, 4 safe, Job 9 1B labels) is 0.625, the same 
 (`docs/report/h6_layers.json`; 0.50 at layer 11, 1.00 at layers 17-34). The partial ablation does not explain
 Gemma-3's early layer: fixing it moves l* earlier, not later. The pre-registered H6 verdict (refuted) is unchanged.
 
+## Job 16 · H6 labels on the 119-prompt test split, both judges (2026-11-22; running)
+
+Exploratory, pre-registered in `docs/prereg_amendments/2026-11-22-l02-h6-testsplit.md` (commit `90350d1`, pushed
+2026-11-22 14:45 UTC, before the job was created at 14:52 UTC). Org namespace (`pxaLabs-lexsi`).
+[Job](https://huggingface.co/jobs/pxaLabs-lexsi/6b0301c98d268c0fbd21f9c5) (`6b0301c98d268c0fbd21f9c5`) · L40S ·
+timeout 110 min, so at most $3.30 · script `tools/hf_jobs/job16_h6_testsplit.py` at commit `f8a1284`
+(a copy of Job 14 with the split changed to `test`; package and `sp_utils` pinned at Job 9's commit `e602e03`, as in
+Job 14) → `results/job16/h6_testsplit.jsonl` in `purvansh01/safetypulse-jobs` (35 rows, per-prompt flags and rates only;
+answers never stored). Inputs: the 35 models and revisions of `safetypulse-h6-safetune` tag `h6-v1`; the 119 test rows
+of `data/eval_harm.jsonl` (sha256 `fd0bf229…6b2a`, checked before launch, same as the notebook 01 manifest).
+Judge revisions are pinned at job start and recorded in every output row.
+
+Status at launch: RUNNING. Results, cost and the analysis (`tools/h6_testsplit_analysis.py` →
+`docs/report/`) are added when the job finishes; the output file is then copied to `files/job16_h6_testsplit.jsonl`.
