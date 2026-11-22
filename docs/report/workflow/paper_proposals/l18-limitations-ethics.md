@@ -1,4 +1,102 @@
-# Lane 18 (round 2): Limitations, Ethics Statement and disclosure edits (exact old -> new)
+# Lane 18 (rounds 2-3): Limitations, Ethics Statement and disclosure edits (exact old -> new)
+
+## Round 3 update (read first)
+
+`paper/main.tex` is unchanged since round 2 (re-checked on `stage2/wf-integration` @ `9d99ae4`; last change `6ab84a7`).
+Lane 9's final patch (`origin/wf/r3-lane9`, commit `96e8c92`, `CONSOLIDATED.md` and `consolidated.main.patch`) has
+merged the round-2 edits below with lanes 2, 3, 5 and 6:
+
+| Round-2 edit (below) | In lane 9's patch as | Round-3 note |
+|---|---|---|
+| X1a (Limitations "Not run") | N1, with H4, H5 and third-judge result clauses | numbers in N1 re-checked against JSON: see "N1/N2 number check" below. Use N1, not X1a |
+| X1b (twins, body) | O14 (optional) | unchanged |
+| X1c (App. A line 331) | N2, adds test-split labels and an H5 paragraph | see X8 for one clause |
+| X2 (AI disclosure) | N6, conservative wording (lane 9 §5 item 1) | Job 24 (2026-11-22 19:48 UTC) is also a "follow-up dated 2026-11-22", so N6's wording covers it |
+| X3 (Ethics risks) | N4, without the PII sentence (owner item) | unchanged |
+| X4 (licences) | N5 | **add X4b** (ShieldGemma, NLLB-200; both cited by N1) |
+| X5/X6 (App. E) | N7, **without the totals** (owner item 4: "Recompute at freeze") | **X5b** gives the totals through Job 22; Job 24 to be filled |
+| X7 (GSM8K) | N8 + B3 | unchanged |
+
+Apply lane 9's patch first; X4b, X5b and X8 below are written against its **new** text (their old strings occur once
+in `paper/main.tex` only after N5, N7 and N2 are applied). Build check, on a scratch copy of `paper/` (base
+`9d99ae4`): `consolidated.main.patch` from `origin/wf/r3-lane9` applied with `patch -p0` (clean), then X4b, X5b and X8
+applied by a script that found each old string exactly once; `tectonic main.tex` exit 0, 0 overfull boxes, 0
+undefined references or citations, 10 pages. `paper/main.tex` in the repo is unchanged.
+
+### N1/N2 number check (what rounds 2-3 added to Limitations and App. A)
+
+| Claim in lane 9's N1/N2 | Source value | OK |
+|---|---|---|
+| H4 "on the 15 fine-tuned H3 checkpoints ... the English alarm fired on every checkpoint" | `h4_multilingual.json`: `per_language.*.checkpoints` 15, `alarm_on_every_later_checkpoint` true | yes |
+| H4 "missed none that was unsafe in some language but also flagged every safe one" | `any_non_english_unsafe.flagged` 15 of 15; `per_language.*.safe_flagged` = `safe` (2, 3, 13, 0) | yes |
+| H5 "no single attention or MLP block changed ASR by more than the 78-prompt noise"; "-3 to +8 prompts", "Wilson half-width (10.6 points)" | `h5_localise.md` §2 (0 of 72; range -3 to +8); `h5_localise.json` `references.drifted.wilson95` [0.296, 0.508] | yes |
+| H5 "top 16 blocks (29% of the energy) gave 15.4% vs. 22.1% for random sets, and 13.5% vs. base 14.3% on the 119 held-out prompts" | `topk.16`: `asr` 0.1538, `frac` 0.286, `random_mean_asr` 0.2205; `heldout.test:topk:16` 0.1345 (16/119), `test:base` 0.1429 | yes |
+| H5 "In-job ASR was 19.2% (base) and 39.7% (drifted)" | `references.base.asr` 0.1923, `references.drifted.asr` 0.3974 | yes |
+| Third judge "agreed with the 1B judge on 73% of the H6 answers (κ 0.26) ... H6 stayed refuted" | `third_judge_h6.json` `sg_vs_1b_all_models` 0.7348 / 0.259; `h6.sg.verdict` refuted | yes |
+| N3 (body) "3 (1B) / 5 (8B) of 31 labels change; 11/12; FAIL 5 of 11, 4 of 9" | `h6_testsplit.json` `n_label_changes_vs_dev`, `h6.1b_test`, `h6.8b_test` | yes |
+
+### X4b. Ethics: licences of the two exploratory artifacts that N1 cites - SHOULD (checklist B2, gap G10)
+
+Old (lane 9's N5 text):
+```
+AdvBench, HarmBench and GSM8K under MIT; the refusal data used in the control states no licence. We release code under
+```
+New:
+```
+AdvBench, HarmBench and GSM8K under MIT, ShieldGemma under the Gemma terms of use and NLLB-200 under CC BY-NC 4.0; the
+refusal data used in the control states no licence. We release code under
+```
+Sources: Hub API `card_data.license`, read 2026-11-22: `google/shieldgemma-9b` = `gemma` (gated),
+`facebook/nllb-200-distilled-600M` = `cc-by-nc-4.0`. Both are used only in the exploratory Jobs 17 and 20 (amendments
+`baeb43e`, `edda1dd`). Drop the clause for any artifact whose result is cut from the paper. Aya Expanse 8B
+(`cc-by-nc-4.0`, gated) was not used (lane 12 blocked, LEDGER round 2), so it needs no licence sentence unless lane 9's
+Variant B (§4a) is applied; then add "Aya Expanse 8B under CC BY-NC 4.0".
+
+### X5b. App. E: total compute - SHOULD (checklist C1, gap G11; lane 9 owner item 4)
+
+Old (lane 9's N7 text):
+```
+ran on Kaggle T4 GPUs and Hugging Face Jobs (A100, A10G, L4 and L40S GPUs, and one CPU job); each H6 family took 9--22
+```
+New:
+```
+ran on Kaggle T4 GPUs (about 72 hours of notebook sessions) and Hugging Face Jobs (A100, A10G, L4 and L40S GPUs, and
+one CPU job; 13.8 GPU-hours and about \$26 in total, of which 6.1 hours and \$11 for the exploratory follow-ups of
+2026-11-22); each H6 family took 9--22
+```
+Sources: `l18-checklist.md` C1, "(r3) Updated totals": HF Jobs 1-22 = 12.57 + 1.20 = 13.77 GPU-h and $23.35 + $2.17 =
+$25.52; workflow Jobs 15-22 = 21,934 s = 6.09 GPU-h, $10.97 (`docs/report/workflow/LEDGER.md`, "GPU spend, all workflow
+jobs"); Kaggle about 72 h: round-2 estimate (X5 below). **Job 24 (seed 9, lane 10) is to be filled**: it was SCHEDULING
+at 2026-11-22 19:51 UTC (`hf jobs inspect 6b03471f8d268c0fbd228a21`), at most $2.25 (`--timeout 75m`, its record on
+`origin/wf/r3-lane10`). When lane 10 collects it, add `running_secs`/3600 to both hour figures and `running_secs` x
+$1.80/3600 to both dollar figures, then round as above (if Job 24 costs more than about $0.50, "about \$26" becomes
+"about \$27" or more). If Job 24's result is not in the paper, keep it in the totals anyway (the checklist asks for all
+compute) or say "Jobs 1--22".
+
+### X8. App. A: the determinism clause in N2 (optional; only with lane 11's Edit 1) - gap G12
+
+Lane 9's N2 ends its test-split clause with "(dev and test labels come from separate jobs, whose library versions may
+differ)". Job 22 found that greedy answers differ across jobs even where the versions match (Jobs 14 and 17: same
+torch 2.15.0 and transformers 5.24.0, inferred from wheel sizes in `docs/report/workflow/determinism_versions.md`; 8 of
+35 models differ), and repeat exactly within a job (8/8 models, 0 of 624 answers differ:
+`origin/wf/r3-lane11:docs/report/determinism_h6.json` `totals`). If lane 11's optional Edit 1
+(`origin/wf/r3-lane11:docs/report/workflow/paper_proposals/l11-determinism.md`) is applied, make N2 point to it:
+
+Old (lane 9's N2 text):
+```
+test-prompt labels \texttt{90350d1} (dev and test labels come from separate jobs, whose library versions may differ).
+```
+New:
+```
+test-prompt labels \texttt{90350d1} (dev and test labels come from separate jobs; greedy generation repeats within a
+job but not always across jobs, App.~\ref{app:robust}).
+```
+Sources as above. Precondition: lane 11's round-3 branch merged (its report is not on the integration branch at this
+poll) and its Edit 1 accepted; otherwise keep N2 as is (it is not wrong).
+
+---
+
+# Round 2 text (unchanged below; superseded where the table above says so)
 
 Base: `paper/main.tex` on `origin/stage2/wf-integration` @ `eb262cd` (paper text identical to `origin/main` @ `eb07db8`).
 `paper/main.tex` is **not** edited. Each edit quotes the current text exactly (line breaks as in the file) and names the
