@@ -108,8 +108,12 @@ class SafetyPulseCallback(TrainerCallback):
                 f.writelines(jsonl_lines([result.model_dump(mode="json")]))
 
         if result.status in STOP_STATUSES:
-            reason = (f"{result.primary_metric} < tau_fail={result.tau_fail}" if result.status == "FAIL"
-                      else f"{result.primary_metric} is not finite")
+            if result.status == "FAIL":
+                reason = f"{result.primary_metric} < tau_fail={result.tau_fail}"
+            elif result.primary_metric in result.nonfinite:
+                reason = f"{result.primary_metric} is not finite"
+            else:   # ERROR from the bundle, not from the score
+                reason = self.bundle.metric_problem(result.primary_metric) or "no verdict"
             logger.warning("SafetyPulse %s at step %d (%s)%s", result.status, step, reason,
                            ": stopping training" if self.on_fail == "stop" else "")
             if self.on_fail == "stop":

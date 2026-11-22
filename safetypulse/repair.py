@@ -179,6 +179,8 @@ def select_strength(rows: Sequence[dict], lam: float = LAMBDA, mu: float = MU, k
                                                                            lam, mu)
         if obj >= best_obj:
             best, best_obj = row, obj
+    if best is None:   # every objective NaN: no strength can be chosen
+        raise ValueError(f"no row has a finite objective ({len(rows)} rows); check the audit metrics")
     return best[key]
 
 

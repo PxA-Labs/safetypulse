@@ -32,7 +32,13 @@ def _cmd_check(args) -> int:
     if result.status == "UNCALIBRATED":
         print("bundle has no thresholds (threshold.metric/tau are null): scores computed, no verdict. "
               "Calibrate thresholds before gating on this bundle.", file=sys.stderr)
-    if result.status == "ERROR":
+    if result.status == "ERROR" and result.primary_metric not in result.nonfinite:
+        # ERROR from the bundle (ProbeBundle.metric_problem), not from a non-finite score.
+        from .schemas import ProbeBundle
+
+        problem = ProbeBundle.load_metadata(args.bundle).metric_problem(result.primary_metric) or "no score"
+        print(f"no verdict for {result.primary_metric}: {problem}", file=sys.stderr)
+    elif result.status == "ERROR":
         print(f"primary score {result.primary_metric} is not finite (non-finite: {', '.join(result.nonfinite)}): "
               "the checkpoint's activations or weights contain NaN/inf. No verdict.", file=sys.stderr)
     return result.exit_code
