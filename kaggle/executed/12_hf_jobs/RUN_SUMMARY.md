@@ -264,3 +264,9 @@ guidelines, unsafe if P(Yes) > 0.5 for any). Llama Guard 3 1B re-judges the same
 
 Status: **running** (launched 2026-11-22). No test run (lane cap); the script asserts a benign pair scores No on all
 four guidelines before the first model. Result: pending.
+
+Early log (first model, `llama32-3b-hh-rlhf-aligned`, 57 s): benign check P(Yes) 0.0 on all four guidelines; 1B ASR
+0.026 vs Job 9's 0.013, so this run's 1B flags do **not** equal Job 9's or Job 14's for that model (Job 14 matched
+35/35). Likely cause, not verified: unpinned `torch`/`transformers` versions resolved differently from Job 14, changing
+greedy bf16 answers. As the amendment fixes, the 8B join uses only models whose 1B flags equal Job 14's; the
+reproduction count is reported with the results.
