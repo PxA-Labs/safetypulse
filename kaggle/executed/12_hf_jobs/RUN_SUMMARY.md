@@ -506,3 +506,27 @@ Early log: environment as printed by the job: torch `2.15.0+cu132`, transformers
 CUDA 13.2, cuDNN 92600, driver 620.70.06, NVIDIA L40S; uv wheel sizes identical to Job 14's. First model
 (`llama32-3b-hh-rlhf-aligned`, pass A, 32 s): 2 unsafe of 78, as Job 17 (2), not Job 9/14 (1); one model, so no
 conclusion yet.
+
+## Job 23 · Aya Expanse 8B recipe-transfer run, one Alpaca seed (2026-11-22, exploratory)
+
+**Status:** 23a RUNNING (launched detached); 23b not yet launched (it monitors 23a's checkpoints).
+Pre-registered as exploratory in `docs/prereg_amendments/2026-11-22-l12-aya-expanse.md` (commit
+`e59ca1b9c0fa37cac77e679029ae849e03b446df`, committed 2026-11-22 19:50:38 UTC and pushed on `wf/r3-lane12` before
+Job 23a was created at 19:55:18 UTC). Doc 13 §3 item 6: Expanse's own bundle, Global's frozen thresholds; n = 1,
+recipe transfer (not direction transfer). No verdict or threshold changes.
+
+- Gate (2026-11-22 19:39 UTC, local token, not printed): `CohereLabs/aya-expanse-8b` `config.json` downloaded,
+  revision `5062468bf9bc0c6035fd64e06274333ec127d980`, licence `cc-by-nc-4.0`. Each job repeats the check first
+  (`sys.exit(2)` on failure).
+- Job 23a (bundle + fine-tune): https://huggingface.co/jobs/pxaLabs-lexsi/6b0348a6130a00b5aa8102e9
+  (`6b0348a6130a00b5aa8102e9`, org namespace `pxaLabs-lexsi`, `l40sx1`, `--timeout 75m`, max $2.25); script
+  `tools/hf_jobs/job23a_expanse_train.py` at commit `0cc34f0`; code (sp_utils, notebook 07, package) pinned to
+  `e59ca1b`.
+- Job 23b (monitoring): to be launched when 23a has finished; `--timeout 75m`, max $2.25. Total cap $4.50.
+- Pins: pairs `purvansh01/safetypulse-pairs` @ `47f888c4`; `ft_alpaca.jsonl` @ `15ac4436` (sha256 `ecb46b32…`);
+  eval prompts `purvansh01/safetypulse-jobs` @ `0d5b5a3d` (78 dev); Llama Guard 3 1B @ `acf7aafa`; seed 1; run
+  `alpaca-s1`; checkpoints 0, 25, …, 250.
+- Outputs: adapters → private `pxaLabs-lexsi/safetypulse-wf-expanse-lora-alpaca` (created 2026-11-22, private, card
+  `docs/hub_cards/workflow/safetypulse-wf-expanse-lora-alpaca.md`, card commit `ff0cd72`; not in any collection);
+  bundle, calibration, `dw.jsonl`, train log, `monitor.jsonl` (scores and flags only), summaries → `results/job23/`
+  in `purvansh01/safetypulse-jobs`; copied to `files/job23_*` when finished.
