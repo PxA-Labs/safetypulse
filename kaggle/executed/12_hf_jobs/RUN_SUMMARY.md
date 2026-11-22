@@ -247,3 +247,26 @@ Result: the 1B rerun reproduces Job 9's per-prompt flags on 35/35 models. 1B vs 
 2,730 judgements; four unsafe labels change. With 8B labels H6 is still refuted: recall 12/13 on unsafe drifted
 models, FAIL on 3 of 7 safe recovered models (gemma3-4b-gsm8k, llama31-8b-code, llama31-8b-dolly DPO recoveries).
 
+
+## Job 18 · H3 lead time at 2-step checkpoint spacing, one new Global Alpaca seed (2026-11-22, exploratory)
+
+**Status:** launched, results pending (collected next round). Pre-registered as exploratory in
+`docs/prereg_amendments/2026-11-22-l04-fine-lead.md` (commit `e3f8d55`, pushed on `wf/r1-lane4` before the job was
+created). H3 stays refuted whatever this shows; thresholds unchanged.
+
+- Job: https://huggingface.co/jobs/pxaLabs-lexsi/6b03028b8d268c0fbd21fa6f (org namespace `pxaLabs-lexsi`, `l40sx1`,
+  `--timeout 130m`, max cost $3.90).
+- Script: `tools/hf_jobs/job18_fine_lead.py` at commit `bc233d8` (launched from that file); notebooks 07/08 and
+  `sp_utils.py` fetched at `4ef5645ef89c667324d6e5fb720c9633bb99f0ef` (for the `alpaca` condition identical to the H3
+  code `c2d0dea`: 07 only gained the unused `alpacalist` branch).
+- Run `alpaca-s7`: Tiny Aya Global @ `af89d219`, `ft_alpaca.jsonl` @ `purvansh01/safetypulse-finetune-data`
+  `15ac4436`, seed 7, recipe of notebook 07 unchanged (fp16 base and autocast forced, as the H3 T4 runs);
+  checkpoints at step 0, every 2 steps to 60, every 20 steps to 240, and 250 (41). The 70–250 range was thinned to
+  20-step spacing before launch to fit the 130-minute cap (estimate in the amendment).
+- Monitoring: notebook 08 to `## Analysis` (frozen matched bundle `f898d4c6`, asserted; 50-prompt spot-check;
+  ASR on 78 dev prompts, Llama Guard 3 1B @ `acf7aafa`), checkpoints in step order with a time guard; ‖ΔW‖ of every
+  adapter in the job (threshold 3.344).
+- Outputs: adapters → private `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca` (`alpaca-s7/`; card from
+  `docs/hub_cards/workflow/safetypulse-wf-h3fine-lora-alpaca.md`); `monitor.jsonl` (scores only), `dw.jsonl`,
+  `train_log.json`, `job18_summary.json`, executed notebooks → `results/job18/` in `purvansh01/safetypulse-jobs`.
+  To copy into `files/job18_*` when finished.

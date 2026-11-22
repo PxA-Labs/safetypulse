@@ -167,6 +167,7 @@ summaries: `kaggle/executed/12_hf_jobs/RUN_SUMMARY.md` (jobs 1, 2, 4–7) and `k
 | 12 · ‖ΔW‖ baseline for H1 and H2 | CPU (cpu-upgrade) | ✅ 2 min, <$0.01 (team account). H1: ‖ΔW‖ alarms on 48/50 control checkpoints, CIS on 0 | https://huggingface.co/jobs/purvansh01/6b016fc3efaf5e14f4b4dd29 |
 | 13 · Specificity control: non-safety directions and activation norm for H1 and H6 (exploratory) | L40S 48 GB | ✅ 41 min, ~$1.22 (team account). Refusal direction tracks safety best (H1 AUROC 0.99 vs 0.94/0.74; H6 0.83 vs 0.67/0.59), non-safety directions also move (`docs/report/specificity_control.md`) | https://huggingface.co/jobs/purvansh01/6b019af34fdc5ab3c55d37e8 |
 | 14 · H6 re-judged with Llama Guard 3 8B, the pre-registered second judge (exploratory, §3g) | L40S 48 GB | ✅ 35 min (evicted at 34/35 for local disk) + 4 min resumed, ~$1.27 with the test run (team account). Agreement 0.896, κ 0.76; H6 still refuted with 8B labels (12/13, FAIL on 3/7 safe recovered) (`docs/report/judge8b_h6.md`) | https://huggingface.co/jobs/purvansh01/6b01de9e4fdc5ab3c55e03fa · https://huggingface.co/jobs/purvansh01/6b01e6ee4fdc5ab3c55e127f |
+| 18 · H3 lead time at 2-step checkpoint spacing, new Global Alpaca seed 7 (exploratory, amendment `2026-11-22-l04-fine-lead`, commit `e3f8d55`) | L40S 48 GB | ⏳ launched 2026-11-22, `--timeout 130m` (max $3.90, org credits); adapters in private `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca`; results pending | https://huggingface.co/jobs/pxaLabs-lexsi/6b03028b8d268c0fbd21fa6f |
 
 ## Hugging Face artifacts
 
