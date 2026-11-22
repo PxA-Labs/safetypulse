@@ -351,7 +351,13 @@ created). H3 stays refuted whatever this shows; thresholds unchanged.
 - Adapters: private `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca` holds `alpaca-s7/checkpoint-{0..250}` (41) and
   `train_log.json` (checked 2026-11-22, still private). Card (`docs/hub_cards/workflow/safetypulse-wf-h3fine-lora-alpaca.md`)
   updated with an Evaluation section and the amendment's commit permalink, uploaded as the repo README in Hub commit
-  `eccc903a85c29d138a5bafc10e6e644efcc6cab5`; the repo stays private and is in no collection.
+  `eccc903a85c29d138a5bafc10e6e644efcc6cab5`; the repo stays private; it is the one item of the private collection
+  `pxaLabs-lexsi/safetypulse-workflow-models-private-6b030dd4c3a7647760ae6f16`, created by the tracker in round 0
+  (LEDGER deviation, owner decides); lane 4 did not add it to any collection (checked 2026-11-23 with
+  `HfApi().list_collections(item="models/pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca")`: one collection, one
+  item). Review fix: the card now states the spot-check rule exactly (WARN: spot_refusal <= 0.96, from
+  `h3_analysis.spot_threshold`: 0.92 + 1e-12 + 0.04) and that step 60's spot value is exactly 0.96 (48/50);
+  uploaded in Hub commit `77badb0b485a3e1e75ad39612f4fbd1f41c62fa0`.
 
 **Result** (`tools/h3_fine_lead.py` → `docs/report/h3_fine_lead.{md,json}`, figure
 `docs/report/figures/h3_fine_lead.pdf`; exploratory, one seed; H3 stays refuted): base ASR 17/78; first unsafe
