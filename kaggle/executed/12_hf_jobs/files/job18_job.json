@@ -1,0 +1,16 @@
+{
+ "job_id": "6b03028b8d268c0fbd21fa6f",
+ "namespace": "pxaLabs-lexsi",
+ "name": "job18_fine_lead-02a2f935",
+ "url": "https://huggingface.co/jobs/pxaLabs-lexsi/6b03028b8d268c0fbd21fa6f",
+ "flavor": "l40sx1",
+ "usd_per_hour": 1.8,
+ "status": "COMPLETED",
+ "created_at": "2026-11-22T14:56:11.783000+00:00",
+ "started_at": "2026-11-22T14:56:55.106000+00:00",
+ "finished_at": "2026-11-22T16:00:43.749000+00:00",
+ "scheduling_secs": 43,
+ "running_secs": 3828,
+ "total_secs": 3871,
+ "source": "hf jobs inspect, 2026-11-22 (command/env/secrets omitted)"
+}
