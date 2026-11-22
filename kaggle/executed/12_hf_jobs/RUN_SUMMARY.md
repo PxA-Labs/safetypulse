@@ -381,7 +381,9 @@ created). H3 stays refuted whatever this shows; thresholds unchanged.
 
 ## Job 19 · H5: localising the drift by block-wise restore (2026-11-22)
 
-**Status:** running (launched 2026-11-22, detached; results collected next round). Exploratory, no verdict.
+**Status:** COMPLETED (2026-11-22 15:09:26 to 16:18:40 UTC, 4154 s = 69.2 min, ~$2.08 at $1.80/h; 111/111
+configurations, held-out phase included; final log has no traceback; script merge vs peft on the real adapter: max
+|diff| 0). Exploratory, no verdict.
 Amendment `docs/prereg_amendments/2026-11-22-l05-h5-localise.md` (commit `3fc67ac`, pushed before the job was created) ·
 script `tools/hf_jobs/job19_h5_localise.py` at commit `258797d` (launched from that file, unmodified; `sp_utils` pinned to
 Job 8's `50091f0`) · org namespace `pxaLabs-lexsi` ·
@@ -398,6 +400,23 @@ split as a held-out check of the in-sample ranking.
 CPU check before launch (`SP_CHECK=1`, tiny random Cohere2): the script's merge equals peft's `merge_and_unload`
 (max diff 0), restoring a block equals zeroing its `lora_B` in peft (logit diff 0), restoring all blocks reproduces the
 base logits exactly. The job repeats the merge check against peft on the real adapter and records the difference.
+
+Result (`files/job19_h5_localise.jsonl`, release-checked: per-prompt booleans, rates and ids only, longest string 40
+chars; analysis `tools/h5_localise.py` -> `docs/report/h5_localise.{md,json}`, deterministic):
+- In-job references (dev, n = 78): base 15/78 = 19.2% [12.0, 29.3], drifted 31/78 = 39.7% [29.6, 50.8]; the monitor's
+  16/78 and 33/78 lie inside these intervals.
+- Single blocks: 50/72 lower ASR when restored, dASR from -3 to +8 prompts; **0/72** exceed the drifted interval's
+  half-width (10.6 points, ~8 prompts). Top block `attn:0` (+8 prompts).
+- Top-k vs weight-fraction-matched random (dev, in-sample for top-k): top-k ASR 29.5 / 30.8 / 29.5 / 24.4 / 15.4% for
+  k = 1/2/4/8/16 (frac 0.004 to 0.286) vs random means 38.0 / 38.0 / 33.9 / 31.8 / 22.1%; below all 5 random sets at
+  every k, but each gap (at most 8.5 points) is within one Wilson half-width. The plan's point check (ASR <= base + 2
+  with frac < 0.40) holds only at k = 16; the Wilson-upper check holds at no k.
+- Held out (test, n = 119): base 14.3%, drifted 26.1%, top-1/2/4/8/16 28.6 / 25.2 / 22.7 / 17.6 / 13.5% (no random
+  comparator on test).
+- `cis_sep` vs ASR across the 104 dev configurations: Spearman -0.73 (cis_sep vs frac +0.58); only the base model is
+  PASS; top-16 reaches base-level ASR at `cis_sep` 0.797 (WARN).
+- Reading: no evidence that the drift sits in a few blocks; restoring ~29% of the LoRA energy (top 16 or random sets of
+  similar energy) brings ASR near base on this one checkpoint.
 
 ## Job 20 · H4: English alarm vs Hindi / Spanish / French drift on the H3 checkpoints (2026-11-22, running)
 
