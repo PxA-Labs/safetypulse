@@ -84,6 +84,6 @@ skipped (none matched).
 - Check query `graphify query "which files implement cis_sep scoring and thresholds"` succeeded and pointed to
   `safetypulse/cis.py` (`projection_separation`, `compute_cis`, `cis_status`, `base_reference`) and
   `safetypulse/check.py` (`scoring_mode`).
-- Limits: the main checkout is on `main`, so the graph does not yet include round-1 branch changes; the code-only update does
+- Limits: the graph reflects the files checked out in the main checkout, not the unmerged round-1 branches; the code-only update does
   not re-extract docs/papers (that needs the skill's `/graphify --update` semantic pass), and 161 communities vs 102 saved
   labels means some community names are stale until `graphify label` runs.
