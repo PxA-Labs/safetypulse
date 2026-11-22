@@ -104,3 +104,54 @@ def test_git_sha_reports_this_checkout(tmp_path, monkeypatch):
         pytest.skip("tests are not running from a git checkout")
     monkeypatch.chdir(tmp_path)   # outside any repository
     assert git_sha() == head.stdout.strip()
+
+
+def _git_repo(path):
+    import subprocess
+
+    path.mkdir(parents=True)
+    git = ["git", "-C", str(path), "-c", "user.name=t", "-c", "user.email=t@example.invalid"]
+    subprocess.run([*git, "init", "-q"], check=True)
+    pkg = path / "safetypulse"
+    pkg.mkdir()
+    (pkg / "utils.py").write_text("# stand-in for the package module\n")
+    subprocess.run([*git, "add", "-A"], check=True)
+    subprocess.run([*git, "commit", "-q", "-m", "x"], check=True)
+    sha = subprocess.run([*git, "rev-parse", "--short", "HEAD"], capture_output=True, text=True, check=True)
+    return pkg, sha.stdout.strip()
+
+
+def test_git_sha_handles_a_checkout_path_with_spaces(tmp_path, monkeypatch):
+    """`git rev-parse --show-toplevel --short HEAD` prints the top level and the SHA on separate lines. They were
+    split on any whitespace, so a checkout under a path with a space ("my repo", "Google Drive") gave three
+    fields, the unpack raised, and git_sha() silently recorded None."""
+    import safetypulse.utils as sp_utils
+
+    pkg, sha = _git_repo(tmp_path / "my repo")
+    monkeypatch.setattr(sp_utils, "__file__", str(pkg / "utils.py"))
+    monkeypatch.chdir(tmp_path)
+    assert sp_utils.git_sha() == sha
+
+
+def test_git_sha_is_none_when_git_fails(tmp_path, monkeypatch):
+    """A non-zero exit from git is never trusted, whatever it printed."""
+    import subprocess
+
+    import safetypulse.utils as sp_utils
+
+    pkg, sha = _git_repo(tmp_path / "repo")
+    monkeypatch.setattr(sp_utils, "__file__", str(pkg / "utils.py"))
+    failed = subprocess.CompletedProcess(args=[], returncode=128, stdout=f"{pkg.parent.resolve()}\n{sha}\n",
+                                         stderr="fatal: simulated failure")
+    monkeypatch.setattr(sp_utils.subprocess, "run", lambda *a, **k: failed)
+    assert sp_utils.git_sha() is None
+
+
+def test_last_logits_builds_no_autograd_graph(model, tok):
+    """Guard, not a regression (the @torch.no_grad() decorator was already there): last_logits is a read-out, and
+    called outside check()'s scoring_mode on a model with trainable parameters (a training loop, audit.mc_accuracy
+    on a fresh PEFT model) it must not build an autograd graph per batch."""
+    trainable = copy.deepcopy(model).requires_grad_(True)
+    out = last_logits(trainable, tok, PROMPTS, batch_size=2)
+    assert not out.requires_grad and out.grad_fn is None
+    torch.testing.assert_close(out, last_logits(model, tok, PROMPTS, batch_size=2))

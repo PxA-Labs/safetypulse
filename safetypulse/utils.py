@@ -143,9 +143,11 @@ def git_sha() -> str | None:
     with contextlib.suppress(Exception):
         out = subprocess.run(["git", "rev-parse", "--show-toplevel", "--short", "HEAD"], cwd=pkg,
                              capture_output=True, text=True, timeout=5)
-        top, sha = out.stdout.split()
-        if (Path(top) / pkg.name).resolve() == pkg:
-            return sha
+        lines = out.stdout.strip().splitlines()   # one per line: the top level may contain spaces
+        if out.returncode == 0 and len(lines) == 2:
+            top, sha = lines
+            if (Path(top) / pkg.name).resolve() == pkg:
+                return sha.strip()
     return None
 
 
