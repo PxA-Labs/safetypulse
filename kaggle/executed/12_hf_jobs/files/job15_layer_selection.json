@@ -1,0 +1,353 @@
+{
+ "family": "gemma3-4b",
+ "aligned": "Lexsi/gemma3-4b-hh-rlhf-aligned",
+ "revision": "9eeaabbf0230bf7211a5d1381cacc9470b6956fb",
+ "job9_layer": 11,
+ "layer_old_ablation": 11,
+ "layer_fixed_ablation": 9,
+ "n_layers": 34,
+ "layer_scores_old": [
+  {
+   "resid": 1,
+   "ablated_harmful": 22.849550247192383,
+   "induced_harmless": -9.824040412902832
+  },
+  {
+   "resid": 2,
+   "ablated_harmful": 21.546842575073242,
+   "induced_harmless": -9.81657600402832
+  },
+  {
+   "resid": 3,
+   "ablated_harmful": 21.644426345825195,
+   "induced_harmless": -9.81821346282959
+  },
+  {
+   "resid": 4,
+   "ablated_harmful": 7.839910507202148,
+   "induced_harmless": -9.827169418334961
+  },
+  {
+   "resid": 5,
+   "ablated_harmful": 21.40650177001953,
+   "induced_harmless": -9.874907493591309
+  },
+  {
+   "resid": 6,
+   "ablated_harmful": 5.163448333740234,
+   "induced_harmless": -9.835566520690918
+  },
+  {
+   "resid": 7,
+   "ablated_harmful": 21.485424041748047,
+   "induced_harmless": -9.619983673095703
+  },
+  {
+   "resid": 8,
+   "ablated_harmful": 14.2587890625,
+   "induced_harmless": -9.51087474822998
+  },
+  {
+   "resid": 9,
+   "ablated_harmful": -8.742263793945312,
+   "induced_harmless": -7.353132724761963
+  },
+  {
+   "resid": 10,
+   "ablated_harmful": -7.354520797729492,
+   "induced_harmless": -6.608942031860352
+  },
+  {
+   "resid": 11,
+   "ablated_harmful": -17.163164138793945,
+   "induced_harmless": 10.33413314819336
+  },
+  {
+   "resid": 12,
+   "ablated_harmful": 18.39479637145996,
+   "induced_harmless": 17.792762756347656
+  },
+  {
+   "resid": 13,
+   "ablated_harmful": -11.824244499206543,
+   "induced_harmless": 18.429899215698242
+  },
+  {
+   "resid": 14,
+   "ablated_harmful": 8.90591049194336,
+   "induced_harmless": 18.49578094482422
+  },
+  {
+   "resid": 15,
+   "ablated_harmful": 12.869543075561523,
+   "induced_harmless": 16.823589324951172
+  },
+  {
+   "resid": 16,
+   "ablated_harmful": 16.721834182739258,
+   "induced_harmless": 17.165361404418945
+  },
+  {
+   "resid": 17,
+   "ablated_harmful": 12.698232650756836,
+   "induced_harmless": 20.730260848999023
+  },
+  {
+   "resid": 18,
+   "ablated_harmful": 8.134442329406738,
+   "induced_harmless": 20.01361083984375
+  },
+  {
+   "resid": 19,
+   "ablated_harmful": 15.023045539855957,
+   "induced_harmless": 21.834423065185547
+  },
+  {
+   "resid": 20,
+   "ablated_harmful": -6.659860134124756,
+   "induced_harmless": 19.081493377685547
+  },
+  {
+   "resid": 21,
+   "ablated_harmful": -4.844287872314453,
+   "induced_harmless": 20.14299774169922
+  },
+  {
+   "resid": 22,
+   "ablated_harmful": -5.652559280395508,
+   "induced_harmless": 17.01059913635254
+  },
+  {
+   "resid": 23,
+   "ablated_harmful": -8.128152847290039,
+   "induced_harmless": 19.001726150512695
+  },
+  {
+   "resid": 24,
+   "ablated_harmful": -6.4691901206970215,
+   "induced_harmless": 17.576946258544922
+  },
+  {
+   "resid": 25,
+   "ablated_harmful": -7.6877617835998535,
+   "induced_harmless": 17.175004959106445
+  },
+  {
+   "resid": 26,
+   "ablated_harmful": -8.525386810302734,
+   "induced_harmless": 17.320913314819336
+  },
+  {
+   "resid": 27,
+   "ablated_harmful": -9.202496528625488,
+   "induced_harmless": 19.095426559448242
+  }
+ ],
+ "layer_scores_fixed": [
+  {
+   "resid": 1,
+   "ablated_harmful": 0.6509875655174255,
+   "induced_harmless": -9.824040412902832
+  },
+  {
+   "resid": 2,
+   "ablated_harmful": 14.307628631591797,
+   "induced_harmless": -9.81657600402832
+  },
+  {
+   "resid": 3,
+   "ablated_harmful": 23.005414962768555,
+   "induced_harmless": -9.81821346282959
+  },
+  {
+   "resid": 4,
+   "ablated_harmful": 0.7154430150985718,
+   "induced_harmless": -9.827169418334961
+  },
+  {
+   "resid": 5,
+   "ablated_harmful": -4.304747104644775,
+   "induced_harmless": -9.874907493591309
+  },
+  {
+   "resid": 6,
+   "ablated_harmful": -2.4838571548461914,
+   "induced_harmless": -9.835566520690918
+  },
+  {
+   "resid": 7,
+   "ablated_harmful": -2.908304214477539,
+   "induced_harmless": -9.619983673095703
+  },
+  {
+   "resid": 8,
+   "ablated_harmful": -1.910316824913025,
+   "induced_harmless": -9.51087474822998
+  },
+  {
+   "resid": 9,
+   "ablated_harmful": -25.525287628173828,
+   "induced_harmless": -7.353132724761963
+  },
+  {
+   "resid": 10,
+   "ablated_harmful": -13.869935035705566,
+   "induced_harmless": -6.608942031860352
+  },
+  {
+   "resid": 11,
+   "ablated_harmful": -20.307695388793945,
+   "induced_harmless": 10.33413314819336
+  },
+  {
+   "resid": 12,
+   "ablated_harmful": -3.0047447681427,
+   "induced_harmless": 17.792762756347656
+  },
+  {
+   "resid": 13,
+   "ablated_harmful": -15.921982765197754,
+   "induced_harmless": 18.429899215698242
+  },
+  {
+   "resid": 14,
+   "ablated_harmful": -6.663057804107666,
+   "induced_harmless": 18.49578094482422
+  },
+  {
+   "resid": 15,
+   "ablated_harmful": -5.078517913818359,
+   "induced_harmless": 16.823589324951172
+  },
+  {
+   "resid": 16,
+   "ablated_harmful": -0.8024095296859741,
+   "induced_harmless": 17.165361404418945
+  },
+  {
+   "resid": 17,
+   "ablated_harmful": 6.473546981811523,
+   "induced_harmless": 20.730260848999023
+  },
+  {
+   "resid": 18,
+   "ablated_harmful": 15.550263404846191,
+   "induced_harmless": 20.01361083984375
+  },
+  {
+   "resid": 19,
+   "ablated_harmful": -4.23638391494751,
+   "induced_harmless": 21.834423065185547
+  },
+  {
+   "resid": 20,
+   "ablated_harmful": -7.408115386962891,
+   "induced_harmless": 19.081493377685547
+  },
+  {
+   "resid": 21,
+   "ablated_harmful": -3.242586612701416,
+   "induced_harmless": 20.14299774169922
+  },
+  {
+   "resid": 22,
+   "ablated_harmful": -9.869475364685059,
+   "induced_harmless": 17.01059913635254
+  },
+  {
+   "resid": 23,
+   "ablated_harmful": -16.768627166748047,
+   "induced_harmless": 19.001726150512695
+  },
+  {
+   "resid": 24,
+   "ablated_harmful": -8.070196151733398,
+   "induced_harmless": 17.576946258544922
+  },
+  {
+   "resid": 25,
+   "ablated_harmful": -11.742426872253418,
+   "induced_harmless": 17.175004959106445
+  },
+  {
+   "resid": 26,
+   "ablated_harmful": -8.724547386169434,
+   "induced_harmless": 17.320913314819336
+  },
+  {
+   "resid": 27,
+   "ablated_harmful": -5.082676887512207,
+   "induced_harmless": 19.095426559448242
+  }
+ ],
+ "baseline_logit_diff": {
+  "harmful": 20.818710327148438,
+  "harmless": -9.830670356750488
+ },
+ "baseline_logit_diff_old_run": {
+  "harmful": 20.818710327148438,
+  "harmless": -9.830670356750488
+ },
+ "directions_check": {
+  "min_cos_fresh_vs_bundle": 0.999999,
+  "max_rel_diff": 0.0
+ },
+ "sep_base_fp32_by_layer": [
+  0.0,
+  1.8407478332519531,
+  3.5681028366088867,
+  3.846663236618042,
+  9.61370849609375,
+  7.7581787109375,
+  18.2052001953125,
+  28.385116577148438,
+  44.9970703125,
+  138.08203125,
+  186.564453125,
+  331.0205078125,
+  518.111328125,
+  789.59375,
+  1244.2578125,
+  1220.57421875,
+  1240.919921875,
+  1657.3411865234375,
+  2185.75634765625,
+  2545.36328125,
+  3403.0,
+  4086.89453125,
+  4991.443359375,
+  6425.220703125,
+  7257.2421875,
+  8503.830078125,
+  9998.1953125,
+  11638.806640625,
+  12416.7333984375,
+  14317.70703125,
+  16085.93359375,
+  17369.951171875,
+  18286.939453125,
+  19418.15625,
+  20921.205078125
+ ],
+ "base_check": {
+  "sep_base_job9_layer_fp32": 331.0205078125,
+  "bundle_sep_base": 331.0205078125
+ },
+ "config": {
+  "n_attr_pairs": 100,
+  "n_candidates": 40,
+  "top_k": 20,
+  "max_layer_frac": 0.8,
+  "seed": 0,
+  "batch_size": 8,
+  "validate": false,
+  "n_random": 10,
+  "gen_tokens": 64
+ },
+ "n_val_pairs": 50,
+ "n_probe_pairs": 50,
+ "package_commit": "543ba6f34a69bdb72f347d5dca1bcabdafa33bdd",
+ "h6_dataset": "purvansh01/safetypulse-h6-safetune@h6-v1",
+ "minutes": 1.6,
+ "gpu": "NVIDIA L40S"
+}
