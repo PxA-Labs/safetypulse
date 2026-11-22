@@ -23,8 +23,13 @@ def format_chat(tok, prompts: Sequence[str], system: str | None = None) -> list[
 
 
 def encode(tok, texts: Sequence[str], dev=None):
-    """Left-padded batch; the template already holds the special tokens."""
-    return tok(list(texts), return_tensors="pt", padding=True, add_special_tokens=False).to(dev or device())
+    """Left-padded batch; the template already holds the special tokens.
+
+    Left padding is forced here rather than trusted to `tok.padding_side`: every caller reads position -1 as the
+    last prompt token (and generation continues from it), so a right-padded tokenizer passed in by the caller would
+    silently score pad positions. The tokenizer itself is not modified."""
+    return tok(list(texts), return_tensors="pt", padding=True, padding_side="left",
+               add_special_tokens=False).to(dev or device())
 
 
 # First tokens of typical refusals vs. compliances. Calibration should check them against real generations of
