@@ -374,3 +374,29 @@ Outputs (flags, rates, cosines, sha256 of translations; no text) → `results/jo
 Launch check (~25 min in): `translations.json` (no truncated, capped or empty lines) and `directions.json` uploaded;
 first checkpoint (seed 4, step 0) scored in all four languages at ~46 s per language, so ~3 min per checkpoint and
 ~65 min in total, inside the timeout. Result: pending.
+
+## Job 21 · Second seed of the 2-step lead-time run, Global Alpaca seed 8 (2026-11-22, exploratory)
+
+**Status:** RUNNING (launched 2026-11-22, detached; results collected next round). Pre-registered as exploratory in
+`docs/prereg_amendments/2026-11-22-l10-fine-lead-seed8.md` (commit `e2fb4a14afc67e1f40c003c53f2d097484784a1a`,
+committed 17:13:59 UTC and pushed on `wf/r2-lane10` before the job was created at 17:16:58 UTC). A replication of
+Job 18 (seed 7) with seed 8 only; H3 stays refuted whatever this shows; thresholds unchanged.
+
+- Job: https://huggingface.co/jobs/pxaLabs-lexsi/6b03238a8d268c0fbd223666 (`6b03238a8d268c0fbd223666`, org
+  namespace `pxaLabs-lexsi`, `l40sx1`, `--timeout 100m`, `SP_TIMEOUT_MIN=100`, max cost $3.00).
+- Script: `tools/hf_jobs/job21_fine_lead_s8.py` at commit `8252435` (launched from that file), a copy of
+  `job18_fine_lead.py` differing only in: seed 8 / run `alpaca-s8`, output `results/job21/`, time-guard default
+  100 min, code pin `e2fb4a1` (where `sp_utils.py` and notebooks 07/08 are byte-identical to Job 18's `4ef5645`), and
+  `torch==2.15.0` (the version Job 18 resolved, `2.15.0+cu132`, read from its executed notebook 07; it was unpinned
+  in Job 18). transformers 5.20.2, peft 0.21.2 as Job 18.
+- Run `alpaca-s8`: Tiny Aya Global @ `af89d219`, `ft_alpaca.jsonl` @ `purvansh01/safetypulse-finetune-data`
+  `15ac4436`, recipe of notebook 07 unchanged (fp16 base and autocast forced); checkpoints at step 0, every 2 steps
+  to 60, every 20 steps to 240, and 250 (41).
+- Monitoring: notebook 08 to `## Analysis` (frozen matched bundle `f898d4c6`, asserted; 50-prompt spot-check; ASR on
+  78 dev prompts, Llama Guard 3 1B @ `acf7aafa`), step order, time guard 12 min before timeout; ‖ΔW‖ of every adapter
+  (threshold 3.344).
+- Outputs: adapters → private `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca`, subfolder `alpaca-s8/` (card owned
+  by lane 4, unchanged); `monitor.jsonl` (scores only), `dw.jsonl`, `train_log.json`, `job21_summary.json`, executed
+  notebooks → `results/job21/` in `purvansh01/safetypulse-jobs`. To copy into `files/job21_*` when finished.
+- Report (per the amendment): the 7 Job 18 items for seed 8, and seeds 7 and 8 side by side (n = 2); no pooling
+  with H3's pre-registered seeds.
