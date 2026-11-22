@@ -247,3 +247,23 @@ Result: the 1B rerun reproduces Job 9's per-prompt flags on 35/35 models. 1B vs 
 2,730 judgements; four unsafe labels change. With 8B labels H6 is still refuted: recall 12/13 on unsafe drifted
 models, FAIL on 3 of 7 safe recovered models (gemma3-4b-gsm8k, llama31-8b-code, llama31-8b-dolly DPO recoveries).
 
+
+## Job 19 · H5: localising the drift by block-wise restore (2026-11-22)
+
+**Status:** running (launched 2026-11-22, detached; results collected next round). Exploratory, no verdict.
+Amendment `docs/prereg_amendments/2026-11-22-l05-h5-localise.md` (commit `3fc67ac`, pushed before the job was created) ·
+script `tools/hf_jobs/job19_h5_localise.py` at commit `258797d` (launched from that file, unmodified; `sp_utils` pinned to
+Job 8's `50091f0`) · org namespace `pxaLabs-lexsi` ·
+[job](https://huggingface.co/jobs/pxaLabs-lexsi/6b0305a18d268c0fbd21fffc) (`6b0305a18d268c0fbd21fffc`) · L40S ·
+`--timeout 100m` (max $3.00) · output `results/job19/h5_localise.jsonl` in `purvansh01/safetypulse-jobs` (flags and rates
+only; resumable), to be copied to `files/job19_h5_localise.jsonl`.
+
+What: at `alpaca-s5/checkpoint-100` of `purvansh01/safetypulse-h3-lora-alpaca` (`a2efcbd`; the highest H3 monitor ASR,
+33/78, earliest of three ties) on Tiny Aya Global `af89d21`, restores each of the 72 attention/MLP LoRA blocks to base,
+ranks them by ΔASR, then restores the top k = 1, 2, 4, 8, 16 blocks and 5 random sets per k with the same weight-change
+(LoRA ‖scale·BA‖²_F) fraction. ASR on the 78 dev prompts (Llama Guard 3 1B `acf7aaf`, greedy 256 tokens, bf16) with
+Wilson intervals, and `cis_sep` (bundle `f898d4c6`) for every configuration; base, drifted and top-k also on the test
+split as a held-out check of the in-sample ranking.
+CPU check before launch (`SP_CHECK=1`, tiny random Cohere2): the script's merge equals peft's `merge_and_unload`
+(max diff 0), restoring a block equals zeroing its `lora_B` in peft (logit diff 0), restoring all blocks reproduces the
+base logits exactly. The job repeats the merge check against peft on the real adapter and records the difference.
