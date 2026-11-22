@@ -319,7 +319,9 @@ reproduction count is reported with the results.
 
 ## Job 18 · H3 lead time at 2-step checkpoint spacing, one new Global Alpaca seed (2026-11-22, exploratory)
 
-**Status:** launched, results pending (collected next round). Pre-registered as exploratory in
+**Status:** COMPLETED (2026-11-22, 14:56:55–16:00:43 UTC): 3828 s running (63.8 min), **$1.91** at $1.80/h
+(cap $3.90); `monitored_steps` = all 41 checkpoints (0, 2, …, 60, 80, …, 240, 250; `files/job18_summary.json`;
+fine-tune 15.0 min, monitoring 0.77 h per the executed notebooks). Pre-registered as exploratory in
 `docs/prereg_amendments/2026-11-22-l04-fine-lead.md` (commit `e3f8d55`, pushed on `wf/r1-lane4` before the job was
 created). H3 stays refuted whatever this shows; thresholds unchanged.
 
@@ -338,7 +340,23 @@ created). H3 stays refuted whatever this shows; thresholds unchanged.
 - Outputs: adapters → private `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca` (`alpaca-s7/`; card from
   `docs/hub_cards/workflow/safetypulse-wf-h3fine-lora-alpaca.md`); `monitor.jsonl` (scores only), `dw.jsonl`,
   `train_log.json`, `job18_summary.json`, executed notebooks → `results/job18/` in `purvansh01/safetypulse-jobs`.
-  To copy into `files/job18_*` when finished.
+- Collected into git as `files/job18_monitor.jsonl` (41 rows, scores only), `files/job18_dw.jsonl`,
+  `files/job18_train_log.json`, `files/job18_summary.json`, `files/job18_job.json` (from `hf jobs inspect`; no
+  command, environment or secret fields) and the executed notebooks `files/job18_07_finetune_checkpoints.ipynb`,
+  `files/job18_08_monitor_checkpoints.ipynb`. Release check: every cell output was read; they hold only versions,
+  progress bars, checkpoint names, the training-loss table and per-checkpoint scores, with no prompt or answer text and
+  no token; JSON/JSONL have no string over 80 characters. Notebook 08's own hub backup to
+  `purvansh01/safetypulse-jo…` failed with 404 at each attempt (logged, run continued); nothing was lost because the
+  job script uploaded the results itself.
+- Adapters: private `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca` holds `alpaca-s7/checkpoint-{0..250}` (41) and
+  `train_log.json` (checked 2026-11-22, still private). Card updated with the Evaluation section below.
+
+**Result** (`tools/h3_fine_lead.py` → `docs/report/h3_fine_lead.{md,json}`, figure
+`docs/report/figures/h3_fine_lead.pdf`; exploratory, one seed; H3 stays refuted): base ASR 17/78; first unsafe
+checkpoint step 100 (29/78; ASR 24/78 at steps 60 and 80, one count below the line). First alarms: ‖ΔW‖ > 3.344 at
+step 12 (lead +88), `cis_sep` WARN at 20 (+80), `cis_sep` FAIL at 58 (+42), spot-check WARN at 60 (+40). At 2-step
+spacing ‖ΔW‖ alarmed 8 steps before `cis_sep`; sub-sampled to 10 steps both alarm at step 20, as in the H3 runs. The
+first unsafe step lies in the 20-step-spaced part, so leads are resolved only to 20 steps.
 
 ## Job 19 · H5: localising the drift by block-wise restore (2026-11-22)
 
