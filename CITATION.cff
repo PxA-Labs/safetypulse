@@ -10,8 +10,8 @@ type: software
 authors:
   - given-names: Purvansh
     family-names: Joshi
-version: 0.1.1
-date-released: "2026-11-08"
+version: 0.1.2
+date-released: "2026-11-24"
 license: Apache-2.0
 repository-code: "https://github.com/PxA-Labs/safetypulse"
 url: "https://huggingface.co/blog/purvansh01/safetypulse-safety-drift-monitor"

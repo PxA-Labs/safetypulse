@@ -1,6 +1,6 @@
 """SafetyPulse: Circuit Integrity Score (CIS) monitor for fine-tuning checkpoints."""
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 from .check import check  # noqa: E402
 from .schemas import CheckResult, ProbeBundle  # noqa: E402

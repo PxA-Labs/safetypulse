@@ -5,7 +5,30 @@ All notable changes to this project are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-11-24
+
+None of these fixes changes a published result: the frozen runs used left-padded tokenizers, fp32 bundles and the
+recorded settings.
+
 ### Fixed
+- `encode` (and so CIS scoring, attribution, audit generation and the Llama Guard judge) always pads on the left,
+  even with a caller-supplied right-padded tokenizer; before, a right-padded tokenizer gave the base model a
+  `cis_sep` of 0.905 instead of 1.0.
+- Provenance `git_sha` runs git in the package directory and requires a clean exit, instead of recording the
+  commit of whatever repository the caller was in.
+- `repair` rejects component IDs outside the model before editing any weight; `select_strength` raises a clear
+  `ValueError` when no candidate has a finite objective.
+- `audit` scores in eval mode with gradients off and restores the caller's train state.
+- `SafetyPulseCallback` under DDP: every rank scores (so all ranks stop at the same step) and only the main process
+  writes `safetypulse_check.json` / `safetypulse_checks.jsonl`.
+- Component mean-ablation on Gemma-2/3 hooks `post_feedforward_layernorm` (the post-norm residual write), so
+  layer selection ablates the full MLP output; stale means are rejected and per-head ablation warns.
+- `calibrate` rejects token IDs that are in both the refuse and comply sets; `calibrate` and `check` warn when a
+  chat template's `enable_thinking` switch (Qwen3) is not recorded in the bundle. Scores are unchanged.
+- `ProbeBundle.load` casts bundle tensors to fp32 and rejects non-float tensors (bf16/fp16 files crashed
+  `compute_cis`), and rejects a schema version from another major version.
+- The CLI and the training callback report the bundle's metric problem, not "not finite", when ERROR comes from a
+  non-positive reference.
 - `calibrate` / `resolve_token_sets`: a model-keyed `token_sets.json` whose only entry is for another model name is
   no longer used silently; a warning names the expected and the found key. Token IDs outside the tokenizer's
   vocabulary (including negative IDs, which torch indexing would wrap round to a real token) raise a `ValueError`
@@ -15,7 +38,7 @@ All notable changes to this project are recorded here. The format follows
 - Probe bundles record the tokens behind the refuse/comply IDs in `provenance.token_strings`, so a token set from
   another tokenizer is visible in the bundle (#113).
 - Stage 2 (research code, not part of the package): pre-registration (`docs/13_PREREGISTRATION.md`), Hugging Face
-  Job scripts 8–14 (`tools/hf_jobs/`, documented in its README), analysis scripts (`tools/h1_analysis.py` …
+  Job scripts 8–24 (`tools/hf_jobs/`, documented in its README; Jobs 15–24 are exploratory follow-ups), analysis scripts (`tools/h1_analysis.py` …
   `tools/review_followups.py`) writing `docs/report/`, and the paper (`paper/`). Results: H1 and H2 confirmed, H3
   and H6 refuted (`docs/13_PREREGISTRATION.md`, `docs/report/`).
 
