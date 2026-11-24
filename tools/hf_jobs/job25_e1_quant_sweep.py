@@ -15,7 +15,7 @@
 #   "safetensors",
 #   "numpy",
 #   "pydantic>=2",
-#   "safetypulse @ git+https://github.com/PxA-Labs/safetypulse@cd72fc6a6cfdc0dfca8a2c5d7acdf6e1b2a5e1b1",
+#   "safetypulse @ git+https://github.com/PxA-Labs/safetypulse@0e1b9f5ef2f95d70e953b274b19f67008d4e85c1",
 # ]
 # ///
 """SafetyPulse HF Job 25 (EXPLORATORY, docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md, commit cd72fc6):
@@ -64,7 +64,7 @@ REQ = [v for v in os.environ.get("SP_VARIANTS", "c35,r1g").split(",") if v]
 REPO = os.environ.get("SP_REPO", "purvansh01/safetypulse-jobs")
 OUT_BASE = "results/job25"
 OUT = f"{OUT_BASE}{'-test' if TEST else ''}"
-COMMIT = "cd72fc6a6cfdc0dfca8a2c5d7acdf6e1b2a5e1b1"   # sp_bench.py and the package
+COMMIT = "0e1b9f5ef2f95d70e953b274b19f67008d4e85c1"   # sp_bench.py and the package
 MODEL, MODEL_REV = "CohereLabs/tiny-aya-global", "af89d219b53ed9b13b8a4645f9c8028973510324"
 JUDGE, JUDGE_REV = "meta-llama/Llama-Guard-3-1B", "acf7aafa60f0410f8f42b1fa35e077d705892029"
 BUNDLE = ("purvansh01/safetypulse-probe-bundle", "de9dc195cc8a8d2afca5bf8634ac3686b7d0ce2a")
@@ -74,7 +74,8 @@ WIKITEXT_REV = "b08601e04326c79dfdd32d625aee71d232d685c3"
 EVAL_N = {"harm": 119, "overrefusal": 150, "task": 300, "general": 500}
 N_CALIB, MAX_SEQ, SEED = 128, 512, 0
 N_PAIRS, CK_BATCH = 64, int(os.environ.get("SP_CK_BATCH", 1))
-EST_MIN = {"fp16": 14, "quant": 26}   # time guard: a variant is not started unless this much time is left (+3)
+# time guard: a variant is not started unless this much time is left (+3 min for the final uploads)
+EST_MIN = {"fp16": 4, "quant": 10} if TEST else {"fp16": 14, "quant": 26}
 
 # name: (kind, base bits, k protected layers, protected-layer bits, embedding bits, arm, target average bits)
 VARIANTS = {
