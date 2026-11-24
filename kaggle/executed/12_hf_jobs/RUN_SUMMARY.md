@@ -667,6 +667,45 @@ whatever this shows; thresholds unchanged.
 - Outputs: adapters → private `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca`, subfolder `alpaca-s9/` (card owned
   by lane 4, unchanged); scores-only results → `results/job24/` in `purvansh01/safetypulse-jobs`.
 
+## Job 25 · E1 wave 1: circuit-guided vs random mixed-precision quantization of Tiny Aya Global (2026-11-24 UTC, exploratory)
+
+**Status:** RUNNING (4 full jobs launched 20:20–20:23 UTC). Exploratory under
+`docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md` (amendment commit `cd72fc6`); no verdict or frozen
+threshold changes. Script `tools/hf_jobs/job25_e1_quant_sweep.py` launched at commit `d92677a`; `sp_bench.py` and the
+package pinned at `106e9ee` (`COMMIT` in the script). Org namespace `pxaLabs-lexsi`, `l40sx1`, `--timeout 85m` each,
+max $2.55 each, $10.20 for the four. Outputs (scores, flags and hashes only; models in compressed-tensors) →
+`results/job25/<shard>/` and `results/job25/models/<variant>/` in private `purvansh01/safetypulse-jobs`.
+
+| Shard | Job id | Variants (fp16 = within-job anchor) |
+|---|---|---|
+| A | [`6b05f178d0582cfbbefcf9c8`](https://huggingface.co/jobs/pxaLabs-lexsi/6b05f178d0582cfbbefcf9c8) | fp16, u4, c72, r72, u8 |
+| B | [`6b05f1cc1460ffe1d5e90665`](https://huggingface.co/jobs/pxaLabs-lexsi/6b05f1cc1460ffe1d5e90665) | fp16, c6, r6, c5, r5 |
+| C | [`6b05f1f2d0582cfbbefcfa5d`](https://huggingface.co/jobs/pxaLabs-lexsi/6b05f1f2d0582cfbbefcfa5d) | fp16, c35, r35, u3 |
+| D | [`6b05f2161460ffe1d5e906da`](https://huggingface.co/jobs/pxaLabs-lexsi/6b05f2161460ffe1d5e906da) | fp16, c3, r3, c1g, r1g |
+
+- Model Tiny Aya Global @ `af89d219` (fp16). Variants: u8/u4/u3 = uniform GPTQ through CircuitKIT 0.2.4
+  `llmcompressor_circuit_quantize`; c*/r* = circuit vs random protected-layer sets of equal size k (protected layers
+  16 bit): 72 = 4-bit base k 9, 6 = k 6, 5 = k 3, 35 = 3-bit base k 1; 3 = 2-bit base k 2 and 1g = largest average
+  under 1 GB (2-bit base, k at 3 bit, tied embedding round-to-nearest 2 bit, size computed) through the same
+  llm-compressor GPTQ call made directly (CircuitKIT allows 3/4/8 bit only). Circuit layers from CircuitKIT EAP-IG
+  node scores (`results/job25/circuit_scores.json`, jobs-repo revision `5f8aa2ba`); random layers
+  `build_random_quantization_plan(36, k/36, seed 0)`.
+- Measures: ASR (119 test prompts, Llama Guard 3 1B @ `acf7aafa`), over-refusal, task, general (notebook 17 settings,
+  eval sets `purvansh01/safetypulse-eval` @ `5e49af71`, sha256-checked), Wilson 95% intervals, exact McNemar vs fp16
+  and circuit vs random; on-disk bytes; HF-transformers tokens/s and peak VRAM (compressed-tensors layers are
+  dequantized by transformers, so these are not quantized-kernel speeds); `cis_sep` (bundle `de9dc195`, frozen
+  thresholds).
+- **Deviation found in the test runs:** GPTQ calibrated on plain wikitext-2 (CircuitKIT's default) collapsed the
+  4-bit and 3-bit models (`cis_sep` 0.01–0.03, MMLU at chance on 8 test items) for every GPTQ setting tried (sequential
+  and basic pipeline, dampening 0.1, no activation ordering, bf16 source), while round-to-nearest 4 bit kept
+  `cis_sep` 0.97. With the same wikitext texts wrapped in the chat template (`SP_CALIB=chat`, 1024 tokens), 4-bit GPTQ
+  gave `cis_sep` 0.95 and 3-bit 0.76. The full jobs use the chat-format calibration.
+- Discovery (test job `6b05d284`): CircuitKIT 0.2.4, 64 pairs, 286 s, peak 24.7 GiB; Spearman 0.988 with the Job 1
+  scores (CircuitKIT 0.2.0), top-20 overlap 0.60.
+- Test jobs (`SP_TEST=1`, 8 items per set, outputs `results/job25-test/`): `6b05d284` (smoke, 541 s), `6b05d6d2`
+  (fp16/u8/u4, 288 s), `6b05e629` (RTN and basic-pipeline diagnostics, 299 s), `6b05e830` (GPTQ settings, 341 s),
+  `6b05ed9c` (chat calibration, 381 s): 1850 s ≈ $0.93 actual, $3.90 worst case.
+
 ## Publication of the follow-up outputs (2026-11-23)
 
 The adapters written by Jobs 18, 21, 24 (`pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca`) and Job 23
