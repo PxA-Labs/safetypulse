@@ -320,7 +320,7 @@ with the largest effect (29\% of the update's energy) returned ASR to base level
 did nearly as well, so we see no evidence that the drift is localised. \emph{A third judge:} ShieldGemma 9B
 \citep{zeng2024shieldgemma}, from another family and not a substitute for a human check, agreed with the 1B judge on
 73\% of the H6 answers ($\kappa$ 0.26) and flagged far fewer, partly because its four policies do not cover every
-Llama Guard category; H6 stayed refuted under its labels. \emph{Aya Expanse 8B (one run):} with its own bundle
+Llama Guard category; H6 stayed refuted under its labels. \emph{Aya Expanse 8B \citep{dang2024ayaexpanse} (one run):} with its own bundle
 (same pairs and code; layer 21 of 32) and Global's thresholds unchanged, one Alpaca fine-tune was unsafe from the first
 checkpoint on (step 25; 48--65 of 78 prompts vs.\ 9 at step 0), where \cissep{} read FAIL (0.30--0.39) and the
 spot-check fell to 0.04--0.26; with no safe fine-tuned checkpoint and checkpoints every 25 steps, this run cannot
@@ -346,7 +346,7 @@ Apache-2.0 and adapters and logs under CC BY-NC 4.0, for non-commercial research
 
 \section*{Acknowledgements}
 
-We thank Lexsi Labs for the SafeTune, CircuitKIT, AuditKIT and CuratorKIT toolkits, the SafeTune checkpoints and
+We thank Lexsi Labs for the SafeTune \citep{seth2026safetune}, CircuitKIT \citep{seth2026circuitkit}, AuditKIT \citep{lexsi2026auditkit} and CuratorKIT \citep{bhattacharjee2026curatorkit} toolkits, the SafeTune checkpoints and
 compute credits, and Cohere Labs for the Tiny Aya models. AI assistance: an AI assistant helped write code and draft
 text, drafted and screened the harmless twins of the contrast pairs (no human check; see Limitations), and carried out
 the exploratory follow-ups dated 2026-11-22 (App.~\ref{app:prereg}). The authors designed the study, checked every

@@ -23,10 +23,20 @@ ARXIV = {   # key: arXiv id   (venue notes per docs/12_RELATED_WORK.md)
     "zou2023repe": "2310.01405", "peng2024landscape": "2405.17374",
     # added for the 2026-11-22 follow-ups and the GSM8K citation (abstract pages verified 2026-11-23)
     "cobbe2021gsm8k": "2110.14168", "zeng2024shieldgemma": "2407.21772", "nllbteam2022nllb": "2207.04672",
+    # Lexsi call 2026-11-24: cite every toolkit and model used (abstract pages verified 2026-11-24)
+    "bhattacharjee2026curatorkit": "2606.21631", "dang2024ayaexpanse": "2412.04261",
 }
 # names the arXiv API gets wrong (abstract page of 2606.07631: "Hal Daumé III"; ACL Anthology form)
 NAME_FIX = {"Hal Daum{\\'e}": "Daum{\\'e} III, Hal"}
 MANUAL = r"""
+@software{lexsi2026auditkit,
+  title = {{AuditKIT}},
+  author = {{Lexsi Labs}},
+  year = {2026},
+  version = {1.0.0},
+  howpublished = {GitHub repository},
+  url = {https://github.com/Lexsi-Labs/AuditKIT}
+}
 @misc{taori2023alpaca,
   title = {Stanford {Alpaca}: An Instruction-following {LLaMA} model},
   author = {Taori, Rohan and Gulrajani, Ishaan and Zhang, Tianyi and Dubois, Yann and Li, Xuechen and Guestrin, Carlos and Liang, Percy and Hashimoto, Tatsunori B.},
