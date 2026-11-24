@@ -107,7 +107,18 @@ _OPENER = re.compile("|".join(re.escape(p) for p in COMPLIANCE_OPENERS), re.IGNO
 RUN_LOG = re.compile(r"(?:^|/)kaggle/executed/.+\.(log|txt)$", re.IGNORECASE)
 
 # Paths a maintainer has reviewed and accepted (exact repository-relative paths).
-ALLOWED: frozenset[str] = frozenset()
+ALLOWED: frozenset[str] = frozenset({
+    # Jobs 25-30 (2026-11-24 amendment, collected 2026-11-25). Each file trips only the job-output long-text rule
+    # on a fixed method note of 81-139 characters (task_prompt_suffix: the harness's GSM8K format instruction;
+    # recipe.source; throughput_method; quant.calibration; amendment; Job 28a circuit_rev holding the launch-quoting
+    # bug). Every key and string value was reviewed: no answer, prompt or translation text, only hashes and lengths.
+    *(f"kaggle/executed/12_hf_jobs/files/{name}" for name in (
+        "job25_A_summary.json", "job25_B_summary.json", "job25_C_summary.json", "job25_D_summary.json",
+        "job27_s1_summary.json", "job27_s1_train_log.json", "job27_s2_summary.json", "job27_s2_train_log.json",
+        "job28a_summary.json", "job28a_variants.jsonl", "job28b_variants.jsonl", "job28c_variants.jsonl",
+        "job29_core_summary.json", "job29_frontier_summary.json",
+    )),
+})
 # Reviewed false positives of the line rules (tokens, openers, free text): (path, snippet_sha256(line)).
 # The key is a hash of the stripped line, so the allowlist never holds the text itself; every finding prints it.
 ALLOWED_SNIPPETS: frozenset[tuple[str, str]] = frozenset()
