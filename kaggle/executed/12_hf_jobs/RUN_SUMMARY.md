@@ -705,6 +705,8 @@ max $2.55 each, $10.20 for the four. Outputs (scores, flags and hashes only; mod
 - Test jobs (`SP_TEST=1`, 8 items per set, outputs `results/job25-test/`): `6b05d284` (smoke, 541 s), `6b05d6d2`
   (fp16/u8/u4, 288 s), `6b05e629` (RTN and basic-pipeline diagnostics, 299 s), `6b05e830` (GPTQ settings, 341 s),
   `6b05ed9c` (chat calibration, 381 s): 1850 s ≈ $0.93 actual, $3.90 worst case.
+- **Status check 2026-11-24 ~21:00 UTC (`hf jobs inspect`):** all four shards RUNNING (running 1869 s A, 2039 s B,
+  2214 s C, 2476 s D at the read).
 
 ## Job 26 · E2 text-generation benchmarks: IFEval and XQuAD en/hi/es (2026-11-24 UTC, exploratory; RUNNING)
 
@@ -731,6 +733,9 @@ max $2.55 each, $10.20 for the four. Outputs (scores, flags and hashes only; mod
 - Cap (worst case, timeout × $1.80/h): smoke 2 × $0.75 + full 3 × $1.80 = **$6.90** (builder cap $8).
 - Outputs: private `purvansh01/safetypulse-jobs` `results/job26/<label>.json` (scores, Wilson 95% intervals, per
   document doc_id / question id / scores / answer sha256 and length; no answer text).
+- **Status check 2026-11-24 ~21:00 UTC (`hf jobs inspect`):** smoke 2 COMPLETED, 213 s ($0.11); base COMPLETED, 1220 s
+  ($0.61); alpaca_s1_125 COMPLETED, 980 s ($0.49); repaired COMPLETED, 1205 s ($0.60). E2 billed total with both
+  smokes $1.86. Results `results/job26/{base,alpaca_s1_125,repaired}.json` not yet copied into git (wave 2).
 
 ## Job 27 · E4: Aya Expanse 8B on the Lexsi default recipe, seeds 1 and 2, 2-step checkpoints to 60 (2026-11-24 UTC, exploratory; RUNNING)
 
@@ -758,6 +763,10 @@ before any job below was created). No verdict or threshold changes.
 - Seed 2: https://huggingface.co/jobs/pxaLabs-lexsi/6b05d599d0582cfbbefcc763 (`l40sx1`, `--timeout 60m`, cap $1.80),
   created 2026-11-24T18:21:13Z.
 - E4 worst-case total including the test: $4.35.
+- **Status check 2026-11-24 ~21:00 UTC (`hf jobs inspect`):** smoke `6b05d32e` COMPLETED, 181 s ($0.09); seed 1 COMPLETED,
+  2029 s ($1.01); seed 2 COMPLETED, 2095 s ($1.05). Results in `results/job27/s{1,2}/` not yet copied into git; the
+  observer's log reading (first WARN 44/46, FAIL 52/52, first unsafe 46/48 for seeds 1/2) is in
+  `docs/report/workflow/2026-11-24-run-log.md` and is to be confirmed from `job27_summary.json`.
 
 ## Job 28 · E5: Aya Expanse 8B quantization tiers, circuit-guided vs random (2026-11-24 UTC, exploratory; RUNNING)
 
@@ -786,6 +795,11 @@ before any job below was created). No verdict or threshold changes.
   2026-11-24T18:34:51Z.
 - Outputs: SP_REPO `results/job28/<28a|28b|28c>/` (`variants.jsonl`, `pairs.json`, `job28_summary.json`), models at
   `results/job28/models/<variant>/`. E5 worst-case total including the test: $9.60.
+- **Status check 2026-11-24 ~21:00 UTC (`hf jobs inspect`):** smoke `6b05d381` COMPLETED, 454 s ($0.23); 28a COMPLETED, 1597 s
+  ($0.80); **28b and 28c ERROR** after 175 s and 176 s ($0.09 each): `RevisionNotFoundError` on
+  `results/job28/circuit.json` because the launch command's later `-e SP_CIRCUIT_SHA=… -e SP_VARIANT_MIN=…` flags were
+  swallowed into the `SP_CIRCUIT_REV` value (launch quoting, not the script). No GPU work was done; 28b and 28c must be
+  relaunched (wave 2) with each `-e` as its own argument. 28a results not yet copied into git.
 
 ## Publication of the follow-up outputs (2026-11-23)
 
