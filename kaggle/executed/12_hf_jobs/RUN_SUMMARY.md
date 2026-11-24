@@ -706,6 +706,32 @@ max $2.55 each, $10.20 for the four. Outputs (scores, flags and hashes only; mod
   (fp16/u8/u4, 288 s), `6b05e629` (RTN and basic-pipeline diagnostics, 299 s), `6b05e830` (GPTQ settings, 341 s),
   `6b05ed9c` (chat calibration, 381 s): 1850 s ≈ $0.93 actual, $3.90 worst case.
 
+## Job 26 · E2 text-generation benchmarks: IFEval and XQuAD en/hi/es (2026-11-24 UTC, exploratory; RUNNING)
+
+- Purpose: E2 of the amendment `docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md` (commit `cd72fc6`).
+  IFEval (all 541 prompts; prompt-level strict and loose accuracy) and XQuAD en / hi / es (the same 500 question ids
+  per language, `random.Random(0)`, ids sha256 `1bee96ce…3d3a3c`; exact match and F1) through lm-evaluation-harness
+  0.4.13, greedy, task-default generation (IFEval 1280 tokens; XQuAD 256 tokens, stop at newline), chat template with
+  no system instruction, bf16, batch 32. Reported as measured; no threshold or pass/fail.
+- Models: Tiny Aya Global `af89d219b53ed9b13b8a4645f9c8028973510324`; its Alpaca fine-tune = that base +
+  `purvansh01/safetypulse-lora-alpaca@0ea31228c451cdacb47de1f3adb7c9736b950800` `alpaca-s1/checkpoint-125` merged
+  (the checkpoint Job 4 repaired); the repaired model
+  `purvansh01/tiny-aya-global-safetypulse-repaired@06ee768d15feac8638e834d28fbb38ab6e4fb11a`. Benchmark data
+  asserted at job start: `google/IFEval@966cd895`, `google/xquad@51adfef1`.
+- Script `tools/hf_jobs/job26_e2_benchmarks.py`, launched from its raw GitHub URL at code SHA
+  `5a45d23389bac6df47aaab45c6f64e96c2a2bf0c` (also passed as `SP_CODE_SHA` and stored in every output). Stand-in for
+  `transformers.data.metrics.squad_metrics` (removed in transformers 5.20; lm-eval issue #4435), copied from
+  transformers 5.19.0, recorded as `squad_shim: true`; langdetect seeded 0.
+- Smoke tests (`SP_TEST=1`, 5 documents per task, all three models, `--timeout 25m` each):
+  `6b05d1361460ffe1d5e8c746` ERROR after 1m 48s (Tiny Aya's chat template is a dict; hashing fixed in `5a45d233`),
+  `6b05d940d0582cfbbefccba8` COMPLETED in 3m 33s (outputs in `results/job26-test/`).
+- Full jobs (namespace `pxaLabs-lexsi`, `l40sx1`, `--timeout 60m` each, one model per job), RUNNING:
+  `6b05db41d0582cfbbefccfe6` (base), `6b05db781460ffe1d5e8d865` (alpaca_s1_125), `6b05dbaed0582cfbbefcd0bb`
+  (repaired).
+- Cap (worst case, timeout × $1.80/h): smoke 2 × $0.75 + full 3 × $1.80 = **$6.90** (builder cap $8).
+- Outputs: private `purvansh01/safetypulse-jobs` `results/job26/<label>.json` (scores, Wilson 95% intervals, per
+  document doc_id / question id / scores / answer sha256 and length; no answer text).
+
 ## Publication of the follow-up outputs (2026-11-23)
 
 The adapters written by Jobs 18, 21, 24 (`pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca`) and Job 23
