@@ -91,7 +91,11 @@ for arm in ("circuit", "random"):
 # diagnostics (uniform 4 bit through the direct call): round-to-nearest, and GPTQ with the "basic" pipeline
 VARIANTS["u4rtn"] = ("direct", 4, 0, 16, 16, None, 4)
 VARIANTS["u4basic"] = ("direct", 4, 0, 16, 16, None, 4)
-DIRECT_KW = {"u4rtn": {"method": "rtn"}, "u4basic": {"pipeline": "basic"}}
+for v in ("u4d10", "u4noact", "u4bf"):
+    VARIANTS[v] = ("direct", 4, 0, 16, 16, None, 4)
+DIRECT_KW = {"u4rtn": {"method": "rtn"}, "u4basic": {"pipeline": "basic"}, "u4d10": {"dampening_frac": 0.1},
+             "u4noact": {"gptq_kw": {"actorder": None}}}
+BUILD_DTYPE = {"u4bf": "bfloat16"}   # source dtype for quantization (default fp16)
 unknown = [v for v in REQ if v not in VARIANTS]
 assert not unknown, f"unknown variants {unknown}; known {sorted(VARIANTS)}"
 
@@ -266,7 +270,8 @@ def plan(name: str) -> dict:
 
 def build(p: dict) -> tuple[Path, dict]:
     tok = load_tokenizer(base_dir)
-    model = AutoModelForCausalLM.from_pretrained(base_dir, dtype=torch.float16, device_map={"": 0})
+    model = AutoModelForCausalLM.from_pretrained(base_dir, dtype=getattr(torch, BUILD_DTYPE.get(p["variant"], "float16")),
+                                                 device_map={"": 0})
     model.eval()
     t = time.time()
     info = {}

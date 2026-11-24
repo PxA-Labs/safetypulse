@@ -224,7 +224,7 @@ def _layers_regex(layers: list[int]) -> str:
 
 def quantize_direct(model, tok, base_bits: int, protect: list[int], protect_bits: int, calib: list[str],
                     max_seq_length: int = 512, dampening_frac: float = 0.01, method: str = "gptq",
-                    pipeline: str = "sequential") -> dict:
+                    pipeline: str = "sequential", gptq_kw: dict | None = None) -> dict:
     """The GPTQModifier call of CircuitKIT's llmcompressor path, made directly so that `base_bits` may be 2 and the
     protected layers may get `protect_bits` (16 = left unquantized, as CircuitKIT does) instead of 16.
     Diagnostics: method="rtn" (QuantizationModifier, round-to-nearest, same scheme) or pipeline="basic"."""
@@ -254,7 +254,7 @@ def quantize_direct(model, tok, base_bits: int, protect: list[int], protect_bits
     if method == "rtn":
         modifier = QuantizationModifier(config_groups=groups, ignore=ignore)
     else:
-        modifier = GPTQModifier(config_groups=groups, ignore=ignore, dampening_frac=dampening_frac)
+        modifier = GPTQModifier(config_groups=groups, ignore=ignore, dampening_frac=dampening_frac, **(gptq_kw or {}))
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
     ds = _build_calibration_dataset(tok, len(calib), max_seq_length, calib)
@@ -262,7 +262,7 @@ def quantize_direct(model, tok, base_bits: int, protect: list[int], protect_bits
             max_seq_length=max_seq_length, pipeline=pipeline, output_dir=None)
     nq = sum(1 for m in model.modules() if getattr(m, "quantization_scheme", None) is not None)
     return {"backend": f"llmcompressor {type(modifier).__name__} (CircuitKIT recipe, direct)", "method": method,
-            "pipeline": pipeline, "bits": base_bits,
+            "pipeline": pipeline, "dampening_frac": dampening_frac, "gptq_kw": gptq_kw, "bits": base_bits,
             "protect_bits": protect_bits, "protected_layers": sorted(protect), "ignore_patterns": ignore,
             "quantized_layers": nq, "n_layers": n, "group_size": GROUP}
 
