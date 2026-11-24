@@ -37,6 +37,13 @@ MANUAL = r"""
   howpublished = {GitHub repository},
   url = {https://github.com/Lexsi-Labs/AuditKIT}
 }
+@software{lexsi2026aligntune,
+  title = {{AlignTune}: A Modular Toolkit for Post Training Alignment of {LLMs}},
+  author = {{Lexsi Labs}},
+  year = {2026},
+  howpublished = {GitHub repository},
+  url = {https://github.com/Lexsi-Labs/aligntune}
+}
 @misc{taori2023alpaca,
   title = {Stanford {Alpaca}: An Instruction-following {LLaMA} model},
   author = {Taori, Rohan and Gulrajani, Ishaan and Zhang, Tianyi and Dubois, Yann and Li, Xuechen and Guestrin, Carlos and Liang, Percy and Hashimoto, Tatsunori B.},
