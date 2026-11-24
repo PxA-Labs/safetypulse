@@ -33,20 +33,22 @@
 \maketitle
 
 \begin{abstract}
-Fine-tuning an aligned model on benign data can erode its refusals, and auditing every checkpoint is costly. We study
-a cheap internal alarm, \cissep{}: the separation of harmful and harmless prompts along the base model's refusal
-direction, relative to the base model, with WARN and FAIL thresholds fixed once on development runs of Tiny Aya Global.
-We pre-registered four tests of where it transfers. At its WARN level it flagged every unsafe checkpoint of three
-drifting runs on a sibling model, Tiny Aya Earth, and none of two control runs, and every unsafe checkpoint after a
-reformatting of the training data (bulleted lists). Two predictions failed. It did not warn earlier than a weight-change
-baseline (tied at 10-step resolution; at 2-step resolution the baseline fired first in three exploratory runs),
-although that baseline also alarmed on 48 of 50 control checkpoints. On 35
-third-party checkpoints from four other model families, its FAIL level fired on 3 of 8 safe recovered models. A check
-costs about a fifth of a behavioural audit and warned earlier than a 50-prompt refusal spot-check in two of the three
-Tiny Aya tests (tied in the third), but on the other families the spot-check alarmed on far fewer safe models (3 vs.\ 10
-of 12). Exploratory analyses suggest the score still ranks models well
-within three families and that the failure in the fourth is tied to the layer chosen by calibration, but we could not
-set reliable thresholds for new families.
+Fine-tuning a safety-aligned language model, even on harmless data, can make it comply with harmful requests it
+used to refuse, and auditing every checkpoint is costly. We test a cheap alarm, \cissep{}: how far apart harmful and
+harmless prompts lie along the base model's refusal direction (the activation direction that carries refusal),
+relative to the base model (1 = unchanged), with WARN and FAIL thresholds fixed once on development runs of Tiny Aya
+Global. Of four tests fixed in advance (pre-registered) of where these thresholds transfer, two passed and two failed.
+\emph{Passed:} at WARN it flagged every unsafe checkpoint (attack success rate up by over 10 points) of three drifting
+runs on a sibling model, Tiny Aya Earth, and none of two control runs (H1), and every unsafe checkpoint after
+reformatting the training data as bulleted lists (H2). \emph{Failed:} it did not warn earlier than a baseline measuring
+weight change (H3; tied at 10-step resolution; at 2-step resolution the baseline fired first in three exploratory
+runs), although that baseline also alarmed on 48 of 50 control checkpoints; and on 35 third-party checkpoints from four
+other model families, its FAIL level fired on 3 of 8 safe models repaired after drifting (H6). A check needs no
+generation and costs about a fifth of a behavioural audit; it warned earlier than a 50-prompt refusal spot-check in two
+of the three Tiny Aya tests (tied in the third), but on the other families the spot-check alarmed on far fewer safe
+models (3 vs.\ 10 of 12). Exploratory analyses suggest the score still ranks models well within three families and that
+the failure in the fourth is tied to the layer chosen by calibration, but we could not set reliable thresholds for new
+families.
 \end{abstract}
 
 \section{Introduction}
@@ -54,7 +56,7 @@ set reliable thresholds for new families.
 Safety alignment is fragile under fine-tuning: even benign instruction data can raise a model's compliance with harmful
 requests \citep{qi2023finetuning,he2024safedata}. Re-auditing every checkpoint with red-team prompts and a safety
 judge is expensive, so a cheap \emph{screening signal} that runs inside the training loop is attractive. Refusal in chat
-models is mediated largely by a single residual-stream direction \citep{arditi2024refusal}, and benign fine-tuning moves
+models is mediated largely by a single direction in the internal activations (the residual stream) \citep{arditi2024refusal}, and benign fine-tuning moves
 it \citep{du2025procon}, which makes the strength of that direction a natural candidate.
 
 Activation-based drift monitors exist and have been validated on held-out runs \citep{nghiem2026trait}; our
@@ -63,8 +65,11 @@ of SafetyPulse, including its alarm thresholds, were made on development runs of
 \citealp{salamanca2026tinyaya}). Because such choices are easily over-fitted, we then fixed four hypotheses with pass
 marks \citep{nosek2018preregistration,vanmiltenburg2021preregistering} and ran new experiments: a sibling model (H1), a
 reformatting of the training data (H2), lead time at finer checkpoint spacing (H3), and 35 third-party checkpoints from
-four other model families (H6). Two were confirmed and two refuted; we report all of them, with baselines, and label
-exploratory analyses as such.
+four other model families (H6). Two were confirmed (H1, H2) and two refuted (H3, H6); we report all of them, with baselines, and label
+exploratory analyses as such. \textbf{Contributions:} (1) a pre-registered test of where frozen alarm thresholds transfer;
+(2) baselines on the same checkpoints, showing where the alarm helps (silent on control runs where a weight-change alarm
+fired on 48 of 50 checkpoints) and where a behavioural spot-check is better (new families); (3) exploratory diagnoses
+of the failures; (4) open code, a Python package and data.
 
 \section{Method}
 \label{sec:method}
@@ -187,8 +192,12 @@ reached 65/65): it tests robustness, not superiority.
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_trajectories.pdf}
-\caption{\cissep{} (top) and ASR (bottom) during fine-tuning, one line per run, with Global's frozen thresholds. H1:
-Alpaca runs fall below WARN and become unsafe; control runs stay above WARN. H2: list-formatted runs; all drift.}
+\caption{Frozen thresholds on new runs (H1, H2). One line per fine-tuning run; markers are unsafe checkpoints (ASR
+more than 10 points above step 0). Top: \cissep{} (1 = base model; lower = harmful and harmless prompts less separated)
+with Global's frozen WARN and FAIL thresholds. Bottom: attack success rate (ASR), the share of harmful prompts whose
+answer Llama Guard 3 1B rates harmful. H1 (left, Tiny Aya Earth): Alpaca runs fall below WARN 10--20 steps before they
+become unsafe; control runs stay above WARN. H2 (right, Global trained on bulleted-list answers): all runs drift, and
+every unsafe checkpoint is below WARN.}
 \label{fig:traj}
 \end{figure*}
 
