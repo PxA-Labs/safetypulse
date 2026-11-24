@@ -88,6 +88,10 @@ for lvl, (bits, k) in {"72": (4, 9), "6": (4, 6), "5": (4, 3), "35": (3, 1)}.ite
 for arm in ("circuit", "random"):
     VARIANTS[f"{arm[0]}3"] = ("direct", 2, 2, 16, 16, arm, 3.0)
     VARIANTS[f"{arm[0]}1g"] = ("direct", 2, None, 3, 2, arm, "max under 1 GB")   # k chosen from the size budget
+# diagnostics (uniform 4 bit through the direct call): round-to-nearest, and GPTQ with the "basic" pipeline
+VARIANTS["u4rtn"] = ("direct", 4, 0, 16, 16, None, 4)
+VARIANTS["u4basic"] = ("direct", 4, 0, 16, 16, None, 4)
+DIRECT_KW = {"u4rtn": {"method": "rtn"}, "u4basic": {"pipeline": "basic"}}
 unknown = [v for v in REQ if v not in VARIANTS]
 assert not unknown, f"unknown variants {unknown}; known {sorted(VARIANTS)}"
 
@@ -271,7 +275,8 @@ def build(p: dict) -> tuple[Path, dict]:
     if p["kind"] == "ck":
         info.update(sb.quantize_circuitkit(model, tok, NODE_SCORES, p["base_bits"], p["protected_layers"], CALIB, MAX_SEQ))
     else:
-        info.update(sb.quantize_direct(model, tok, p["base_bits"], p["protected_layers"], p["protect_bits"], CALIB, MAX_SEQ))
+        info.update(sb.quantize_direct(model, tok, p["base_bits"], p["protected_layers"], p["protect_bits"], CALIB, MAX_SEQ,
+                                       **DIRECT_KW.get(p["variant"], {})))
     info["quantize_seconds"] = round(time.time() - t, 1)
     out = work / "models" / p["variant"]
     model.save_pretrained(out)
