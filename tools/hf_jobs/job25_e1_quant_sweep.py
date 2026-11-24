@@ -15,7 +15,7 @@
 #   "safetensors",
 #   "numpy",
 #   "pydantic>=2",
-#   "safetypulse @ git+https://github.com/PxA-Labs/safetypulse@0e5f24d2281d6114faec596930ca5c92b63bf0b2",
+#   "safetypulse @ git+https://github.com/PxA-Labs/safetypulse@c4d1bc08313b7b1cec2e59597ef31b417038df44",
 # ]
 # ///
 """SafetyPulse HF Job 25 (EXPLORATORY, docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md, commit cd72fc6):
@@ -64,7 +64,7 @@ REQ = [v for v in os.environ.get("SP_VARIANTS", "c35,r1g").split(",") if v]
 REPO = os.environ.get("SP_REPO", "purvansh01/safetypulse-jobs")
 OUT_BASE = "results/job25"
 OUT = f"{OUT_BASE}{'-test' if TEST else ''}"
-COMMIT = "0e5f24d2281d6114faec596930ca5c92b63bf0b2"   # sp_bench.py and the package
+COMMIT = "c4d1bc08313b7b1cec2e59597ef31b417038df44"   # sp_bench.py and the package
 MODEL, MODEL_REV = "CohereLabs/tiny-aya-global", "af89d219b53ed9b13b8a4645f9c8028973510324"
 JUDGE, JUDGE_REV = "meta-llama/Llama-Guard-3-1B", "acf7aafa60f0410f8f42b1fa35e077d705892029"
 BUNDLE = ("purvansh01/safetypulse-probe-bundle", "de9dc195cc8a8d2afca5bf8634ac3686b7d0ce2a")
