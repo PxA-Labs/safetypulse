@@ -24,9 +24,11 @@ task-default generation settings, the model's own chat template with no system i
 Models (one or more per job, `--models`): `base` = Tiny Aya Global; `alpaca_s1_125` = base + the alpaca-s1
 checkpoint-125 LoRA merged in (the drifted checkpoint the repaired model was built from, tools/hf_jobs/job4_repaired_model.py);
 `repaired` = the Job 4 SafeTune-repaired model. Any other variant (e.g. the E1/E5 quantized checkpoints in wave 2) is
-given with `--model-repo/--model-rev [--model-subfolder] [--model-repo-type dataset] --label NAME`; the checkpoint is
-loaded with AutoModelForCausalLM.from_pretrained (plain, PEFT-merged or compressed-tensors all work), so `bench()` can
-also be imported from this file at a pinned commit.
+given with `--model-repo/--model-rev [--model-subfolder] [--model-repo-type dataset] --label NAME`, or several
+subfolders of one repo with `--model-subfolders a/x,b/y` (label = last path component; used by Job 30 for the Job 25
+frontier checkpoints, with `--base-tokenizer` so every variant uses the pinned Tiny Aya tokenizer, as Job 26 base did);
+the checkpoint is loaded with AutoModelForCausalLM.from_pretrained (plain, PEFT-merged or compressed-tensors all work),
+so `bench()` can also be imported from this file at a pinned commit.
 
 Release policy: generated answers stay in memory. Stored per model (SP_REPO private, results/job26/<label>.json): summary
 metrics with lm-eval stderr and Wilson 95% intervals, versions, sample counts, generation settings, chat-template sha256,
@@ -183,15 +185,17 @@ def mean_ci(xs):
     return [round(max(0.0, m - Z * se), 6), round(min(1.0, m + Z * se), 6)]
 
 
-def load_variant(repo, rev, subfolder=None, repo_type="model", adapter=None, tokenizer=None, dtype=torch.bfloat16):
+def load_variant(repo, rev, subfolder=None, repo_type="model", adapter=None, tokenizer=None, dtype=torch.bfloat16,
+                 force_tokenizer=False):
     """Load a checkpoint (plain, compressed-tensors or other HF-loadable format) and optionally merge a LoRA adapter.
 
-    adapter = (repo, rev, subfolder); tokenizer = (repo, rev), used when the checkpoint folder has no tokenizer.
+    adapter = (repo, rev, subfolder); tokenizer = (repo, rev), used when the checkpoint folder has no tokenizer or
+    when force_tokenizer is set.
     """
     pats = [f"{subfolder}/*"] if subfolder else None
     local = Path(snapshot_download(repo, revision=rev, repo_type=repo_type, allow_patterns=pats))
     path = local / subfolder if subfolder else local
-    has_tok = any((path / f).exists() for f in ("tokenizer.json", "tokenizer_config.json"))
+    has_tok = not force_tokenizer and any((path / f).exists() for f in ("tokenizer.json", "tokenizer_config.json"))
     tok_src = (str(path), None) if has_tok else (tokenizer or GLOBAL)
     tok = AutoTokenizer.from_pretrained(tok_src[0], revision=tok_src[1]) if tok_src[1] else \
         AutoTokenizer.from_pretrained(tok_src[0])
@@ -202,6 +206,20 @@ def load_variant(repo, rev, subfolder=None, repo_type="model", adapter=None, tok
         ad = Path(snapshot_download(adapter[0], revision=adapter[1], allow_patterns=[f"{adapter[2]}/*"]))
         model = PeftModel.from_pretrained(model, str(ad / adapter[2])).merge_and_unload()
     return model.eval(), tok
+
+
+def quant_info(model):
+    """quant_method / format / bits of a quantized checkpoint (None for plain weights); never raises."""
+    try:
+        q = getattr(model.config, "quantization_config", None)
+        if q is None:
+            return None
+        q = q if isinstance(q, dict) else q.to_dict()
+        bits = sorted({g.get("weights", {}).get("num_bits") for g in (q.get("config_groups") or {}).values()} - {None})
+        return {"quant_method": q.get("quant_method"), "format": q.get("format"), "bits": bits,
+                "n_ignore": len(q.get("ignore") or [])}
+    except Exception as e:   # noqa: BLE001 - metadata only
+        return {"error": type(e).__name__}
 
 
 def bench(model, tok, label, limit=None, batch=BATCH):
@@ -291,6 +309,12 @@ def main():
     ap.add_argument("--model-repo")
     ap.add_argument("--model-rev")
     ap.add_argument("--model-subfolder")
+    ap.add_argument("--model-subfolders", default="", help="comma list of subfolders of --model-repo, one variant each "
+                    "(label = last path component)")
+    ap.add_argument("--base-tokenizer", action="store_true", help="always use --tokenizer-repo/--tokenizer-rev")
+    ap.add_argument("--time-budget-min", type=float, default=None,
+                    help="job timeout in minutes; a variant is skipped if fewer than --est-min minutes are left")
+    ap.add_argument("--est-min", type=float, default=0.0, help="expected minutes per variant (with --time-budget-min)")
     ap.add_argument("--model-repo-type", default="model", choices=["model", "dataset"])
     ap.add_argument("--tokenizer-repo", default=GLOBAL[0])
     ap.add_argument("--tokenizer-rev", default=GLOBAL[1])
@@ -305,7 +329,12 @@ def main():
     assert code_sha or a.limit, "full runs need SP_CODE_SHA (the pushed commit the script was launched from)"
 
     plan = [(m, PRESETS[m]) for m in a.models.split(",") if m]
-    if a.model_repo:
+    if a.model_repo and a.model_subfolders:
+        assert a.model_rev and not (a.label or a.model_subfolder), "--model-subfolders needs --model-rev only"
+        for sub in a.model_subfolders.split(","):
+            plan.append((sub.rstrip("/").split("/")[-1], {"repo": a.model_repo, "rev": a.model_rev, "subfolder": sub,
+                                                          "repo_type": a.model_repo_type}))
+    elif a.model_repo:
         assert a.label and a.model_rev, "--model-repo needs --label and --model-rev"
         plan.append((a.label, {"repo": a.model_repo, "rev": a.model_rev, "subfolder": a.model_subfolder,
                                "repo_type": a.model_repo_type}))
@@ -313,20 +342,27 @@ def main():
     api = HfApi()   # token from the HF_TOKEN secret
     check_datasets(api)
     t_job = time.time()
+    skipped = []
     for label, spec in plan:
         dest = f"{out}/{label}.json"
         if not a.force and done_before(dest):
             print(label, "already complete in", dest, flush=True)
             continue
+        left = a.time_budget_min - (time.time() - t_job) / 60 if a.time_budget_min else None
+        if left is not None and left < a.est_min:
+            print(label, f"skipped by time guard ({left:.1f} min left < {a.est_min})", flush=True)
+            skipped.append(label)
+            continue
         t0 = time.time()
         model, tok = load_variant(spec["repo"], spec["rev"], spec.get("subfolder"), spec.get("repo_type", "model"),
-                                  spec.get("adapter"), (a.tokenizer_repo, a.tokenizer_rev))
+                                  spec.get("adapter"), (a.tokenizer_repo, a.tokenizer_rev),
+                                  force_tokenizer=a.base_tokenizer)
         load_min = round((time.time() - t0) / 60, 2)
         r = bench(model, tok, label, a.limit, a.batch)
         r.update(complete=True, load_minutes=load_min, limit=a.limit, code_sha=code_sha,
                  amendment="docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md (cd72fc6)",
                  model={k: (list(v) if isinstance(v, tuple) else v) for k, v in spec.items()},
-                 job_id=os.environ.get("JOB_ID"))
+                 job_id=os.environ.get("JOB_ID"), base_tokenizer=a.base_tokenizer, quantization=quant_info(model))
         upload(api, r, dest, f"{label} ({'limit ' + str(a.limit) if a.limit else 'full'})")
         brief = {t: {k: round(v, 4) for k, v in s.items() if isinstance(v, float) and "stderr" not in k}
                  for t, s in r["summary"].items()}
@@ -335,7 +371,7 @@ def main():
         del model
         if DEV == "cuda":
             torch.cuda.empty_cache()
-    print(f"done in {(time.time() - t_job) / 60:.1f} min", flush=True)
+    print(f"done in {(time.time() - t_job) / 60:.1f} min; skipped by time guard: {skipped}", flush=True)
 
 
 if __name__ == "__main__":

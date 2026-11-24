@@ -837,6 +837,34 @@ before any job below was created). No verdict or threshold changes.
 - Outputs: private `purvansh01/safetypulse-jobs` `results/job29/<core|frontier>/{translations.json, rows.jsonl,
   summary.json}`: per (model, language) n, k, ASR, Wilson interval, flags, answer lengths and digest, prompt-set hash.
 
+## Job 30 · E1 frontier variants: IFEval and XQuAD en/hi/es on the Job 25 size/quality frontier (2026-11-24 UTC, exploratory; RUNNING)
+
+- Purpose: amendment `docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md` (commit `cd72fc6`), E1 bullet
+  "Frontier variants ... also get IFEval and XQuAD". Same benchmark, settings and data pins as Job 26 (bf16, batch 32,
+  chat template, no system instruction). No verdict or frozen threshold is touched.
+- Frontier rule (deterministic): all Job 25 variants from `results/job25/{A,B,C,D}/rows.jsonl` (jobs revision
+  `77c4650f`); collapsed variants dropped (task < 0.10: c3, r3, c1g, r1g); among the rest (fp16 excluded) a variant is
+  kept if no other has `disk_bytes` <= and `general` >= with one strict. Frontier: u3, r35, u4, r5, r6, r72, u8 (7);
+  capped at 5 by highest `general`: **u4** (2,524,069,488 B, general 0.526), **r5** (2,871,937,680 B, 0.548), **r6**
+  (3,219,805,864 B, 0.552), **r72** (3,567,674,056 B, 0.564), **u8** (3,930,210,104 B, 0.570). Dropped by the cap: u3
+  (0.422), r35 (0.470).
+- Checkpoints: `purvansh01/safetypulse-jobs` (dataset) `results/job25/models/<variant>` at revision
+  `77c4650fcf77e1c517fbd04002cc67e86f7102e1` (compressed-tensors pack-quantized, 4- or 8-bit group). Tokenizer forced
+  to Tiny Aya Global `af89d219` (`--base-tokenizer`); chat-template sha256 `9d2fae0e…` equals Job 26 base.
+  transformers decompresses compressed-tensors weights on load/first forward (peak 8.16 GiB in the smoke, as fp16), so
+  benchmark minutes are not a quantized-speed claim.
+- Script `tools/hf_jobs/job26_e2_benchmarks.py` at code SHA `ba121a76064aca2e0aea030f2d49dce835184bc7` (adds
+  `--model-subfolders`, `--base-tokenizer`, a per-variant time guard; `bench()` and the presets unchanged from
+  `5a45d233`). Anchor: Job 26 `results/job26/base.json` (no fp16 rerun inside Job 30; the cap did not allow it).
+- Smoke (`--limit 5`, u4, `--timeout 15m`): `6b06038dd0582cfbbefd163b` COMPLETED in 94 s; bench 0.82 min vs 0.68 min
+  for Job 26 base smoke; n = 5 per task; no answer text in the output (`results/job30-test/u4.json`).
+- Full jobs (namespace `pxaLabs-lexsi`, `l40sx1`), RUNNING: `6b0604c8d0582cfbbefd17fa` job30-e1-frontier-A (u4, u8,
+  r72; `--timeout 90m`), `6b0604fc1460ffe1d5e927a5` job30-e1-frontier-B (r5, r6; `--timeout 60m`). Time guard skips a
+  variant if fewer than 22 min remain.
+- Cap (worst case, timeout × $1.80/h): smoke $0.45 + A $2.70 + B $1.80 = **$4.95** (builder cap $5).
+- Outputs: private `purvansh01/safetypulse-jobs` `results/job30/<variant>.json` (scores, Wilson 95% intervals, per
+  document ids / scores / answer sha256 and length; no answer text).
+
 ## Publication of the follow-up outputs (2026-11-23)
 
 The adapters written by Jobs 18, 21, 24 (`pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca`) and Job 23
