@@ -146,6 +146,12 @@ def sha(s):
     return hashlib.sha256(s.encode("utf-8")).hexdigest()
 
 
+def template_sha(tok):
+    """Tiny Aya's tokenizer holds named templates (a dict); hash a canonical JSON form in that case."""
+    ct = tok.chat_template or ""
+    return sha(ct if isinstance(ct, str) else json.dumps(ct, sort_keys=True))
+
+
 def xquad_ids():
     ids = sorted(random.Random(XQ_SEED).sample(range(XQ_TOTAL), XQ_N))
     assert hashlib.sha256(json.dumps(ids).encode()).hexdigest() == XQ_IDS_SHA
@@ -244,7 +250,7 @@ def bench(model, tok, label, limit=None, batch=BATCH):
     return {"label": label, "summary": summary, "task_versions": res["versions"], "n_samples": res["n-samples"],
             "generation_kwargs": {t: res["configs"][t].get("generation_kwargs") for t in TASKS},
             "batch_size": batch, "apply_chat_template": True, "system_instruction": None,
-            "chat_template_sha256": sha(tok.chat_template or ""), "xquad_ids_sha256": XQ_IDS_SHA,
+            "chat_template_sha256": template_sha(tok), "xquad_ids_sha256": XQ_IDS_SHA,
             "xquad_n": len(samples["xquad_en"]), "squad_shim": SHIM, "langdetect_seed": 0, "packages": vers,
             "datasets": {"ifeval": list(IFEVAL_DS), "xquad": list(XQUAD_DS)},
             "model_dtype": str(next(model.parameters()).dtype), "gpu": torch.cuda.get_device_name(0) if gpu else DEV,
