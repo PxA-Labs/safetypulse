@@ -801,6 +801,42 @@ before any job below was created). No verdict or threshold changes.
   swallowed into the `SP_CIRCUIT_REV` value (launch quoting, not the script). No GPU work was done; 28b and 28c must be
   relaunched (wave 2) with each `-e` as its own argument. 28a results not yet copied into git.
 
+## Job 29 · E3: Hindi, Spanish and French ASR on base, Alpaca fine-tune, repaired and the E1 frontier (2026-11-24 UTC, exploratory; RUNNING)
+
+- Purpose: E3 of the amendment `docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md` (commit `cd72fc6`). ASR on
+  the 119 held-out test prompts in en / hi / es / fr, per model, with Wilson 95% intervals, the change from the same
+  model's English ASR in the same job, and a paired exact McNemar (language vs English, same prompt). No alarm is
+  evaluated (amendment E3).
+- Translations: re-made in the job, because Job 20 kept them in memory only. Job 20's `translate` copied verbatim,
+  `facebook/nllb-200-distilled-600M@f8d333a098d19b4fd9a8b18f94170487ad3f821d`, fp32, greedy, line by line, batch 16;
+  English input `data/eval_harm.jsonl` split test at SP_REPO `194c2f53` (asserted equal to Job 20's English hash).
+  Job 20 stored only one sha256 per translated set (texts joined by newlines), so the check is a set match per
+  language. Smoke result: **hi, es and fr all match Job 20's sha256 (match rate 1.0 per language) and all length
+  statistics are equal**. Per-prompt sha256 of the translations are stored for later runs; the text never leaves the job.
+- Generation and judge: notebook 17 / Job 25 ASR settings (`safetypulse.audit.generate`, greedy, 256 new tokens, fp16,
+  batch 16, template default system prompt); Llama Guard 3 1B `acf7aafa` (pre-registered), prompt and answer in the
+  target language. Job 20 used bf16, batch 32 and the 8B judge, so Job 20 rates are not mixed with these.
+- Models: Tiny Aya Global `af89d219`; Alpaca fine-tune = base + `purvansh01/safetypulse-lora-alpaca@0ea31228`
+  `alpaca-s1/checkpoint-125` merged (Job 26 preset); repaired `purvansh01/tiny-aya-global-safetypulse-repaired@06ee768d`;
+  E1 frontier variants from SP_REPO `results/job25/models/<variant>` at `77c4650f`. Frontier rule (shared with the E1
+  follow-up): Job 25 variants with task ≥ 0.10, fp16 excluded, non-dominated in (disk_bytes, general); 7 qualify (u3,
+  r35, u4, r5, r6, r72, u8), the 5 with the highest general are kept: **u4, r5, r6, r72, u8**. Collapsed (task < 0.10):
+  c3, r3, c1g, r1g. Not run: u3 and r35 (cut by the top-5 rule). Nothing was dropped for budget.
+- Script `tools/hf_jobs/job29_e3_multilingual.py`, launched from its raw GitHub URL at code SHA
+  `91b7ced98aca7e86f35d8400f52027ee1c18737c` (also `SP_CODE_SHA`); package and `sp_bench.py` at `106e9ee` as Job 25;
+  torch 2.14.1, transformers 5.21.0.
+- Smoke (`SP_TEST=1`, first 8 prompts per language, base / alpaca_s1_125 / repaired / u4, `--timeout 30m`):
+  `6b06028e1460ffe1d5e92440` COMPLETED in 4m 18s (`results/job29-test/smoke/`). Output scan: no prompt, answer or
+  translation text (no string ≥ 40 characters except hashes and labels, no non-ASCII string); English flags of base and
+  u4 agree 8/8 with Job 25's.
+- Full jobs (namespace `pxaLabs-lexsi`, `l40sx1`), RUNNING: `6b06075f1460ffe1d5e92b8c` job29-e3-core (base,
+  alpaca_s1_125, repaired; `--timeout 40m`, created 21:53:35 UTC) and `6b060793d0582cfbbefd1c14` job29-e3-frontier
+  (u4, r5, r6, r72, u8; `--timeout 70m`, created 21:54:27 UTC). Each env var checked as a separate key with
+  `hf jobs inspect`.
+- Cap (worst case, timeout × $1.80/h): smoke $0.90 + core $1.20 + frontier $2.10 = **$4.20** (builder cap $6).
+- Outputs: private `purvansh01/safetypulse-jobs` `results/job29/<core|frontier>/{translations.json, rows.jsonl,
+  summary.json}`: per (model, language) n, k, ASR, Wilson interval, flags, answer lengths and digest, prompt-set hash.
+
 ## Publication of the follow-up outputs (2026-11-23)
 
 The adapters written by Jobs 18, 21, 24 (`pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca`) and Job 23
