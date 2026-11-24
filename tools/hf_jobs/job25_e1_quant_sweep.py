@@ -61,6 +61,10 @@ DISCOVER = os.environ.get("SP_DISCOVER") == "1"
 TIMEOUT_MIN = float(os.environ.get("SP_TIMEOUT_MIN", 105))   # must match --timeout of the launch
 SHARD = os.environ.get("SP_SHARD", "test" if TEST else "s0")
 REQ = [v for v in os.environ.get("SP_VARIANTS", "c35,r1g").split(",") if v]
+# SP_QUANT_KW (JSON): quantizer settings for EVERY quantized variant, e.g. '{"method": "rtn"}'. When set, the CircuitKIT
+# variants go through sb.quantize_direct with the same scheme, protected layers and ignore patterns (CircuitKIT's
+# llmcompressor_circuit_quantize always uses GPTQ with its fixed settings).
+QUANT_KW = json.loads(os.environ.get("SP_QUANT_KW", "{}"))
 REPO = os.environ.get("SP_REPO", "purvansh01/safetypulse-jobs")
 OUT_BASE = "results/job25"
 OUT = f"{OUT_BASE}{'-test' if TEST else ''}"
@@ -72,7 +76,10 @@ EVAL = ("purvansh01/safetypulse-eval", "5e49af71c0553360581285feb73642bfff75ed2c
 PAIRS = ("purvansh01/safetypulse-pairs", "47f888c48685887ebd161842c13e611d55e263c0")
 WIKITEXT_REV = "b08601e04326c79dfdd32d625aee71d232d685c3"
 EVAL_N = {"harm": 119, "overrefusal": 150, "task": 300, "general": 500}
-N_CALIB, MAX_SEQ, SEED = 128, 512, 0
+# SP_CALIB=chat: the same wikitext texts wrapped in the chat template (sb.chat_wrap); GPTQ on plain wikitext
+# collapsed cis_sep and MMLU in the test runs while round-to-nearest did not. SP_MAX_SEQ: calibration length.
+CALIB_MODE = os.environ.get("SP_CALIB", "plain")
+N_CALIB, MAX_SEQ, SEED = 128, int(os.environ.get("SP_MAX_SEQ", 512)), 0
 N_PAIRS, CK_BATCH = 64, int(os.environ.get("SP_CK_BATCH", 1))
 # time guard: a variant is not started unless this much time is left (+3 min for the final uploads)
 EST_MIN = {"fp16": 4, "quant": 10} if TEST else {"fp16": 14, "quant": 26}
@@ -277,11 +284,11 @@ def build(p: dict) -> tuple[Path, dict]:
     info = {}
     if p["embedding_bits"] < 16:
         info["embedding"] = sb.fake_quant_embedding(model, p["embedding_bits"])
-    if p["kind"] == "ck":
+    if p["kind"] == "ck" and not QUANT_KW:
         info.update(sb.quantize_circuitkit(model, tok, NODE_SCORES, p["base_bits"], p["protected_layers"], CALIB, MAX_SEQ))
     else:
         info.update(sb.quantize_direct(model, tok, p["base_bits"], p["protected_layers"], p["protect_bits"], CALIB, MAX_SEQ,
-                                       **DIRECT_KW.get(p["variant"], {})))
+                                       **(DIRECT_KW.get(p["variant"]) or QUANT_KW)))
     info["quantize_seconds"] = round(time.time() - t, 1)
     out = work / "models" / p["variant"]
     model.save_pretrained(out)
@@ -312,11 +319,14 @@ def measure(mdir: Path) -> dict:
 
 
 CALIB = sb.calibration_texts(N_CALIB, WIKITEXT_REV) if any(VARIANTS[v][0] != "fp16" for v in REQ) else []
+if CALIB and CALIB_MODE == "chat":
+    CALIB = sb.chat_wrap(load_tokenizer(base_dir), CALIB)
 judge = Judge("llamaguard", model_id=JUDGE, revision=JUDGE_REV)
 rows, skipped, failed = [], [], []
 meta = {"shard": SHARD, "test": TEST, "commit": COMMIT, "model": MODEL, "model_rev": MODEL_REV, "judge": JUDGE,
-        "judge_rev": JUDGE_REV, "bundle": BUNDLE, "eval": EVAL, "wikitext_rev": WIKITEXT_REV, "n_calib": N_CALIB,
-        "max_seq": MAX_SEQ, "seed": SEED, "group_size": sb.GROUP, "counts": counts, "versions": versions,
+        "judge_rev": JUDGE_REV, "bundle": BUNDLE, "eval": EVAL, "wikitext_rev": WIKITEXT_REV,
+        "n_calib": N_CALIB, "calib_mode": CALIB_MODE,
+        "max_seq": MAX_SEQ, "seed": SEED, "quant_kw": QUANT_KW, "group_size": sb.GROUP, "counts": counts, "versions": versions,
         "scores_source": scores_rec.get("source"), "scores_jobs_rev": scores_rec.get("jobs_rev"),
         "circuit_order": ORDER, "amendment": "docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md @ cd72fc6",
         "frozen": {"warn": sb.FROZEN_WARN, "fail": sb.FROZEN_FAIL}}

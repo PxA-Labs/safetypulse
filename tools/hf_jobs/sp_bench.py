@@ -203,6 +203,22 @@ def calibration_texts(n: int = 128, revision: str = "b08601e04326c79dfdd32d625ae
     return texts
 
 
+def chat_wrap(tok, texts: list[str]) -> list[str]:
+    """Calibration texts in the model's chat format: each text split at its middle word into a user turn and an
+    assistant turn, with the template's default system prompt; the leading BOS string is dropped because the
+    calibration tokenizer call adds its own."""
+    out = []
+    for t in texts:
+        w = t.split()
+        msgs = [{"role": "user", "content": " ".join(w[:len(w) // 2])},
+                {"role": "assistant", "content": " ".join(w[len(w) // 2:])}]
+        s = tok.apply_chat_template(msgs, tokenize=False)
+        if tok.bos_token and s.startswith(tok.bos_token):
+            s = s[len(tok.bos_token):]
+        out.append(s)
+    return out
+
+
 def quantize_circuitkit(model, tok, node_scores: dict, bits: int, protect: list[int], calib: list[str],
                         max_seq_length: int = 512) -> dict:
     """CircuitKIT llm-compressor GPTQ: every decoder-block Linear to `bits` except the layers in `protect` (16 bit)."""
