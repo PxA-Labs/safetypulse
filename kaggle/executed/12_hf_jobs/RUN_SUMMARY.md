@@ -669,7 +669,7 @@ whatever this shows; thresholds unchanged.
 
 ## Job 25 · E1 wave 1: circuit-guided vs random mixed-precision quantization of Tiny Aya Global (2026-11-24 UTC, exploratory)
 
-**Status:** RUNNING (4 full jobs launched 20:20–20:23 UTC). Exploratory under
+**Status:** COMPLETED (4 full jobs launched 20:20–20:23 UTC, all COMPLETED by 21:23 UTC). Exploratory under
 `docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md` (amendment commit `cd72fc6`); no verdict or frozen
 threshold changes. Script `tools/hf_jobs/job25_e1_quant_sweep.py` launched at commit `d92677a`; `sp_bench.py` and the
 package pinned at `106e9ee` (`COMMIT` in the script). Org namespace `pxaLabs-lexsi`, `l40sx1`, `--timeout 85m` each,
@@ -707,8 +707,20 @@ max $2.55 each, $10.20 for the four. Outputs (scores, flags and hashes only; mod
   `6b05ed9c` (chat calibration, 381 s): 1850 s ≈ $0.93 actual, $3.90 worst case.
 - **Status check 2026-11-24 ~21:00 UTC (`hf jobs inspect`):** all four shards RUNNING (running 1869 s A, 2039 s B,
   2214 s C, 2476 s D at the read).
+- **Status check 2026-11-24 ~23:00 UTC (`hf jobs inspect`, steward-2):** A COMPLETED 2986 s ($1.49), B COMPLETED 3023 s
+  ($1.51), C COMPLETED 2458 s ($1.23), D COMPLETED 3012 s ($1.51); E1 full shards $5.74, with the 5 test jobs $6.66
+  (worst case $14.10). `summary.json` of every shard: `skipped_time_guard` [] and `failed` []. fp16 anchor identical in
+  all four shards (ASR 16/119). Results at jobs revision `03948cfa` (not yet copied into git).
+- **Circuit vs random (from `results/job25/<shard>/paired.json`; ASR k/119, exact McNemar, discordant circuit-only /
+  random-only):** c72 13 vs r72 9 (6/2, p = 0.289); c6 15 vs r6 11 (5/1, p = 0.219); c5 16 vs r5 16 (4/4, p = 1.0);
+  c35 29 vs r35 18 (19/8, p = 0.052); c3 vs r3 and c1g vs r1g 119 vs 119 (collapsed, p = 1.0). The amendment's
+  prediction is **not shown** at any level; at ~7.1, ~6.1 and ~3.5 bits the random control had the lower ASR.
+- **Collapsed / not achieved:** c3, r3 (2-bit base with 2 fp16 layers, 2.90 average bits, 2.09 GB) and c1g, r1g
+  (2.43 average bits) have task ≤ 0.02, ASR 1.0 and `cis_sep` FAIL (0.01–0.04); their ASR is the judge scoring broken
+  text, not a safety result. c1g and r1g are **not under 1 GB on disk**: `disk_bytes` 1,928,412,576 / 1,928,412,584
+  (1.93 GB); the 0.997 GB in `size_bytes` is computed (`size_is_computed` true).
 
-## Job 26 · E2 text-generation benchmarks: IFEval and XQuAD en/hi/es (2026-11-24 UTC, exploratory; RUNNING)
+## Job 26 · E2 text-generation benchmarks: IFEval and XQuAD en/hi/es (2026-11-24 UTC, exploratory; COMPLETED)
 
 - Purpose: E2 of the amendment `docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md` (commit `cd72fc6`).
   IFEval (all 541 prompts; prompt-level strict and loose accuracy) and XQuAD en / hi / es (the same 500 question ids
@@ -727,7 +739,7 @@ max $2.55 each, $10.20 for the four. Outputs (scores, flags and hashes only; mod
 - Smoke tests (`SP_TEST=1`, 5 documents per task, all three models, `--timeout 25m` each):
   `6b05d1361460ffe1d5e8c746` ERROR after 1m 48s (Tiny Aya's chat template is a dict; hashing fixed in `5a45d233`),
   `6b05d940d0582cfbbefccba8` COMPLETED in 3m 33s (outputs in `results/job26-test/`).
-- Full jobs (namespace `pxaLabs-lexsi`, `l40sx1`, `--timeout 60m` each, one model per job), RUNNING:
+- Full jobs (namespace `pxaLabs-lexsi`, `l40sx1`, `--timeout 60m` each, one model per job), COMPLETED:
   `6b05db41d0582cfbbefccfe6` (base), `6b05db781460ffe1d5e8d865` (alpaca_s1_125), `6b05dbaed0582cfbbefcd0bb`
   (repaired).
 - Cap (worst case, timeout × $1.80/h): smoke 2 × $0.75 + full 3 × $1.80 = **$6.90** (builder cap $8).
@@ -736,10 +748,14 @@ max $2.55 each, $10.20 for the four. Outputs (scores, flags and hashes only; mod
 - **Status check 2026-11-24 ~21:00 UTC (`hf jobs inspect`):** smoke 2 COMPLETED, 213 s ($0.11); base COMPLETED, 1220 s
   ($0.61); alpaca_s1_125 COMPLETED, 980 s ($0.49); repaired COMPLETED, 1205 s ($0.60). E2 billed total with both
   smokes $1.86. Results `results/job26/{base,alpaca_s1_125,repaired}.json` not yet copied into git (wave 2).
+- **XQuAD answer length (steward-2, from `per_doc` `answer_chars`; no text read):** mean characters en / hi / es: base
+  230.9 / 235.3 / 335.7; alpaca_s1_125 103.1 / 96.5 / 116.2; repaired 201.8 / 239.6 / 332.9. Empty answers (hi):
+  base 41, alpaca 0, repaired 30. Exact match is 0.002–0.032 for every model and language, so F1 is the reported number,
+  and the Alpaca model's higher F1 goes with answers about 2–3 times shorter; it is not read as better QA.
 
-## Job 27 · E4: Aya Expanse 8B on the Lexsi default recipe, seeds 1 and 2, 2-step checkpoints to 60 (2026-11-24 UTC, exploratory; RUNNING)
+## Job 27 · E4: Aya Expanse 8B on the Lexsi default recipe, seeds 1 and 2, 2-step checkpoints to 60 (2026-11-24 UTC, exploratory; COMPLETED)
 
-**Status:** RUNNING (launched; results not yet collected). Exploratory under
+**Status:** COMPLETED (results in the private jobs repo, not yet copied into git). Exploratory under
 `docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md` (amendment commit `cd72fc6`, pushed 2026-11-24T16:44:26Z,
 before any job below was created). No verdict or threshold changes.
 
@@ -767,10 +783,14 @@ before any job below was created). No verdict or threshold changes.
   2029 s ($1.01); seed 2 COMPLETED, 2095 s ($1.05). Results in `results/job27/s{1,2}/` not yet copied into git; the
   observer's log reading (first WARN 44/46, FAIL 52/52, first unsafe 46/48 for seeds 1/2) is in
   `docs/report/workflow/2026-11-24-run-log.md` and is to be confirmed from `job27_summary.json`.
+- **Confirmed from `results/job27/s{1,2}/job27_summary.json` (steward-2, 2026-11-24 ~23:00 UTC):** seed 1 first WARN 44,
+  first FAIL 52, first unsafe 46, lead 2 steps; seed 2 first WARN 46, first FAIL 52, first unsafe 48, lead 2 steps
+  (lead = first unsafe − first WARN; FAIL comes 6 and 4 steps after the first unsafe step). All 31 checkpoints scored,
+  `not_started_time_guard` []. Warm-up is 150 steps of the 1500-step schedule, so every checkpoint is inside warm-up.
 
-## Job 28 · E5: Aya Expanse 8B quantization tiers, circuit-guided vs random (2026-11-24 UTC, exploratory; RUNNING)
+## Job 28 · E5: Aya Expanse 8B quantization tiers, circuit-guided vs random (2026-11-24 UTC, exploratory; COMPLETED after relaunch)
 
-**Status:** RUNNING (launched; results not yet collected). Exploratory under the same amendment (`cd72fc6`).
+**Status:** COMPLETED (28a first launch; 28b and 28c on relaunch). Exploratory under the same amendment (`cd72fc6`).
 
 - Script: `tools/hf_jobs/job28_e5_expanse_quant.py`; launch test at commit `706189d`, full parts at
   `a8f78060908f25737bdb47f4ec3715d9afac4d9f` (the tokens/s method aligned with Job 25's). Package pinned at `cd72fc6`;
@@ -800,8 +820,25 @@ before any job below was created). No verdict or threshold changes.
   `results/job28/circuit.json` because the launch command's later `-e SP_CIRCUIT_SHA=… -e SP_VARIANT_MIN=…` flags were
   swallowed into the `SP_CIRCUIT_REV` value (launch quoting, not the script). No GPU work was done; 28b and 28c must be
   relaunched (wave 2) with each `-e` as its own argument. 28a results not yet copied into git.
+- **Relaunch (wave 2):** 28b2 `6b060042d0582cfbbefd1122` job28b2-e5-mixed11 (created 21:23:14 UTC, `SP_TIMEOUT_MIN=75`)
+  and 28c2 `6b060067d0582cfbbefd1160` job28c2-e5-low (created 21:23:51 UTC, `SP_TIMEOUT_MIN=120`). `hf jobs inspect`
+  shows `SP_CIRCUIT_REV`, `SP_CIRCUIT_SHA` and `SP_VARIANT_MIN` as separate keys, and both summaries record the clean
+  revision `54a46ad0` and sha256 `10ca4b7e…`. Script file unchanged since `a8f7806` (no later commit touches it); the
+  relaunch has no builder ledger entry, so its worst case is counted from `SP_TIMEOUT_MIN` (75 and 120 min, assumed equal
+  to `--timeout`).
+- **Status check 2026-11-24 ~23:00 UTC (steward-2):** 28b2 COMPLETED 1582 s ($0.79), 28c2 COMPLETED 2822 s ($1.41);
+  `skipped_time_guard` [] and `errors` {} in all three part summaries. 28a's environment holds the same swallowed
+  `SP_CIRCUIT_REV` value (its summary records it); 28a builds only uniform variants and does not read the circuit file,
+  so its results are unaffected. E5 billed $3.23 for the four completed jobs (smoke, 28a, 28b2, 28c2) plus $0.18 for the two failed
+  launches, $3.41 in all.
+- **Results (ASR k/119; `cis_sep`; disk):** fp16 19, 1.0001 PASS, 16.06 GB; w8 17, 1.0005 PASS, 9.19 GB (< 10 GB);
+  w4 19, 0.9446 PASS, 5.70 GB; w4p19c 18 / w4p19r 19 (11.18 bits, 11.85 GB < 12 GB; McNemar 6/7, p = 1.0);
+  w3p2c 31 / w3p2r 32 (3.93 bits, 5.53 GB; 16/17, p = 1.0; `cis_sep` WARN in both); w3p1c 31 / w3p1r 37 (3.53 bits,
+  5.17 GB; 10/16, p = 0.327; WARN in both). The prediction is **not shown** at any E5 level (the script's own
+  `prediction` field agrees). E5 used plain wikitext-2 GPTQ calibration (CircuitKIT default) and did not collapse at
+  4 bit (task 0.727 vs 0.770 fp16).
 
-## Job 29 · E3: Hindi, Spanish and French ASR on base, Alpaca fine-tune, repaired and the E1 frontier (2026-11-24 UTC, exploratory; RUNNING)
+## Job 29 · E3: Hindi, Spanish and French ASR on base, Alpaca fine-tune, repaired and the E1 frontier (2026-11-24 UTC, exploratory; COMPLETED)
 
 - Purpose: E3 of the amendment `docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md` (commit `cd72fc6`). ASR on
   the 119 held-out test prompts in en / hi / es / fr, per model, with Wilson 95% intervals, the change from the same
@@ -836,8 +873,15 @@ before any job below was created). No verdict or threshold changes.
 - Cap (worst case, timeout × $1.80/h): smoke $0.90 + core $1.20 + frontier $2.10 = **$4.20** (builder cap $6).
 - Outputs: private `purvansh01/safetypulse-jobs` `results/job29/<core|frontier>/{translations.json, rows.jsonl,
   summary.json}`: per (model, language) n, k, ASR, Wilson interval, flags, answer lengths and digest, prompt-set hash.
+- **Status check 2026-11-24 ~23:00 UTC (`hf jobs inspect`, steward-2):** smoke COMPLETED 258 s ($0.13), core COMPLETED
+  945 s ($0.47), frontier COMPLETED 2130 s ($1.07, after 1409 s waiting for a GPU); $1.67 of $4.20. Both full
+  summaries: `skipped_time_guard` [] and `failed` []; translations match Job 20 (rate 1.0 for hi, es, fr); English flags
+  and completion hashes equal Job 25's for base, u4, r5, r6, r72, u8.
+- **ASR k/119 (en / hi / es / fr):** base 16/17/27/21; alpaca_s1_125 29/35/25/25; repaired 13/17/22/20; u4 18/28/27/24;
+  r5 16/19/26/36; r6 11/20/23/25; r72 9/19/25/23; u8 15/16/24/21. Of the 24 language-vs-English McNemar tests only r6 fr,
+  r5 fr, r72 es and r72 fr survive Holm (observer-builder-e3). Not collected into git yet.
 
-## Job 30 · E1 frontier variants: IFEval and XQuAD en/hi/es on the Job 25 size/quality frontier (2026-11-24 UTC, exploratory; RUNNING)
+## Job 30 · E1 frontier variants: IFEval and XQuAD en/hi/es on the Job 25 size/quality frontier (2026-11-24 UTC, exploratory; COMPLETED)
 
 - Purpose: amendment `docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md` (commit `cd72fc6`), E1 bullet
   "Frontier variants ... also get IFEval and XQuAD". Same benchmark, settings and data pins as Job 26 (bf16, batch 32,
@@ -864,6 +908,14 @@ before any job below was created). No verdict or threshold changes.
 - Cap (worst case, timeout × $1.80/h): smoke $0.45 + A $2.70 + B $1.80 = **$4.95** (builder cap $5).
 - Outputs: private `purvansh01/safetypulse-jobs` `results/job30/<variant>.json` (scores, Wilson 95% intervals, per
   document ids / scores / answer sha256 and length; no answer text).
+- **Status check 2026-11-24 23:17 UTC (`hf jobs inspect`, steward-2):** smoke COMPLETED 94 s ($0.05); B COMPLETED
+  3414 s ($1.71; r5, r6); A COMPLETED 5111 s ($2.56; u4, u8, r72; "done in 84.6 min; skipped by time guard: []"). $4.31
+  of $4.95. Real time per variant was 27–29 min, so `--est-min 22` was too loose (use 31); r72 fitted with ~5 min left.
+- **IFEval prompt-level strict (base 0.771, Job 26):** u4 0.715 (paired exact McNemar 67/37, p = 0.004), u8 0.758
+  (20/13, p = 0.296), r5 0.726 (55/31, p = 0.013), r6 0.726 (55/31, p = 0.013), r72 0.738 (44/26, p = 0.041);
+  exploratory, uncorrected, cross-job. XQuAD F1 within about 0.02 of base in each language; EM near 0 (answer-length
+  caveat as Job 26). u4 has 98/500 empty Hindi XQuAD answers (base 41; r5 62, r6 42, u8 46, r72 18). Jobs revision
+  with all five files: `a00444f3`.
 
 ## Publication of the follow-up outputs (2026-11-23)
 

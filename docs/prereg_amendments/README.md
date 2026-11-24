@@ -134,12 +134,13 @@ Every job's amendment was committed before the job was created; 0 violations.
 2026-11-24. It is **exploratory**; its header states that it changes no pre-registered verdict and no frozen threshold.
 Built the same way as section A: commit time `%cI` of `cd72fc6` in UTC; first push from the GitHub activity API
 (`branch_creation` of `stage2/lexsi-feedback` at `cd72fc6`); job `created_at`, state and `running_secs` from
-`hf jobs inspect --namespace pxaLabs-lexsi` (read 2026-11-24 ~20:50–21:06 UTC). Job ids from the builders' ledgers and
-`kaggle/executed/12_hf_jobs/RUN_SUMMARY.md` (Jobs 25–28).
+`hf jobs inspect --namespace pxaLabs-lexsi` (first read 2026-11-24 ~20:50–21:06 UTC; table refreshed by steward-2 at
+23:17–23:20 UTC with every job created on 2026-11-24). Job ids from the builders' ledgers, `hf jobs ps -a` and
+`kaggle/executed/12_hf_jobs/RUN_SUMMARY.md` (Jobs 25–30).
 
 | File | Title | Amendment commit (time) | First push | Governs |
 |---|---|---|---|---|
-| `2026-11-24-e1-e5-lexsi-feedback.md` | E1 Tiny Aya quantization sweep, E2 IFEval/XQuAD, E3 multilingual ASR, E4 Aya Expanse default recipe, E5 Aya Expanse quantization tiers | `cd72fc60f753` (16:44:21) | 16:44:25, `stage2/lexsi-feedback` @ `cd72fc6` | Jobs 25–28 (E3 not yet launched) |
+| `2026-11-24-e1-e5-lexsi-feedback.md` | E1 Tiny Aya quantization sweep, E2 IFEval/XQuAD, E3 multilingual ASR, E4 Aya Expanse default recipe, E5 Aya Expanse quantization tiers | `cd72fc60f753` (16:44:21) | 16:44:25, `stage2/lexsi-feedback` @ `cd72fc6` | Jobs 25–30 (E3 = Job 29; E1 frontier benchmarks = Job 30) |
 
 All times UTC, 2026-11-24. Δ amendment − job creation; negative = amendment first.
 
@@ -162,16 +163,25 @@ All times UTC, 2026-11-24. Δ amendment − job creation; negative = amendment f
 | E1 job25-e1-diag | `6b05e6291460ffe1d5e8f2b7` | 19:31:53.437 | −10052.4 s (2 h 47 min) | −10048.4 s (2 h 47 min) | COMPLETED | 299 s |
 | E1 job25-e1-diag2 | `6b05e830d0582cfbbefceb72` | 19:40:32.366 | −10571.4 s (2 h 56 min) | −10567.4 s (2 h 56 min) | COMPLETED | 341 s |
 | E1 job25-e1-diag3 | `6b05ed9c1460ffe1d5e8ffa5` | 20:03:40.253 | −11959.3 s (3 h 19 min) | −11955.3 s (3 h 19 min) | COMPLETED | 381 s |
-| E1 job25-e1-A | `6b05f178d0582cfbbefcf9c8` | 20:20:08.201 | −12947.2 s (3 h 35 min) | −12943.2 s (3 h 35 min) | RUNNING | 1869 s |
-| E1 job25-e1-B | `6b05f1cc1460ffe1d5e90665` | 20:21:32.894 | −13031.9 s (3 h 37 min) | −13027.9 s (3 h 37 min) | RUNNING | 2039 s |
-| E1 job25-e1-C | `6b05f1f2d0582cfbbefcfa5d` | 20:22:10.493 | −13069.5 s (3 h 37 min) | −13065.5 s (3 h 37 min) | RUNNING | 2214 s |
-| E1 job25-e1-D | `6b05f2161460ffe1d5e906da` | 20:22:46.944 | −13105.9 s (3 h 38 min) | −13101.9 s (3 h 38 min) | RUNNING | 2476 s |
+| E1 job25-e1-A | `6b05f178d0582cfbbefcf9c8` | 20:20:08.201 | −12947.2 s (3 h 35 min) | −12943.2 s (3 h 35 min) | COMPLETED | 2986 s |
+| E1 job25-e1-B | `6b05f1cc1460ffe1d5e90665` | 20:21:32.894 | −13031.9 s (3 h 37 min) | −13027.9 s (3 h 37 min) | COMPLETED | 3023 s |
+| E1 job25-e1-C | `6b05f1f2d0582cfbbefcfa5d` | 20:22:10.493 | −13069.5 s (3 h 37 min) | −13065.5 s (3 h 37 min) | COMPLETED | 2458 s |
+| E1 job25-e1-D | `6b05f2161460ffe1d5e906da` | 20:22:46.944 | −13105.9 s (3 h 38 min) | −13101.9 s (3 h 38 min) | COMPLETED | 3012 s |
+| E5 job28b2-e5-mixed11 | `6b060042d0582cfbbefd1122` | 21:23:14.886 | −16733.9 s (4 h 38 min) | −16729.9 s (4 h 38 min) | COMPLETED | 1582 s |
+| E5 job28c2-e5-low | `6b060067d0582cfbbefd1160` | 21:23:51.203 | −16770.2 s (4 h 39 min) | −16766.2 s (4 h 39 min) | COMPLETED | 2822 s |
+| E3 job29-e3-smoke | `6b06028e1460ffe1d5e92440` | 21:33:02.784 | −17321.8 s (4 h 48 min) | −17317.8 s (4 h 48 min) | COMPLETED | 258 s |
+| E1 job30-e1-frontier-smoke | `6b06038dd0582cfbbefd163b` | 21:37:17.387 | −17576.4 s (4 h 52 min) | −17572.4 s (4 h 52 min) | COMPLETED | 94 s |
+| E1 job30-e1-frontier-A | `6b0604c8d0582cfbbefd17fa` | 21:42:32.297 | −17891.3 s (4 h 58 min) | −17887.3 s (4 h 58 min) | COMPLETED | 5111 s |
+| E1 job30-e1-frontier-B | `6b0604fc1460ffe1d5e927a5` | 21:43:24.633 | −17943.6 s (4 h 59 min) | −17939.6 s (4 h 58 min) | COMPLETED | 3414 s |
+| E3 job29-e3-core | `6b06075f1460ffe1d5e92b8c` | 21:53:35.433 | −18554.4 s (5 h 09 min) | −18550.4 s (5 h 09 min) | COMPLETED | 945 s |
+| E3 job29-e3-frontier | `6b060793d0582cfbbefd1c14` | 21:54:27.761 | −18606.8 s (5 h 10 min) | −18602.8 s (5 h 10 min) | COMPLETED | 2130 s |
 
-- **Amendment committed or pushed after a job: none.** All 21 jobs were created 1 h 18 min to 3 h 38 min after the
-  push. Running times of the four Job 25 shards are partial (RUNNING at the read).
+- **Amendment committed or pushed after a job: none (0 violations).** All 29 jobs were created 1 h 18 min to 5 h 10 min
+  after the push. Every state above is terminal (read 23:17–23:20 UTC).
 - Failed attempts (counted, no result): Job 26 smoke 1 (script bug, fixed in `5a45d23`), Job 28b and 28c (launch-command
-  quoting; to be relaunched under the same amendment).
-- E3 has no job yet. Outcomes, reports and paper text are pending collection (wave 2); see
-  `docs/report/workflow/2026-11-24-run-log.md`.
+  quoting), relaunched under the same amendment as job28b2-e5-mixed11 and job28c2-e5-low (both COMPLETED).
+- Wave 2 added 8 jobs (28b2, 28c2; Job 29 smoke/core/frontier; Job 30 smoke/A/B), all created after the push.
+  Outcomes are summarised in `docs/report/workflow/2026-11-24-run-log.md` (wave 2); result files are not yet copied
+  into git and no paper text was changed.
 
 Updated counts: 16 amendment files (12 job-tied, 3 analysis-only, 1 erratum); 0 violations.
