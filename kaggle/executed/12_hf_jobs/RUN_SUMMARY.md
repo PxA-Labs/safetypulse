@@ -732,6 +732,61 @@ max $2.55 each, $10.20 for the four. Outputs (scores, flags and hashes only; mod
 - Outputs: private `purvansh01/safetypulse-jobs` `results/job26/<label>.json` (scores, Wilson 95% intervals, per
   document doc_id / question id / scores / answer sha256 and length; no answer text).
 
+## Job 27 · E4: Aya Expanse 8B on the Lexsi default recipe, seeds 1 and 2, 2-step checkpoints to 60 (2026-11-24 UTC, exploratory; RUNNING)
+
+**Status:** RUNNING (launched; results not yet collected). Exploratory under
+`docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md` (amendment commit `cd72fc6`, pushed 2026-11-24T16:44:26Z,
+before any job below was created). No verdict or threshold changes.
+
+- Script: `tools/hf_jobs/job27_e4_expanse_default.py` at commit `706189d0744570de79127fad8ce1410a71bf4ee9` (launched
+  from that file); package and `sp_utils.py` pinned at `cd72fc60f753fe76d443aeb1e77ae4f4623c2d1d`; torch 2.15.0,
+  transformers 5.20.2, peft 0.21.2.
+- Recipe: lr 2e-4, LoRA r 16, alpha 32 (amendment); from the AlignTune `create_sft_trainer` defaults
+  (Lexsi-Labs/aligntune @ `f53b41d0`): dropout 0.1, 3 epochs, batch 4 x accumulation 1, warm-up ratio 0.1, weight
+  decay 0.01, max grad norm 1.0, adamw_torch, cosine, max length 512; kept from Job 23: 7 projection modules,
+  answer-only loss, fp16 base with fp16 autocast, random data order. Full schedule 1500 steps (2000 features), warm-up
+  150 steps; stopped at step 60 by a callback, so every checkpoint is inside the warm-up.
+- Scoring in the same job per checkpoint 0, 2, ..., 60: CIS with the Job 23 bundle (`results/job23/bundle` @
+  `850e3557`, probe sha `f898d4c6`, layer 21), 50-prompt spot-check, ASR on the 78 dev prompts with Llama Guard 3 1B
+  @ `acf7aafa`, frozen `cis_sep` levels, ‖ΔW‖. Model Aya Expanse 8B @ `5062468b`, data @ `15ac4436` (sha256 asserted).
+- Outputs: SP_REPO `results/job27/s<seed>/` (`monitor.jsonl`, `dw.jsonl`, `train_log.json`, `job27_summary.json`,
+  adapters under `adapters/alpaca-default-s<seed>/checkpoint-<step>/`).
+- Launch test: https://huggingface.co/jobs/pxaLabs-lexsi/6b05d32ed0582cfbbefcc300 (`SP_TEST=1`, steps 0-4, 8 prompts,
+  `--timeout 25m`, cap $0.75); COMPLETED, running 3 min 1 s; outputs `results/job27-test/s1/`.
+- Seed 1: https://huggingface.co/jobs/pxaLabs-lexsi/6b05d5741460ffe1d5e8cecb (`l40sx1`, `--timeout 60m`,
+  `SP_TIMEOUT_MIN=60`, cap $1.80), created 2026-11-24T18:20:36Z.
+- Seed 2: https://huggingface.co/jobs/pxaLabs-lexsi/6b05d599d0582cfbbefcc763 (`l40sx1`, `--timeout 60m`, cap $1.80),
+  created 2026-11-24T18:21:13Z.
+- E4 worst-case total including the test: $4.35.
+
+## Job 28 · E5: Aya Expanse 8B quantization tiers, circuit-guided vs random (2026-11-24 UTC, exploratory; RUNNING)
+
+**Status:** RUNNING (launched; results not yet collected). Exploratory under the same amendment (`cd72fc6`).
+
+- Script: `tools/hf_jobs/job28_e5_expanse_quant.py`; launch test at commit `706189d`, full parts at
+  `a8f78060908f25737bdb47f4ec3715d9afac4d9f` (the tokens/s method aligned with Job 25's). Package pinned at `cd72fc6`;
+  torch 2.14.1, transformers 5.21.0, llmcompressor 0.15.0, compressed-tensors 0.20.1, CircuitKIT 0.2.4.
+- Circuit scores: CircuitKIT EAP-IG node discovery on the base model (64 length-matched calib pairs @ `47f888c4`, chat
+  template on, Expanse bundle token sets, bf16, batch 2), run once inside the launch test (135 s). Stored at SP_REPO
+  `results/job28/circuit.json`, revision `54a46ad0a8da46c8161835ba3696860624708754`, sha256 `10ca4b7e…4e83`, asserted by
+  the full parts. Layer order starts 23, 26, 31, 29, 17; circuit sets k=1 [23], k=2 [23, 26]; random sets (seed 0)
+  k=1 [3], k=2 [3, 7].
+- Variants (GPTQ, symmetric int, group 128, 128 wikitext-2 texts @ `b08601e0`, protected layers kept 16-bit,
+  equal k in both arms): 28a fp16, w8, w4; 28b fp16, w4p19c, w4p19r (~11.2 bit, est. 11.85 GB); 28c fp16, w3p2c,
+  w3p2r (~3.9 bit), w3p1c, w3p1r (~3.5 bit).
+- Launch test: https://huggingface.co/jobs/pxaLabs-lexsi/6b05d3811460ffe1d5e8cae2 (`SP_TEST=1`, fp16 + w3p1c with 16
+  calibration texts and 8 items per set, `--timeout 50m`, cap $1.50); COMPLETED, running 454 s; outputs
+  `results/job28-test/smoke/`. It showed transformers unpacking the compressed weights at the first forward (w3p1c:
+  5.17 GB after load, 16.16 GB after the first forward), so HF tokens/s and peak memory are dense-path numbers.
+- 28a: https://huggingface.co/jobs/pxaLabs-lexsi/6b05d87ad0582cfbbefccad0 (`--timeout 75m`, cap $2.25), created
+  2026-11-24T18:33:30Z.
+- 28b: https://huggingface.co/jobs/pxaLabs-lexsi/6b05d8a6d0582cfbbefccafd (`--timeout 75m`, cap $2.25), created
+  2026-11-24T18:34:14Z.
+- 28c: https://huggingface.co/jobs/pxaLabs-lexsi/6b05d8cb1460ffe1d5e8d317 (`--timeout 120m`, cap $3.60), created
+  2026-11-24T18:34:51Z.
+- Outputs: SP_REPO `results/job28/<28a|28b|28c>/` (`variants.jsonl`, `pairs.json`, `job28_summary.json`), models at
+  `results/job28/models/<variant>/`. E5 worst-case total including the test: $9.60.
+
 ## Publication of the follow-up outputs (2026-11-23)
 
 The adapters written by Jobs 18, 21, 24 (`pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca`) and Job 23
