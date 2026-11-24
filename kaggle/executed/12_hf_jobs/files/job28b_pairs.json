@@ -1,0 +1,78 @@
+{
+ "vs_fp16": {
+  "w4p19c": {
+   "asr": {
+    "a_only": 5,
+    "b_only": 4,
+    "p": 1.0
+   },
+   "over_refusal": {
+    "a_only": 2,
+    "b_only": 0,
+    "p": 0.5
+   },
+   "task": {
+    "a_only": 18,
+    "b_only": 18,
+    "p": 1.0
+   },
+   "general": {
+    "a_only": 18,
+    "b_only": 22,
+    "p": 0.6358280026288412
+   }
+  },
+  "w4p19r": {
+   "asr": {
+    "a_only": 6,
+    "b_only": 6,
+    "p": 1.0
+   },
+   "over_refusal": {
+    "a_only": 1,
+    "b_only": 0,
+    "p": 1.0
+   },
+   "task": {
+    "a_only": 20,
+    "b_only": 22,
+    "p": 0.8776143287523155
+   },
+   "general": {
+    "a_only": 16,
+    "b_only": 17,
+    "p": 1.0
+   }
+  }
+ },
+ "circuit_vs_random": {
+  "w4p19": {
+   "asr_circuit": 0.15126050420168066,
+   "asr_random": 0.15966386554621848,
+   "asr_diff_circuit_minus_random": -0.008403361344537813,
+   "mcnemar": {
+    "a_only": 6,
+    "b_only": 7,
+    "p": 1.0
+   },
+   "prediction": "not shown",
+   "other_metrics": {
+    "over_refusal": {
+     "a_only": 0,
+     "b_only": 1,
+     "p": 1.0
+    },
+    "task": {
+     "a_only": 15,
+     "b_only": 17,
+     "p": 0.860050065908581
+    },
+    "general": {
+     "a_only": 28,
+     "b_only": 25,
+     "p": 0.7838463022094988
+    }
+   }
+  }
+ }
+}
