@@ -69,13 +69,15 @@ No GPU job was launched in workflow C.
 | publisher | Hub (no git commit) | Created the ten `purvansh01` repos, **all private**; copied weights inside HF with two CPU jobs; adapter configs patched to name the base revision; private collection "SafetyPulse CircuitQuant" |
 | publish-verifier | `wf3/c-cards` (`4a79fbd`) | Checked all ten repos (cards, licence, gating, protected layers, CPU load of the 4 Tiny Aya repos, text scan); fixed two card statements and re-uploaded the 7 quantized-model READMEs |
 | docs-writer | `wf3/c-docs` (from `wf3/c-analysis`) | This record, the report index, RUN_SUMMARY result lines, docs/03, 05, 10, 11, README and CHANGELOG |
+| steward-3 | merges into `stage2/lexsi-feedback` (`94d16f9`, `d810a38`, `11b70d9`, `06a81b1`, `8e9448d`) and a consistency commit | Merged the five workflow C branches; cross-checked the docs against the reports and the Hub; final spend in the run log |
 
-CPU jobs (namespace `pxaLabs-lexsi`, `cpu-upgrade`): `6b062b631460ffe1d5e96391` (copy smoke, about 24 s),
-`6b062bf61460ffe1d5e9649d` (copy, about 3 min 5 s), `6b063a301460ffe1d5e97bd4` (load check, 331 s). Together well
-under $0.01 (running time × $0.0005/min; an estimate, not a billed figure).
+CPU jobs (namespace `pxaLabs-lexsi`, `cpu-upgrade`, all COMPLETED): `6b062b631460ffe1d5e96391` (copy smoke, 23 s),
+`6b062bf61460ffe1d5e9649d` (copy, 184 s), `6b063a301460ffe1d5e97bd4` (load check, 331 s); `running_secs` from `hf jobs
+inspect`, read 2026-11-25. Together 538 s, about $0.0045 (running time × $0.0005/min; an estimate, not a billed figure).
 
-At the time of writing, none of the workflow C branches is merged into `stage2/lexsi-feedback`. `wf3/c-cards`,
-`wf3/c-paper` and `wf3/c-docs` all branch from `wf3/c-analysis` (`ad321e3`).
+`wf3/c-cards`, `wf3/c-paper` and `wf3/c-docs` all branch from `wf3/c-analysis` (`ad321e3`). steward-3 merged
+`wf3/c-data`, `wf3/c-analysis`, `wf3/c-cards`, `wf3/c-paper` and `wf3/c-docs` into `stage2/lexsi-feedback` on
+2026-11-25, in that order, with normal merge commits and no conflicts.
 
 ## Total spend
 
@@ -85,7 +87,8 @@ At the time of writing, none of the workflow C branches is merged into `stage2/l
 | E5 relaunch (28b2, 28c2) | 2 GPU | $5.85 | $2.20 |
 | Workflow B | 6 GPU | $9.15 | $5.98 |
 | **GPU total (run log)** | **29** | **$49.95** | **$20.06** (40,118 running seconds × $1.80/h) |
-| Workflow C | 3 CPU | n/a | under $0.01 (estimate) |
+| Workflow C | 3 CPU | n/a | about $0.0045 (538 running seconds × $0.0005/min, estimate) |
+| **All jobs** | **29 GPU + 3 CPU** | **$49.95** | **about $20.06** |
 
 The worst case stayed under the $55 soft cap, so no launch was refused, and under the $60 hard stop, so nothing was
 cancelled. Nothing was dropped for budget.
@@ -115,9 +118,6 @@ cancelled. Nothing was dropped for budget.
   ungated `safetypulse-expanse-lora-alpaca`.
 - Decide whether to delete the Job 25 test models in `results/job25-test/`.
 - Decide on the wording of the departures (E1 chat calibration, Alpaca checkpoint choice, E4 defaults).
-- Before the paper says "decompresses on load", check how the Job 25 and Job 28 harnesses loaded the models. A CPU
-  load with transformers 5.21.0 keeps the weights packed and expands them at each forward pass. The GPU peak-VRAM
-  figures stand as measured.
 - u4's 98/500 empty Hindi XQuAD answers have not been explained; the Hindi score is not interpreted.
 
 ## Reports
@@ -126,3 +126,14 @@ cancelled. Nothing was dropped for budget.
 - [benchmarks.md](../benchmarks.md): E2 and Job 30, IFEval and XQuAD.
 - [multilingual_e3.md](../multilingual_e3.md): E3, ASR in Hindi, Spanish and French.
 - [expanse_default.md](../expanse_default.md): E4, Aya Expanse 8B on the AlignTune default recipe.
+
+## Resolved after the record was written (steward-3, 2026-11-25)
+
+- **"Decompresses on load".** compressed-tensors 0.20.1 `ModelCompressor.add_decompress_hook` registers a forward
+  pre-hook that decompresses the whole model on the first forward pass and then removes itself, so the model runs
+  dense from then on. The CPU load check saw packed weights because it inspected the model before any forward pass;
+  the GPU peak VRAM (equal to fp16) agrees with a dense model. The paper and `benchmarks.md` now say "at the first
+  forward pass" instead of "on load"; the cards' "16-bit compute, no quantized kernels" is consistent with this.
+- **Run-log rounding.** Two XQuAD F1 values in the run log's departure (f) table were rounding slips (u8 en 0.199,
+  r6 es 0.125; exact 0.198453 and 0.124477). They now read 0.198 and 0.124, as in the paper's Table; the
+  `benchmarks` run-log check reports 0 differences.

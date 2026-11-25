@@ -2328,19 +2328,6 @@
  },
  "run_log_check": {
   "checked": 110,
-  "differences": [
-   {
-    "item": "xquad f1 u8 en",
-    "recomputed": 0.198,
-    "run_log": 0.199,
-    "exact": 0.198453
-   },
-   {
-    "item": "xquad f1 r6 es",
-    "recomputed": 0.124,
-    "run_log": 0.125,
-    "exact": 0.124477
-   }
-  ]
+  "differences": []
  }
 }

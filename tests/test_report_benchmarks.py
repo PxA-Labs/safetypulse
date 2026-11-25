@@ -80,8 +80,8 @@ def test_xquad_f1(rep, label, lg, f1):
 
 
 def test_run_log_differences(rep):
-    items = sorted(x["item"] for x in rep["run_log_check"]["differences"])
-    assert items == ["xquad f1 r6 es", "xquad f1 u8 en"]
+    # The two rounding slips (u8 en F1, r6 es F1) were corrected in the run log on 2026-11-25.
+    assert rep["run_log_check"]["differences"] == []
 
 
 def test_ifeval_no_empty_and_medians(rep):

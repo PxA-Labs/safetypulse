@@ -63,7 +63,8 @@ MODELS = [  # label, file, job
 ]
 FRONTIER = ("u4", "r5", "r6", "r72", "u8")
 # Values as recorded in docs/report/workflow/2026-11-24-run-log.md (E2 table lines 81-85, departure (f) table lines
-# 269-278, "Other wave-2 results" lines 285-291). Compared at the precision the log prints.
+# 269-278, "Other wave-2 results" lines 285-291). Compared at the precision the log prints. The two rounding slips
+# this check found (u8 en F1 0.199, r6 es F1 0.125) were corrected in the run log on 2026-11-25 (0.198, 0.124).
 RUNLOG = {
     "ifeval_strict": {"base": 0.7708, "alpaca_s1_125": 0.6821, "repaired": 0.7634, "u4": 0.715, "u8": 0.758,
                       "r5": 0.726, "r6": 0.726, "r72": 0.738},
@@ -74,8 +75,8 @@ RUNLOG = {
                    "repaired": (201.8, 239.6, 332.9), "u4": (210.0, 186.5, 308.4), "u8": (236.2, 234.6, 332.3),
                    "r5": (239.0, 208.6, 327.8), "r6": (242.8, 246.4, 325.3), "r72": (223.1, 254.9, 339.4)},
     "f1": {"base": (0.201, 0.112, 0.119), "alpaca_s1_125": (0.322, 0.261, 0.304), "repaired": (0.230, 0.118, 0.128),
-           "u4": (0.218, 0.117, 0.121), "u8": (0.199, 0.111, 0.118), "r5": (0.190, 0.126, 0.116),
-           "r6": (0.199, 0.113, 0.125), "r72": (0.208, 0.115, 0.116)},
+           "u4": (0.218, 0.117, 0.121), "u8": (0.198, 0.111, 0.118), "r5": (0.190, 0.126, 0.116),
+           "r6": (0.199, 0.113, 0.124), "r72": (0.208, 0.115, 0.116)},
     "em": {"base": (0.006, 0.002, 0.002), "alpaca_s1_125": (0.032, 0.006, 0.022), "repaired": (0.012, 0.002, 0.006),
            "u4": (0.018, 0.002, 0.004), "u8": (0.006, 0.002, 0.002), "r5": (0.006, 0.004, 0.002),
            "r6": (0.012, 0.002, 0.002), "r72": (0.010, 0.002, 0.002)},
@@ -438,8 +439,8 @@ def render_md(res):
          f"prompt) and `default_rng({res['bootstrap']['seed_by_paragraph']})` (XQuAD by paragraph). "
          f"Rebuild: `{res['run_command']}`.", "",
          "All runs: lm-evaluation-harness 0.4.13, greedy, chat template, no system instruction, bf16 compute, batch 32, "
-         "L40S. Job 30 variants are compressed-tensors checkpoints that transformers decompresses on load, so these are "
-         "quality numbers for the quantized weights, not speed or memory numbers.", "",
+         "L40S. Job 30 variants are compressed-tensors checkpoints that transformers decompresses at the first forward pass, so "
+         "these are quality numbers for the quantized weights, not speed or memory numbers.", "",
          "## IFEval (541 prompts)", "",
          "| Model | Job | Prompt strict [Wilson 95%] | Prompt loose [Wilson 95%] | Instr. strict [boot 95%, by prompt] | "
          "Instr. loose [boot 95%] | Median chars | Empty |",

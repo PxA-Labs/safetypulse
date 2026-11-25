@@ -558,7 +558,7 @@ scoring broken text). c1g/r1g take 1.93\,GB on disk because the embedding is sto
 computed size. Under 1\,GB was not achieved. \textbf{(c) The prediction was not shown} at any level of either family
 (Table~\ref{tab:quant}); directions at levels other than 3.48 bits are not interpreted. Both arms of every Aya
 Expanse level near 3.5--3.9 bits read WARN. \textbf{(d) Dense path.} Transformers decompresses compressed-tensors
-checkpoints on load and runs them dense, so throughput and memory are not quantized-kernel numbers: compressed models
+checkpoints at the first forward pass and runs them dense, so throughput and memory are not quantized-kernel numbers: compressed models
 were 24--32\% slower than the fp16 model of the same job and used as much memory (6.82--6.87 vs.\ 6.79\,GiB on Tiny
 Aya). We claim no speed or memory gain; disk size is the only saving measured. A quantized-kernel serving run was
 planned but not done. \textbf{(e) Warm-up.} Every E4 checkpoint lies inside the warm-up of AlignTune's default

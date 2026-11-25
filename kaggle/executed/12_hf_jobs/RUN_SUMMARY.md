@@ -962,13 +962,14 @@ manifest) and in the data collection. Cards: `docs/hub_cards/stage2/safetypulse-
 ## Publication of the E1–E5 outputs (2026-11-25, private-first; still PRIVATE)
 
 Ten repos were created under `purvansh01`, all **private**; the owner makes them public after review. Cards and the
-release plan (`docs/hub_cards/stage2/circuitquant_repos.json`, generator `tools/hub_cards_circuitquant.py`) are on
-branch `wf3/c-cards` (`73db08e`, card fixes `4a79fbd`). Weights were copied inside Hugging Face from the private jobs
+release plan (`docs/hub_cards/stage2/circuitquant_repos.json`, generator `tools/hub_cards_circuitquant.py`) came from
+branch `wf3/c-cards` (`73db08e`, card fixes `4a79fbd`), merged into `stage2/lexsi-feedback` in `11b70d9`. Weights were copied inside Hugging Face from the private jobs
 repo by two CPU jobs (namespace `pxaLabs-lexsi`, `cpu-upgrade`): `6b062b631460ffe1d5e96391` (smoke, W3A16-P1 only,
-about 24 s) and `6b062bf61460ffe1d5e9649d` (the other 7 repos, about 3 min 5 s); the script asserted that the byte
+23 s) and `6b062bf61460ffe1d5e9649d` (the other 7 repos, 184 s); the script asserted that the byte
 total of every copied folder equals the plan. A third CPU job, `6b063a301460ffe1d5e97bd4` (331 s), loaded the 4 Tiny
 Aya repos with transformers 5.21.0 and checked that exactly the protected layers hold 16-bit weights. The three CPU
-jobs together cost well under $0.01 (running time × $0.0005/min; an estimate, not a billed figure).
+jobs together ran 538 s (`running_secs`, all COMPLETED) and cost about $0.0045 (running time × $0.0005/min; an estimate,
+not a billed figure).
 
 | Repo | Type | Source (private jobs repo) | Gated | Hub head |
 |---|---|---|---|---|
