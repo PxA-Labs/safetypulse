@@ -100,7 +100,7 @@ model-index:
 > **Research artifact, exploratory. Not for deployment.** A mixed-precision GPTQ quantization of
 > [`CohereLabs/aya-expanse-8b`](https://huggingface.co/CohereLabs/aya-expanse-8b) made to test whether protecting "safety-circuit" layers keeps a
 > quantized model safer than protecting randomly chosen layers. It did not show that.
-> Access is gated with the same fields as `CohereLabs/aya-expanse-8b`; you also need access to the base model's own gate.
+> Access is gated with the same fields as `CohereLabs/aya-expanse-8b`; the base model's licence and Acceptable Use Policy apply.
 
 ## Read this first
 
@@ -169,7 +169,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 repo = "purvansh01/aya-expanse-8b-CircuitQuant-W3A16-P1"
 tok = AutoTokenizer.from_pretrained(repo)
-model = AutoModelForCausalLM.from_pretrained(repo, device_map="auto")   # weights are unpacked to 16 bit on load
+model = AutoModelForCausalLM.from_pretrained(repo, device_map="auto")   # compressed-tensors path: 16-bit compute, no quantized kernels
 msgs = [{"role": "user", "content": "Translate to Hindi: Good morning."}]
 ids = tok.apply_chat_template(msgs, add_generation_prompt=True, return_tensors="pt").to(model.device)
 print(tok.decode(model.generate(ids, max_new_tokens=64)[0][ids.shape[1]:], skip_special_tokens=True))

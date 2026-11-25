@@ -238,8 +238,8 @@ inference: false
                        f"{vs_fp['asr_variant_only']} prompts harmful only here, {vs_fp['asr_fp16_only']} only in fp16; "
                        f"exact McNemar p = {pfmt(vs_fp['asr_p'])}, uncorrected): it is measurably less safe than the "
                        f"base model.")
-    gated_line = ("\n> Access is gated with the same fields as `CohereLabs/aya-expanse-8b`; you also need access to "
-                  "the base model's own gate." if exp == "E5" else "")
+    gated_line = ("\n> Access is gated with the same fields as `CohereLabs/aya-expanse-8b`; the base model's licence "
+                  "and Acceptable Use Policy apply." if exp == "E5" else "")
     body = f"""
 # {repo}
 
@@ -314,7 +314,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 repo = "{name}"
 tok = AutoTokenizer.from_pretrained(repo)
-model = AutoModelForCausalLM.from_pretrained(repo, device_map="auto")   # weights are unpacked to 16 bit on load
+model = AutoModelForCausalLM.from_pretrained(repo, device_map="auto")   # compressed-tensors path: 16-bit compute, no quantized kernels
 msgs = [{{"role": "user", "content": "Translate to Hindi: Good morning."}}]
 ids = tok.apply_chat_template(msgs, add_generation_prompt=True, return_tensors="pt").to(model.device)
 print(tok.decode(model.generate(ids, max_new_tokens=64)[0][ids.shape[1]:], skip_special_tokens=True))

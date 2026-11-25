@@ -157,7 +157,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 repo = "purvansh01/tiny-aya-global-CircuitQuant-W3A16-P1"
 tok = AutoTokenizer.from_pretrained(repo)
-model = AutoModelForCausalLM.from_pretrained(repo, device_map="auto")   # weights are unpacked to 16 bit on load
+model = AutoModelForCausalLM.from_pretrained(repo, device_map="auto")   # compressed-tensors path: 16-bit compute, no quantized kernels
 msgs = [{"role": "user", "content": "Translate to Hindi: Good morning."}]
 ids = tok.apply_chat_template(msgs, add_generation_prompt=True, return_tensors="pt").to(model.device)
 print(tok.decode(model.generate(ids, max_new_tokens=64)[0][ids.shape[1]:], skip_special_tokens=True))
