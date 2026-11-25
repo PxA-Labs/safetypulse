@@ -1,6 +1,10 @@
 # Link checker configuration (.github/workflows/links.yml).
 max_retries = 3
 timeout = 30
+# github.com answers bursts of parallel requests with HTTP/2 protocol errors (PR #168: 63 of 77 errors were these on
+# links that resolve). Fewer parallel requests and a pause before each retry keep the check within its limits.
+max_concurrency = 8
+retry_wait_time = 5
 accept = [200, 206, 429]
 exclude_path = ["graphify-out", "brag-output", ".venv", "kaggle/executed"]
 exclude = [
@@ -9,6 +13,8 @@ exclude = [
   '^https://huggingface\.co/datasets/purvansh01/safetypulse-(jobs|withheld)',
   # Stage 2: the Earth probe bundle stays private (the other Stage 2 repos are public since 2026-11-21).
   '^https://huggingface\.co/datasets/purvansh01/safetypulse-earth-probe-bundle',
+  # Stage 2 CircuitQuant release (2026-11-25): created private for owner review; remove this entry once public.
+  '^https://huggingface\.co/(datasets/)?purvansh01/(tiny-aya-global-CircuitQuant-|aya-expanse-8b-CircuitQuant-|aya-expanse-8b-safetypulse-lora-alpaca-default|safetypulse-circuitquant-results|alpaca-curatorkit-rejected)',
   # Hugging Face Jobs pages are owner-only and answer anonymous requests with 202.
   '^https://huggingface\.co/jobs/',
   # Gated models redirect unauthenticated requests.
