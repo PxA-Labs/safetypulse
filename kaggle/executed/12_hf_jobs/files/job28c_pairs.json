@@ -1,0 +1,150 @@
+{
+ "vs_fp16": {
+  "w3p2c": {
+   "asr": {
+    "a_only": 4,
+    "b_only": 16,
+    "p": 0.01181793212890625
+   },
+   "over_refusal": {
+    "a_only": 0,
+    "b_only": 1,
+    "p": 1.0
+   },
+   "task": {
+    "a_only": 106,
+    "b_only": 12,
+    "p": 5.775236264703375e-20
+   },
+   "general": {
+    "a_only": 82,
+    "b_only": 38,
+    "p": 7.291502428713535e-05
+   }
+  },
+  "w3p2r": {
+   "asr": {
+    "a_only": 10,
+    "b_only": 23,
+    "p": 0.03508203336969018
+   },
+   "over_refusal": {
+    "a_only": 4,
+    "b_only": 0,
+    "p": 0.125
+   },
+   "task": {
+    "a_only": 99,
+    "b_only": 18,
+    "p": 9.723859231682608e-15
+   },
+   "general": {
+    "a_only": 87,
+    "b_only": 46,
+    "p": 0.0004772225240720683
+   }
+  },
+  "w3p1c": {
+   "asr": {
+    "a_only": 2,
+    "b_only": 14,
+    "p": 0.004180908203125
+   },
+   "over_refusal": {
+    "a_only": 4,
+    "b_only": 0,
+    "p": 0.125
+   },
+   "task": {
+    "a_only": 111,
+    "b_only": 13,
+    "p": 1.4575322761455106e-20
+   },
+   "general": {
+    "a_only": 78,
+    "b_only": 39,
+    "p": 0.0003961778187923077
+   }
+  },
+  "w3p1r": {
+   "asr": {
+    "a_only": 4,
+    "b_only": 22,
+    "p": 0.0005335211753845215
+   },
+   "over_refusal": {
+    "a_only": 3,
+    "b_only": 0,
+    "p": 0.25
+   },
+   "task": {
+    "a_only": 88,
+    "b_only": 15,
+    "p": 9.654706383228214e-14
+   },
+   "general": {
+    "a_only": 85,
+    "b_only": 46,
+    "p": 0.0008320420945381638
+   }
+  }
+ },
+ "circuit_vs_random": {
+  "w3p2": {
+   "asr_circuit": 0.2605042016806723,
+   "asr_random": 0.2689075630252101,
+   "asr_diff_circuit_minus_random": -0.008403361344537785,
+   "mcnemar": {
+    "a_only": 16,
+    "b_only": 17,
+    "p": 1.0
+   },
+   "prediction": "not shown",
+   "other_metrics": {
+    "over_refusal": {
+     "a_only": 5,
+     "b_only": 0,
+     "p": 0.0625
+    },
+    "task": {
+     "a_only": 46,
+     "b_only": 59,
+     "p": 0.24143171756517745
+    },
+    "general": {
+     "a_only": 65,
+     "b_only": 68,
+     "p": 0.8624034912671916
+    }
+   }
+  },
+  "w3p1": {
+   "asr_circuit": 0.2605042016806723,
+   "asr_random": 0.31092436974789917,
+   "asr_diff_circuit_minus_random": -0.05042016806722688,
+   "mcnemar": {
+    "a_only": 10,
+    "b_only": 16,
+    "p": 0.32693958282470703
+   },
+   "prediction": "not shown",
+   "other_metrics": {
+    "over_refusal": {
+     "a_only": 0,
+     "b_only": 1,
+     "p": 1.0
+    },
+    "task": {
+     "a_only": 37,
+     "b_only": 62,
+     "p": 0.015432364507309008
+    },
+    "general": {
+     "a_only": 68,
+     "b_only": 68,
+     "p": 1.0
+    }
+   }
+  }
+ }
+}

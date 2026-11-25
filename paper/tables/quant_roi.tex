@@ -1,0 +1,24 @@
+\begin{table}[t]
+\centering\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}l l r r r r@{}}
+\toprule
+Model & Job & tok/s & $\times$fp16 & \$/1M b8 & \$/1M b1 \\
+\midrule
+Tiny Aya fp16 & 25A & 224.8 & 1.00 & 2.22 & 14.36 \\
+Tiny Aya u4 & 25A & 157.4 & 0.70 & 3.18 & 22.21 \\
+Tiny Aya c72 & 25A & 160.4 & 0.71 & 3.12 & 21.64 \\
+Tiny Aya c6 & 25B & 155.8 & 0.71 & 3.21 & 22.67 \\
+Tiny Aya c5 & 25B & 150.7 & 0.69 & 3.32 & 23.12 \\
+Tiny Aya c35 & 25C & 152.8 & 0.70 & 3.27 & 22.77 \\
+\midrule
+Expanse fp16 & 28a & 241.8 & 1.00 & 2.07 & 14.03 \\
+Expanse w4 & 28a & 169.6 & 0.70 & 2.95 & 20.99 \\
+Expanse w4p19c & 28b & 179.7 & 0.76 & 2.78 & 19.79 \\
+Expanse w3p2c & 28c & 181.7 & 0.72 & 2.75 & 19.76 \\
+Expanse w3p1c & 28c & 178.8 & 0.71 & 2.80 & 19.97 \\
+\bottomrule
+\end{tabular}
+\caption{Cost per million output tokens on one L40S (\$1.80/h) from the measured dense-path throughput (batch 8; b1: batch 1). $\times$fp16: ratio to the fp16 model measured in the same job. fp16 itself varied between jobs (217.9--230.0 and 235.5--251.3 tok/s), as much as the compressed variants differ, so they are not ranked. Closed-source output prices restated from our Stage~1 report (checked 2026-11-11): Claude Haiku 5.5 \$0.50; Claude Sonnet 5.5 \$10.00; Gemini 3.8 Flash \$3.75. Output price only, at matched cost, not matched quality.}
+\label{tab:roi}
+\end{table}

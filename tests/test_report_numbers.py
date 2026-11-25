@@ -341,6 +341,142 @@ def robust_h6_fail():
     return [frac(len(rob[m]["H6"]["fail_on_safe_recovered"]), rob[m]["H6"]["n_safe_recovered"]) for m in MARGINS]
 
 
+def h4_unsafe_by_language():
+    per = report("h4_multilingual")["per_language"]
+    assert {per[lang]["checkpoints"] for lang in per} == {15}
+    return [per[lang]["unsafe"] for lang in ("en", "hi", "es", "fr")]
+
+
+def h4_alarm_on_all():
+    d = report("h4_multilingual")
+    assert d["alarm_on_every_later_checkpoint"]
+    per = d["per_language"]
+    assert all(per[lang]["safe_flagged"] == per[lang]["safe"] for lang in per)   # every safe one flagged
+    assert all(per[lang]["unsafe_flagged"] == per[lang]["unsafe"] for lang in per)
+    return d["any_non_english_unsafe"]["checkpoints"]
+
+
+def h4_cos_range():
+    cos = report("h4_multilingual")["directions"]["cos_with_en"].values()
+    return [min(cos), max(cos)]
+
+
+# ---------- appendix: CuratorKIT counts and training hyperparameters (tracked run files) ----------
+
+EXECUTED = REPO / "kaggle" / "executed"
+CURATION = EXECUTED / "13_curatorkit_alpaca" / "files" / "curation_report.json"
+TRAIN_LOGS = {   # name used in paper_numbers.json -> tracked train_log.json
+    **{p.name.split("__")[0]: p for p in (EXECUTED / "07_finetune_checkpoints" / "files").glob("*__train_log.json")},
+    # Job 27 (E4) trains on the AlignTune default recipe, not the paper's shared LoRA recipe, and its log has a
+    # different schema; it is covered by tests/test_report_expanse_default.py.
+    **{p.name.split("_train_log")[0]: p for p in (EXECUTED / "12_hf_jobs" / "files").glob("job*_train_log.json")
+       if not p.name.startswith("job27_")},
+    "alpacacur-s0": EXECUTED / "13_curatorkit_alpaca" / "files" / "alpacacur-s0__train_log.json",
+}
+
+
+@cache
+def _curation():
+    return json.loads(CURATION.read_text(encoding="utf-8"))
+
+
+def curation_version():
+    c = _curation()
+    assert c["n_in"] == 2000
+    return c["curatorkit"]
+
+
+def curation_stage(stage: str):
+    c = _curation()["stage_counts"][stage]
+    out = [c["input_count"], c["output_count"]]
+    if "rejected_count" in c and c["rejected_count"]:
+        out.append(c["rejected_count"])
+    assert c["input_count"] - c["output_count"] == c.get("rejected_count", 0)
+    return out
+
+
+def curation_exported():
+    c = _curation()
+    assert c["stage_counts"]["AlpacaExporter"]["exported_count"] == c["n_out"]
+    return c["n_out"]
+
+
+def curation_removed():
+    c = _curation()
+    removed = c["n_in"] - c["n_out"]
+    assert removed == sum(c["rejected_reasons"].values())
+    return [removed, round(100 * removed / c["n_in"])]
+
+
+def curation_peak_asr():
+    def peak(path, run):
+        rows = [json.loads(x) for x in path.read_text(encoding="utf-8").splitlines() if x.strip()]
+        return round(100 * max(r["asr"] for r in rows if r["run"] == run))
+    return [peak(EXECUTED / "13_curatorkit_alpaca" / "files" / "monitor.jsonl", "alpacacur-s0"),
+            peak(EXECUTED / "08_monitor_checkpoints" / "files" / "final__monitor.jsonl", "alpaca-s0")]
+
+
+@cache
+def _train_log(name: str):
+    return json.loads(TRAIN_LOGS[name].read_text(encoding="utf-8"))
+
+
+SHARED_LORA = {"r": 16, "lora_alpha": 32, "lora_dropout": 0.05,
+               "target_modules": ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]}
+
+
+def train_row(*names):
+    """[examples, epochs, effective batch, last step, checkpoint every] shared by the runs of one table row; examples
+    per condition are joined with '/' when they differ. Also asserts the settings the caption says are shared."""
+    logs = [_train_log(n) for n in names]
+    for d in logs:
+        assert d["lora"] == SHARED_LORA and d["hp"]["lr"] == 2e-4 and d["base_dtype"] == "torch.float16", d["run"]
+
+    def one(key):
+        vals = {key(d) for d in logs}
+        assert len(vals) == 1, (key, vals)
+        return vals.pop()
+
+    by_cond: dict = {}
+    for d in logs:
+        by_cond.setdefault(d["condition"], set()).add(d["n_examples"])
+    assert all(len(v) == 1 for v in by_cond.values()), by_cond
+    ex = [v.pop() for v in by_cond.values()]
+    examples = ex[0] if len(set(ex)) == 1 else "/".join(map(str, ex))
+    return [examples, one(lambda d: d["hp"]["epochs"]), one(lambda d: d["hp"]["batch"] * d["hp"]["accum"]),
+            one(lambda d: max(h.get("step", 0) for h in d["log_history"])), one(lambda d: d["hp"]["save_every"])]
+
+
+def train_row_stopped(*names):
+    """train_row without the Trainer's own save interval (job24 saves on its own schedule and stops early)."""
+    return train_row(*names)[:4]
+
+
+def train_dense(*names):
+    """[dense every, dense until] of runs with extra early checkpoints."""
+    sched = {(_train_log(n)["dense_every"], _train_log(n)["dense_until"]) for n in names}
+    assert len(sched) == 1, sched
+    return list(sched.pop())
+
+
+def train_shared():
+    for name in TRAIN_LOGS:
+        train_row(name)   # asserts LoRA, learning rate and base dtype
+    return [SHARED_LORA["r"], SHARED_LORA["lora_alpha"], SHARED_LORA["lora_dropout"]]
+
+
+def amendment_no_expanse_recipe():
+    text = (REPO / "docs" / "prereg_amendments" / "2026-11-24-e1-e5-lexsi-feedback.md").read_text(encoding="utf-8")
+    return "The reviewer named no Aya Expanse recipe" in text
+
+
+def e4_seed_steps(seed):
+    """[first WARN, cis_sep there (3 dp), first unsafe, first FAIL, cis_sep there (3 dp)] of one E4 seed."""
+    d = report("expanse_default")["seeds"][seed]
+    return [d["first_warn"], round(d["cis_sep_first_warn"], 3), d["first_unsafe"], d["first_fail"],
+            round(d["cis_sep_first_fail"], 3)]
+
+
 DERIVE = {name: fn for name, fn in globals().items() if callable(fn) and not name.startswith("_")}
 
 

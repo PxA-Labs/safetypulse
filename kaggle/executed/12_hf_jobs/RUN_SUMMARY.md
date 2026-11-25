@@ -667,6 +667,285 @@ whatever this shows; thresholds unchanged.
 - Outputs: adapters → private `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca`, subfolder `alpaca-s9/` (card owned
   by lane 4, unchanged); scores-only results → `results/job24/` in `purvansh01/safetypulse-jobs`.
 
+## Job 25 · E1 wave 1: circuit-guided vs random mixed-precision quantization of Tiny Aya Global (2026-11-24 UTC, exploratory)
+
+**Status:** COMPLETED (4 full jobs launched 20:20–20:23 UTC, all COMPLETED by 21:23 UTC). Exploratory under
+`docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md` (amendment commit `cd72fc6`); no verdict or frozen
+threshold changes. Script `tools/hf_jobs/job25_e1_quant_sweep.py` launched at commit `d92677a`; `sp_bench.py` and the
+package pinned at `106e9ee` (`COMMIT` in the script). Org namespace `pxaLabs-lexsi`, `l40sx1`, `--timeout 85m` each,
+max $2.55 each, $10.20 for the four. Outputs (scores, flags and hashes only; models in compressed-tensors) →
+`results/job25/<shard>/` and `results/job25/models/<variant>/` in private `purvansh01/safetypulse-jobs`.
+
+| Shard | Job id | Variants (fp16 = within-job anchor) |
+|---|---|---|
+| A | [`6b05f178d0582cfbbefcf9c8`](https://huggingface.co/jobs/pxaLabs-lexsi/6b05f178d0582cfbbefcf9c8) | fp16, u4, c72, r72, u8 |
+| B | [`6b05f1cc1460ffe1d5e90665`](https://huggingface.co/jobs/pxaLabs-lexsi/6b05f1cc1460ffe1d5e90665) | fp16, c6, r6, c5, r5 |
+| C | [`6b05f1f2d0582cfbbefcfa5d`](https://huggingface.co/jobs/pxaLabs-lexsi/6b05f1f2d0582cfbbefcfa5d) | fp16, c35, r35, u3 |
+| D | [`6b05f2161460ffe1d5e906da`](https://huggingface.co/jobs/pxaLabs-lexsi/6b05f2161460ffe1d5e906da) | fp16, c3, r3, c1g, r1g |
+
+- Model Tiny Aya Global @ `af89d219` (fp16). Variants: u8/u4/u3 = uniform GPTQ through CircuitKIT 0.2.4
+  `llmcompressor_circuit_quantize`; c*/r* = circuit vs random protected-layer sets of equal size k (protected layers
+  16 bit): 72 = 4-bit base k 9, 6 = k 6, 5 = k 3, 35 = 3-bit base k 1; 3 = 2-bit base k 2 and 1g = largest average
+  under 1 GB (2-bit base, k at 3 bit, tied embedding round-to-nearest 2 bit, size computed) through the same
+  llm-compressor GPTQ call made directly (CircuitKIT allows 3/4/8 bit only). Circuit layers from CircuitKIT EAP-IG
+  node scores (`results/job25/circuit_scores.json`, jobs-repo revision `5f8aa2ba`); random layers
+  `build_random_quantization_plan(36, k/36, seed 0)`.
+- Measures: ASR (119 test prompts, Llama Guard 3 1B @ `acf7aafa`), over-refusal, task, general (notebook 17 settings,
+  eval sets `purvansh01/safetypulse-eval` @ `5e49af71`, sha256-checked), Wilson 95% intervals, exact McNemar vs fp16
+  and circuit vs random; on-disk bytes; HF-transformers tokens/s and peak VRAM (compressed-tensors layers are
+  dequantized by transformers, so these are not quantized-kernel speeds); `cis_sep` (bundle `de9dc195`, frozen
+  thresholds).
+- **Deviation found in the test runs:** GPTQ calibrated on plain wikitext-2 (CircuitKIT's default) collapsed the
+  4-bit and 3-bit models (`cis_sep` 0.01–0.03, MMLU at chance on 8 test items) for every GPTQ setting tried (sequential
+  and basic pipeline, dampening 0.1, no activation ordering, bf16 source), while round-to-nearest 4 bit kept
+  `cis_sep` 0.97. With the same wikitext texts wrapped in the chat template (`SP_CALIB=chat`, 1024 tokens), 4-bit GPTQ
+  gave `cis_sep` 0.95 and 3-bit 0.76. The full jobs use the chat-format calibration.
+- Discovery (test job `6b05d284`): CircuitKIT 0.2.4, 64 pairs, 286 s, peak 24.7 GiB; Spearman 0.988 with the Job 1
+  scores (CircuitKIT 0.2.0), top-20 overlap 0.60.
+- Test jobs (`SP_TEST=1`, 8 items per set, outputs `results/job25-test/`): `6b05d284` (smoke, 541 s), `6b05d6d2`
+  (fp16/u8/u4, 288 s), `6b05e629` (RTN and basic-pipeline diagnostics, 299 s), `6b05e830` (GPTQ settings, 341 s),
+  `6b05ed9c` (chat calibration, 381 s): 1850 s ≈ $0.93 actual, $3.90 worst case.
+- **Status check 2026-11-24 ~21:00 UTC (`hf jobs inspect`):** all four shards RUNNING (running 1869 s A, 2039 s B,
+  2214 s C, 2476 s D at the read).
+- **Status check 2026-11-24 ~23:00 UTC (`hf jobs inspect`, steward-2):** A COMPLETED 2986 s ($1.49), B COMPLETED 3023 s
+  ($1.51), C COMPLETED 2458 s ($1.23), D COMPLETED 3012 s ($1.51); E1 full shards $5.74, with the 5 test jobs $6.66
+  (worst case $14.10). `summary.json` of every shard: `skipped_time_guard` [] and `failed` []. fp16 anchor identical in
+  all four shards (ASR 16/119). Results at jobs revision `03948cfa` (not yet copied into git).
+- **Circuit vs random (from `results/job25/<shard>/paired.json`; ASR k/119, exact McNemar, discordant circuit-only /
+  random-only):** c72 13 vs r72 9 (6/2, p = 0.289); c6 15 vs r6 11 (5/1, p = 0.219); c5 16 vs r5 16 (4/4, p = 1.0);
+  c35 29 vs r35 18 (19/8, p = 0.052); c3 vs r3 and c1g vs r1g 119 vs 119 (collapsed, p = 1.0). The amendment's
+  prediction is **not shown** at any level; at ~7.1, ~6.1 and ~3.5 bits the random control had the lower ASR.
+- **Collapsed / not achieved:** c3, r3 (2-bit base with 2 fp16 layers, 2.90 average bits, 2.09 GB) and c1g, r1g
+  (2.43 average bits) have task ≤ 0.02, ASR 1.0 and `cis_sep` FAIL (0.01–0.04); their ASR is the judge scoring broken
+  text, not a safety result. c1g and r1g are **not under 1 GB on disk**: `disk_bytes` 1,928,412,576 / 1,928,412,584
+  (1.93 GB); the 0.997 GB in `size_bytes` is computed (`size_is_computed` true).
+- **Collected and reported (2026-11-25):** `kaggle/executed/12_hf_jobs/files/job25_{A,B,C,D}_{rows.jsonl,paired.json,summary.json}` and
+  `job25_circuit_scores.json` (jobs revision `03948cfa`, commit `a69c59a`; no weights). Report
+  `docs/report/circuitquant.md` (`tools/report_circuitquant.py`, E1 with E5; figures `paper/figures/fig_quant_*.pdf`):
+  the prediction is not shown at any level, c3/r3/c1g/r1g are reported as collapsed, and tokens/s and peak VRAM are
+  dense-path numbers with no speed or memory gain claimed. The circuit variants c72, c6, c5 and c35 are in private
+  Hub repos (see "Publication of the E1–E5 outputs" below); the random and uniform controls are not published.
+
+## Job 26 · E2 text-generation benchmarks: IFEval and XQuAD en/hi/es (2026-11-24 UTC, exploratory; COMPLETED)
+
+- Purpose: E2 of the amendment `docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md` (commit `cd72fc6`).
+  IFEval (all 541 prompts; prompt-level strict and loose accuracy) and XQuAD en / hi / es (the same 500 question ids
+  per language, `random.Random(0)`, ids sha256 `1bee96ce…3d3a3c`; exact match and F1) through lm-evaluation-harness
+  0.4.13, greedy, task-default generation (IFEval 1280 tokens; XQuAD 256 tokens, stop at newline), chat template with
+  no system instruction, bf16, batch 32. Reported as measured; no threshold or pass/fail.
+- Models: Tiny Aya Global `af89d219b53ed9b13b8a4645f9c8028973510324`; its Alpaca fine-tune = that base +
+  `purvansh01/safetypulse-lora-alpaca@0ea31228c451cdacb47de1f3adb7c9736b950800` `alpaca-s1/checkpoint-125` merged
+  (the checkpoint Job 4 repaired); the repaired model
+  `purvansh01/tiny-aya-global-safetypulse-repaired@06ee768d15feac8638e834d28fbb38ab6e4fb11a`. Benchmark data
+  asserted at job start: `google/IFEval@966cd895`, `google/xquad@51adfef1`.
+- Script `tools/hf_jobs/job26_e2_benchmarks.py`, launched from its raw GitHub URL at code SHA
+  `5a45d23389bac6df47aaab45c6f64e96c2a2bf0c` (also passed as `SP_CODE_SHA` and stored in every output). Stand-in for
+  `transformers.data.metrics.squad_metrics` (removed in transformers 5.20; lm-eval issue #4435), copied from
+  transformers 5.19.0, recorded as `squad_shim: true`; langdetect seeded 0.
+- Smoke tests (`SP_TEST=1`, 5 documents per task, all three models, `--timeout 25m` each):
+  `6b05d1361460ffe1d5e8c746` ERROR after 1m 48s (Tiny Aya's chat template is a dict; hashing fixed in `5a45d233`),
+  `6b05d940d0582cfbbefccba8` COMPLETED in 3m 33s (outputs in `results/job26-test/`).
+- Full jobs (namespace `pxaLabs-lexsi`, `l40sx1`, `--timeout 60m` each, one model per job), COMPLETED:
+  `6b05db41d0582cfbbefccfe6` (base), `6b05db781460ffe1d5e8d865` (alpaca_s1_125), `6b05dbaed0582cfbbefcd0bb`
+  (repaired).
+- Cap (worst case, timeout × $1.80/h): smoke 2 × $0.75 + full 3 × $1.80 = **$6.90** (builder cap $8).
+- Outputs: private `purvansh01/safetypulse-jobs` `results/job26/<label>.json` (scores, Wilson 95% intervals, per
+  document doc_id / question id / scores / answer sha256 and length; no answer text).
+- **Status check 2026-11-24 ~21:00 UTC (`hf jobs inspect`):** smoke 2 COMPLETED, 213 s ($0.11); base COMPLETED, 1220 s
+  ($0.61); alpaca_s1_125 COMPLETED, 980 s ($0.49); repaired COMPLETED, 1205 s ($0.60). E2 billed total with both
+  smokes $1.86. Results `results/job26/{base,alpaca_s1_125,repaired}.json` not yet copied into git (wave 2).
+- **XQuAD answer length (steward-2, from `per_doc` `answer_chars`; no text read):** mean characters en / hi / es: base
+  230.9 / 235.3 / 335.7; alpaca_s1_125 103.1 / 96.5 / 116.2; repaired 201.8 / 239.6 / 332.9. Empty answers (hi):
+  base 41, alpaca 0, repaired 30. Exact match is 0.002–0.032 for every model and language, so F1 is the reported number,
+  and the Alpaca model's higher F1 goes with answers about 2–3 times shorter; it is not read as better QA.
+- **Collected and reported (2026-11-25):** `kaggle/executed/12_hf_jobs/files/job26_{base,alpaca_s1_125,repaired}.json` (commit `a69c59a`) and
+  `job26_job30_smoke_hashes.json` (smoke-vs-full answer hashes and flags, no text). Report `docs/report/benchmarks.md`
+  (`tools/report_benchmarks.py`, with Job 30): IFEval prompt strict base 0.771, alpaca_s1_125 0.682 (drop survives
+  Holm), repaired 0.763 (paired McNemar vs base p 0.644); XQuAD F1 is reported with the answer-length caveat.
+
+## Job 27 · E4: Aya Expanse 8B on the Lexsi default recipe, seeds 1 and 2, 2-step checkpoints to 60 (2026-11-24 UTC, exploratory; COMPLETED)
+
+**Status:** COMPLETED (results copied into git on 2026-11-25; see the last bullet). Exploratory under
+`docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md` (amendment commit `cd72fc6`, pushed 2026-11-24T16:44:26Z,
+before any job below was created). No verdict or threshold changes.
+
+- Script: `tools/hf_jobs/job27_e4_expanse_default.py` at commit `706189d0744570de79127fad8ce1410a71bf4ee9` (launched
+  from that file); package and `sp_utils.py` pinned at `cd72fc60f753fe76d443aeb1e77ae4f4623c2d1d`; torch 2.15.0,
+  transformers 5.20.2, peft 0.21.2.
+- Recipe: lr 2e-4, LoRA r 16, alpha 32 (amendment); from the AlignTune `create_sft_trainer` defaults
+  (Lexsi-Labs/aligntune @ `f53b41d0`): dropout 0.1, 3 epochs, batch 4 x accumulation 1, warm-up ratio 0.1, weight
+  decay 0.01, max grad norm 1.0, adamw_torch, cosine, max length 512; kept from Job 23: 7 projection modules,
+  answer-only loss, fp16 base with fp16 autocast, random data order. Full schedule 1500 steps (2000 features), warm-up
+  150 steps; stopped at step 60 by a callback, so every checkpoint is inside the warm-up.
+- Scoring in the same job per checkpoint 0, 2, ..., 60: CIS with the Job 23 bundle (`results/job23/bundle` @
+  `850e3557`, probe sha `f898d4c6`, layer 21), 50-prompt spot-check, ASR on the 78 dev prompts with Llama Guard 3 1B
+  @ `acf7aafa`, frozen `cis_sep` levels, ‖ΔW‖. Model Aya Expanse 8B @ `5062468b`, data @ `15ac4436` (sha256 asserted).
+- Outputs: SP_REPO `results/job27/s<seed>/` (`monitor.jsonl`, `dw.jsonl`, `train_log.json`, `job27_summary.json`,
+  adapters under `adapters/alpaca-default-s<seed>/checkpoint-<step>/`).
+- Launch test: https://huggingface.co/jobs/pxaLabs-lexsi/6b05d32ed0582cfbbefcc300 (`SP_TEST=1`, steps 0-4, 8 prompts,
+  `--timeout 25m`, cap $0.75); COMPLETED, running 3 min 1 s; outputs `results/job27-test/s1/`.
+- Seed 1: https://huggingface.co/jobs/pxaLabs-lexsi/6b05d5741460ffe1d5e8cecb (`l40sx1`, `--timeout 60m`,
+  `SP_TIMEOUT_MIN=60`, cap $1.80), created 2026-11-24T18:20:36Z.
+- Seed 2: https://huggingface.co/jobs/pxaLabs-lexsi/6b05d599d0582cfbbefcc763 (`l40sx1`, `--timeout 60m`, cap $1.80),
+  created 2026-11-24T18:21:13Z.
+- E4 worst-case total including the test: $4.35.
+- **Status check 2026-11-24 ~21:00 UTC (`hf jobs inspect`):** smoke `6b05d32e` COMPLETED, 181 s ($0.09); seed 1 COMPLETED,
+  2029 s ($1.01); seed 2 COMPLETED, 2095 s ($1.05). Results in `results/job27/s{1,2}/` not yet copied into git; the
+  observer's log reading (first WARN 44/46, FAIL 52/52, first unsafe 46/48 for seeds 1/2) is in
+  `docs/report/workflow/2026-11-24-run-log.md` and is to be confirmed from `job27_summary.json`.
+- **Confirmed from `results/job27/s{1,2}/job27_summary.json` (steward-2, 2026-11-24 ~23:00 UTC):** seed 1 first WARN 44,
+  first FAIL 52, first unsafe 46, lead 2 steps; seed 2 first WARN 46, first FAIL 52, first unsafe 48, lead 2 steps
+  (lead = first unsafe − first WARN; FAIL comes 6 and 4 steps after the first unsafe step). All 31 checkpoints scored,
+  `not_started_time_guard` []. Warm-up is 150 steps of the 1500-step schedule, so every checkpoint is inside warm-up.
+- **Collected and reported (2026-11-25):** `kaggle/executed/12_hf_jobs/files/job27_s{1,2}_{summary.json,monitor.jsonl,dw.jsonl,train_log.json}`
+  (commit `a69c59a`). Report `docs/report/expanse_default.md` (`tools/report_expanse_default.py`, figure
+  `paper/figures/expanse_default.pdf`): lead 2 steps on both seeds, inside the warm-up (highest learning rate 39% of
+  the peak); one flagged prompt more or less at one checkpoint moves the lead between −2 and +4 steps. The adapters
+  (2 × 31 checkpoints) are in the private repo `purvansh01/aya-expanse-8b-safetypulse-lora-alpaca-default`.
+
+## Job 28 · E5: Aya Expanse 8B quantization tiers, circuit-guided vs random (2026-11-24 UTC, exploratory; COMPLETED after relaunch)
+
+**Status:** COMPLETED (28a first launch; 28b and 28c on relaunch). Exploratory under the same amendment (`cd72fc6`).
+
+- Script: `tools/hf_jobs/job28_e5_expanse_quant.py`; launch test at commit `706189d`, full parts at
+  `a8f78060908f25737bdb47f4ec3715d9afac4d9f` (the tokens/s method aligned with Job 25's). Package pinned at `cd72fc6`;
+  torch 2.14.1, transformers 5.21.0, llmcompressor 0.15.0, compressed-tensors 0.20.1, CircuitKIT 0.2.4.
+- Circuit scores: CircuitKIT EAP-IG node discovery on the base model (64 length-matched calib pairs @ `47f888c4`, chat
+  template on, Expanse bundle token sets, bf16, batch 2), run once inside the launch test (135 s). Stored at SP_REPO
+  `results/job28/circuit.json`, revision `54a46ad0a8da46c8161835ba3696860624708754`, sha256 `10ca4b7e…4e83`, asserted by
+  the full parts. Layer order starts 23, 26, 31, 29, 17; circuit sets k=1 [23], k=2 [23, 26]; random sets (seed 0)
+  k=1 [3], k=2 [3, 7].
+- Variants (GPTQ, symmetric int, group 128, 128 wikitext-2 texts @ `b08601e0`, protected layers kept 16-bit,
+  equal k in both arms): 28a fp16, w8, w4; 28b fp16, w4p19c, w4p19r (~11.2 bit, est. 11.85 GB); 28c fp16, w3p2c,
+  w3p2r (~3.9 bit), w3p1c, w3p1r (~3.5 bit).
+- Launch test: https://huggingface.co/jobs/pxaLabs-lexsi/6b05d3811460ffe1d5e8cae2 (`SP_TEST=1`, fp16 + w3p1c with 16
+  calibration texts and 8 items per set, `--timeout 50m`, cap $1.50); COMPLETED, running 454 s; outputs
+  `results/job28-test/smoke/`. It showed transformers unpacking the compressed weights at the first forward (w3p1c:
+  5.17 GB after load, 16.16 GB after the first forward), so HF tokens/s and peak memory are dense-path numbers.
+- 28a: https://huggingface.co/jobs/pxaLabs-lexsi/6b05d87ad0582cfbbefccad0 (`--timeout 75m`, cap $2.25), created
+  2026-11-24T18:33:30Z.
+- 28b: https://huggingface.co/jobs/pxaLabs-lexsi/6b05d8a6d0582cfbbefccafd (`--timeout 75m`, cap $2.25), created
+  2026-11-24T18:34:14Z.
+- 28c: https://huggingface.co/jobs/pxaLabs-lexsi/6b05d8cb1460ffe1d5e8d317 (`--timeout 120m`, cap $3.60), created
+  2026-11-24T18:34:51Z.
+- Outputs: SP_REPO `results/job28/<28a|28b|28c>/` (`variants.jsonl`, `pairs.json`, `job28_summary.json`), models at
+  `results/job28/models/<variant>/`. E5 worst-case total including the test: $9.60.
+- **Status check 2026-11-24 ~21:00 UTC (`hf jobs inspect`):** smoke `6b05d381` COMPLETED, 454 s ($0.23); 28a COMPLETED, 1597 s
+  ($0.80); **28b and 28c ERROR** after 175 s and 176 s ($0.09 each): `RevisionNotFoundError` on
+  `results/job28/circuit.json` because the launch command's later `-e SP_CIRCUIT_SHA=… -e SP_VARIANT_MIN=…` flags were
+  swallowed into the `SP_CIRCUIT_REV` value (launch quoting, not the script). No GPU work was done; 28b and 28c must be
+  relaunched (wave 2) with each `-e` as its own argument. 28a results not yet copied into git.
+- **Relaunch (wave 2):** 28b2 `6b060042d0582cfbbefd1122` job28b2-e5-mixed11 (created 21:23:14 UTC, `SP_TIMEOUT_MIN=75`)
+  and 28c2 `6b060067d0582cfbbefd1160` job28c2-e5-low (created 21:23:51 UTC, `SP_TIMEOUT_MIN=120`). `hf jobs inspect`
+  shows `SP_CIRCUIT_REV`, `SP_CIRCUIT_SHA` and `SP_VARIANT_MIN` as separate keys, and both summaries record the clean
+  revision `54a46ad0` and sha256 `10ca4b7e…`. Script file unchanged since `a8f7806` (no later commit touches it); the
+  relaunch has no builder ledger entry, so its worst case is counted from `SP_TIMEOUT_MIN` (75 and 120 min, assumed equal
+  to `--timeout`).
+- **Status check 2026-11-24 ~23:00 UTC (steward-2):** 28b2 COMPLETED 1582 s ($0.79), 28c2 COMPLETED 2822 s ($1.41);
+  `skipped_time_guard` [] and `errors` {} in all three part summaries. 28a's environment holds the same swallowed
+  `SP_CIRCUIT_REV` value (its summary records it); 28a builds only uniform variants and does not read the circuit file,
+  so its results are unaffected. E5 billed $3.23 for the four completed jobs (smoke, 28a, 28b2, 28c2) plus $0.18 for the two failed
+  launches, $3.41 in all.
+- **Results (ASR k/119; `cis_sep`; disk):** fp16 19, 1.0001 PASS, 16.06 GB; w8 17, 1.0005 PASS, 9.19 GB (< 10 GB);
+  w4 19, 0.9446 PASS, 5.70 GB; w4p19c 18 / w4p19r 19 (11.18 bits, 11.85 GB < 12 GB; McNemar 6/7, p = 1.0);
+  w3p2c 31 / w3p2r 32 (3.93 bits, 5.53 GB; 16/17, p = 1.0; `cis_sep` WARN in both); w3p1c 31 / w3p1r 37 (3.53 bits,
+  5.17 GB; 10/16, p = 0.327; WARN in both). The prediction is **not shown** at any E5 level (the script's own
+  `prediction` field agrees). E5 used plain wikitext-2 GPTQ calibration (CircuitKIT default) and did not collapse at
+  4 bit (task 0.727 vs 0.770 fp16).
+- **Collected and reported (2026-11-25):** `kaggle/executed/12_hf_jobs/files/job28_circuit.json` and `job28{a,b,c}_{summary.json,pairs.json,variants.jsonl}`
+  (commit `a69c59a`; the 28b and 28c files are the outputs of the 28b2 and 28c2 relaunches). Report
+  `docs/report/circuitquant.md` (E5 section): not shown at every level (p 1.0, 1.0, 0.327); w8 9.19 GB and w4p19
+  11.85 GB meet the size tiers. The circuit variants w4p19c, w3p2c and w3p1c are in private, gated Hub repos.
+
+## Job 29 · E3: Hindi, Spanish and French ASR on base, Alpaca fine-tune, repaired and the E1 frontier (2026-11-24 UTC, exploratory; COMPLETED)
+
+- Purpose: E3 of the amendment `docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md` (commit `cd72fc6`). ASR on
+  the 119 held-out test prompts in en / hi / es / fr, per model, with Wilson 95% intervals, the change from the same
+  model's English ASR in the same job, and a paired exact McNemar (language vs English, same prompt). No alarm is
+  evaluated (amendment E3).
+- Translations: re-made in the job, because Job 20 kept them in memory only. Job 20's `translate` copied verbatim,
+  `facebook/nllb-200-distilled-600M@f8d333a098d19b4fd9a8b18f94170487ad3f821d`, fp32, greedy, line by line, batch 16;
+  English input `data/eval_harm.jsonl` split test at SP_REPO `194c2f53` (asserted equal to Job 20's English hash).
+  Job 20 stored only one sha256 per translated set (texts joined by newlines), so the check is a set match per
+  language. Smoke result: **hi, es and fr all match Job 20's sha256 (match rate 1.0 per language) and all length
+  statistics are equal**. Per-prompt sha256 of the translations are stored for later runs; the text never leaves the job.
+- Generation and judge: notebook 17 / Job 25 ASR settings (`safetypulse.audit.generate`, greedy, 256 new tokens, fp16,
+  batch 16, template default system prompt); Llama Guard 3 1B `acf7aafa` (pre-registered), prompt and answer in the
+  target language. Job 20 used bf16, batch 32 and the 8B judge, so Job 20 rates are not mixed with these.
+- Models: Tiny Aya Global `af89d219`; Alpaca fine-tune = base + `purvansh01/safetypulse-lora-alpaca@0ea31228`
+  `alpaca-s1/checkpoint-125` merged (Job 26 preset); repaired `purvansh01/tiny-aya-global-safetypulse-repaired@06ee768d`;
+  E1 frontier variants from SP_REPO `results/job25/models/<variant>` at `77c4650f`. Frontier rule (shared with the E1
+  follow-up): Job 25 variants with task ≥ 0.10, fp16 excluded, non-dominated in (disk_bytes, general); 7 qualify (u3,
+  r35, u4, r5, r6, r72, u8), the 5 with the highest general are kept: **u4, r5, r6, r72, u8**. Collapsed (task < 0.10):
+  c3, r3, c1g, r1g. Not run: u3 and r35 (cut by the top-5 rule). Nothing was dropped for budget.
+- Script `tools/hf_jobs/job29_e3_multilingual.py`, launched from its raw GitHub URL at code SHA
+  `91b7ced98aca7e86f35d8400f52027ee1c18737c` (also `SP_CODE_SHA`); package and `sp_bench.py` at `106e9ee` as Job 25;
+  torch 2.14.1, transformers 5.21.0.
+- Smoke (`SP_TEST=1`, first 8 prompts per language, base / alpaca_s1_125 / repaired / u4, `--timeout 30m`):
+  `6b06028e1460ffe1d5e92440` COMPLETED in 4m 18s (`results/job29-test/smoke/`). Output scan: no prompt, answer or
+  translation text (no string ≥ 40 characters except hashes and labels, no non-ASCII string); English flags of base and
+  u4 agree 8/8 with Job 25's.
+- Full jobs (namespace `pxaLabs-lexsi`, `l40sx1`), RUNNING: `6b06075f1460ffe1d5e92b8c` job29-e3-core (base,
+  alpaca_s1_125, repaired; `--timeout 40m`, created 21:53:35 UTC) and `6b060793d0582cfbbefd1c14` job29-e3-frontier
+  (u4, r5, r6, r72, u8; `--timeout 70m`, created 21:54:27 UTC). Each env var checked as a separate key with
+  `hf jobs inspect`.
+- Cap (worst case, timeout × $1.80/h): smoke $0.90 + core $1.20 + frontier $2.10 = **$4.20** (builder cap $6).
+- Outputs: private `purvansh01/safetypulse-jobs` `results/job29/<core|frontier>/{translations.json, rows.jsonl,
+  summary.json}`: per (model, language) n, k, ASR, Wilson interval, flags, answer lengths and digest, prompt-set hash.
+- **Status check 2026-11-24 ~23:00 UTC (`hf jobs inspect`, steward-2):** smoke COMPLETED 258 s ($0.13), core COMPLETED
+  945 s ($0.47), frontier COMPLETED 2130 s ($1.07, after 1409 s waiting for a GPU); $1.67 of $4.20. Both full
+  summaries: `skipped_time_guard` [] and `failed` []; translations match Job 20 (rate 1.0 for hi, es, fr); English flags
+  and completion hashes equal Job 25's for base, u4, r5, r6, r72, u8.
+- **ASR k/119 (en / hi / es / fr):** base 16/17/27/21; alpaca_s1_125 29/35/25/25; repaired 13/17/22/20; u4 18/28/27/24;
+  r5 16/19/26/36; r6 11/20/23/25; r72 9/19/25/23; u8 15/16/24/21. Of the 24 language-vs-English McNemar tests only r6 fr,
+  r5 fr, r72 es and r72 fr survive Holm (observer-builder-e3).
+- **Collected and reported (2026-11-25):** `kaggle/executed/12_hf_jobs/files/job29_{core,frontier}_{rows.jsonl,summary.json,translations.json}`
+  (commit `a69c59a`; the translation files hold sha256 hashes and length statistics only). Report
+  `docs/report/multilingual_e3.md` (`tools/report_multilingual_e3.py`): the four Holm survivors are confirmed; compared
+  with base in the same language, only r5 fr is higher (36 vs 21, p 0.0015, uncorrected); r6 and r72 survive because
+  their English ASR is low. The judge is not validated in hi/es/fr and the translations are not human-checked.
+
+## Job 30 · E1 frontier variants: IFEval and XQuAD en/hi/es on the Job 25 size/quality frontier (2026-11-24 UTC, exploratory; COMPLETED)
+
+- Purpose: amendment `docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md` (commit `cd72fc6`), E1 bullet
+  "Frontier variants ... also get IFEval and XQuAD". Same benchmark, settings and data pins as Job 26 (bf16, batch 32,
+  chat template, no system instruction). No verdict or frozen threshold is touched.
+- Frontier rule (deterministic): all Job 25 variants from `results/job25/{A,B,C,D}/rows.jsonl` (jobs revision
+  `77c4650f`); collapsed variants dropped (task < 0.10: c3, r3, c1g, r1g); among the rest (fp16 excluded) a variant is
+  kept if no other has `disk_bytes` <= and `general` >= with one strict. Frontier: u3, r35, u4, r5, r6, r72, u8 (7);
+  capped at 5 by highest `general`: **u4** (2,524,069,488 B, general 0.526), **r5** (2,871,937,680 B, 0.548), **r6**
+  (3,219,805,864 B, 0.552), **r72** (3,567,674,056 B, 0.564), **u8** (3,930,210,104 B, 0.570). Dropped by the cap: u3
+  (0.422), r35 (0.470).
+- Checkpoints: `purvansh01/safetypulse-jobs` (dataset) `results/job25/models/<variant>` at revision
+  `77c4650fcf77e1c517fbd04002cc67e86f7102e1` (compressed-tensors pack-quantized, 4- or 8-bit group). Tokenizer forced
+  to Tiny Aya Global `af89d219` (`--base-tokenizer`); chat-template sha256 `9d2fae0e…` equals Job 26 base.
+  transformers decompresses compressed-tensors weights on load/first forward (peak 8.16 GiB in the smoke, as fp16), so
+  benchmark minutes are not a quantized-speed claim.
+- Script `tools/hf_jobs/job26_e2_benchmarks.py` at code SHA `ba121a76064aca2e0aea030f2d49dce835184bc7` (adds
+  `--model-subfolders`, `--base-tokenizer`, a per-variant time guard; `bench()` and the presets unchanged from
+  `5a45d233`). Anchor: Job 26 `results/job26/base.json` (no fp16 rerun inside Job 30; the cap did not allow it).
+- Smoke (`--limit 5`, u4, `--timeout 15m`): `6b06038dd0582cfbbefd163b` COMPLETED in 94 s; bench 0.82 min vs 0.68 min
+  for Job 26 base smoke; n = 5 per task; no answer text in the output (`results/job30-test/u4.json`).
+- Full jobs (namespace `pxaLabs-lexsi`, `l40sx1`), RUNNING: `6b0604c8d0582cfbbefd17fa` job30-e1-frontier-A (u4, u8,
+  r72; `--timeout 90m`), `6b0604fc1460ffe1d5e927a5` job30-e1-frontier-B (r5, r6; `--timeout 60m`). Time guard skips a
+  variant if fewer than 22 min remain.
+- Cap (worst case, timeout × $1.80/h): smoke $0.45 + A $2.70 + B $1.80 = **$4.95** (builder cap $5).
+- Outputs: private `purvansh01/safetypulse-jobs` `results/job30/<variant>.json` (scores, Wilson 95% intervals, per
+  document ids / scores / answer sha256 and length; no answer text).
+- **Status check 2026-11-24 23:17 UTC (`hf jobs inspect`, steward-2):** smoke COMPLETED 94 s ($0.05); B COMPLETED
+  3414 s ($1.71; r5, r6); A COMPLETED 5111 s ($2.56; u4, u8, r72; "done in 84.6 min; skipped by time guard: []"). $4.31
+  of $4.95. Real time per variant was 27–29 min, so `--est-min 22` was too loose (use 31); r72 fitted with ~5 min left.
+- **IFEval prompt-level strict (base 0.771, Job 26):** u4 0.715 (paired exact McNemar 67/37, p = 0.004), u8 0.758
+  (20/13, p = 0.296), r5 0.726 (55/31, p = 0.013), r6 0.726 (55/31, p = 0.013), r72 0.738 (44/26, p = 0.041);
+  exploratory, uncorrected, cross-job. XQuAD F1 within about 0.02 of base in each language; EM near 0 (answer-length
+  caveat as Job 26). u4 has 98/500 empty Hindi XQuAD answers (base 41; r5 62, r6 42, u8 46, r72 18). Jobs revision
+  with all five files: `a00444f3`.
+- **Collected and reported (2026-11-25):** `kaggle/executed/12_hf_jobs/files/job30_{u4,u8,r5,r6,r72}.json` (jobs revision `a00444f3`, commit
+  `a69c59a`). Report `docs/report/benchmarks.md`: after Holm, u4 is the only frontier variant whose IFEval
+  prompt-strict drop survives (adjusted p 0.046 over 14 tests, 0.021 over the 5 frontier strict tests); r5, r6 and r72
+  strict drops are nominal only, while the r6 and r72 loose drops survive the 14-test correction. All comparisons are
+  cross-job (no base rerun in Job 30). u4's empty Hindi answers are not interpreted.
+
 ## Publication of the follow-up outputs (2026-11-23)
 
 The adapters written by Jobs 18, 21, 24 (`pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca`) and Job 23
@@ -679,3 +958,35 @@ and added to the model collection. The org has no transfer right for the account
 private. The Jobs 15–24 files of this folder and their reports are public in
 [`purvansh01/safetypulse-followups`](https://huggingface.co/datasets/purvansh01/safetypulse-followups) (with a SHA-256
 manifest) and in the data collection. Cards: `docs/hub_cards/stage2/safetypulse-{h3fine-lora-alpaca,expanse-lora-alpaca,followups}.md`.
+
+## Publication of the E1–E5 outputs (2026-11-25, private-first; still PRIVATE)
+
+Ten repos were created under `purvansh01`, all **private**; the owner makes them public after review. Cards and the
+release plan (`docs/hub_cards/stage2/circuitquant_repos.json`, generator `tools/hub_cards_circuitquant.py`) came from
+branch `wf3/c-cards` (`73db08e`, card fixes `4a79fbd`), merged into `stage2/lexsi-feedback` in `11b70d9`. Weights were copied inside Hugging Face from the private jobs
+repo by two CPU jobs (namespace `pxaLabs-lexsi`, `cpu-upgrade`): `6b062b631460ffe1d5e96391` (smoke, W3A16-P1 only,
+23 s) and `6b062bf61460ffe1d5e9649d` (the other 7 repos, 184 s); the script asserted that the byte
+total of every copied folder equals the plan. A third CPU job, `6b063a301460ffe1d5e97bd4` (331 s), loaded the 4 Tiny
+Aya repos with transformers 5.21.0 and checked that exactly the protected layers hold 16-bit weights. The three CPU
+jobs together ran 538 s (`running_secs`, all COMPLETED) and cost about $0.0045 (running time × $0.0005/min; an estimate,
+not a billed figure).
+
+| Repo | Type | Source (private jobs repo) | Gated | Hub head |
+|---|---|---|---|---|
+| `purvansh01/tiny-aya-global-CircuitQuant-W4A16-P9` | model | Job 25 `c72` | no | `a5237221` |
+| `purvansh01/tiny-aya-global-CircuitQuant-W4A16-P6` | model | Job 25 `c6` | no | `56297e0b` |
+| `purvansh01/tiny-aya-global-CircuitQuant-W4A16-P3` | model | Job 25 `c5` | no | `3f238bfe` |
+| `purvansh01/tiny-aya-global-CircuitQuant-W3A16-P1` | model | Job 25 `c35` | no | `ce28e022` |
+| `purvansh01/aya-expanse-8b-CircuitQuant-W4A16-P19` | model | Job 28 `w4p19c` | auto | `07074b21` |
+| `purvansh01/aya-expanse-8b-CircuitQuant-W3A16-P2` | model | Job 28 `w3p2c` | auto | `1297f88a` |
+| `purvansh01/aya-expanse-8b-CircuitQuant-W3A16-P1` | model | Job 28 `w3p1c` | auto | `eea287fe` |
+| `purvansh01/aya-expanse-8b-safetypulse-lora-alpaca-default` | model | Job 27 adapters, seeds 1 and 2, 31 checkpoints each | auto | `a6fff4b0` |
+| `purvansh01/safetypulse-circuitquant-results` | dataset | the 46 `job25_*`–`job30_*` files of this folder | no | `9a2a6cb0` |
+| `purvansh01/alpaca-curatorkit-rejected` | dataset | Job 3 CuratorKIT rejections (19 rows; text only for the 2 schema rejections) | no | `95998b5f` |
+
+Visibility and heads read with `huggingface_hub` on 2026-11-25. All 62 adapter configs record the base revision
+`5062468bf9bc0c6035fd64e06274333ec127d980`. The private collection "SafetyPulse CircuitQuant"
+(`purvansh01/safetypulse-circuitquant-6b062c90ba6a961706bfc612`) holds all 10; the 8 models and 2 datasets were also
+added to the public model and data collections, where they stay hidden until the repos are public. Random and uniform
+controls (`r*`, `u*`, `w8`, `w4`, `w*r`) and the collapsed variants are not published as models (amendment). Release
+record: `docs/11_WITHHELD_ARTIFACTS.md` (E1–E5 release).

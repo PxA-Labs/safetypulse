@@ -14,7 +14,9 @@ How runs work: [kaggle/README.md](../kaggle/README.md). Notebooks are launched w
 runs them on Kaggle and saves the executed copy, log and key files to `kaggle/executed/<notebook>/` together with a
 `RUN_SUMMARY.md`.
 
-_Last updated: 2026-11-22 (HF Jobs 1–14 checked against `hf jobs inspect`)._
+_Last updated: 2026-11-25 (HF Jobs 25–30 collected into git and reported; the ten E1–E5 repos created **private**, see
+[E1–E5 repos](#e1e5-repos-private-until-the-owner-makes-them-public)). HF Jobs 1–14 were checked against `hf jobs inspect` on
+2026-11-22, Jobs 25–30 on 2026-11-24._
 
 ## Kaggle datasets
 
@@ -148,7 +150,7 @@ the bundle is the existing `safetypulse-probe-bundle`. The training data is kept
 ## Hugging Face Jobs
 
 Runs that do not fit free Kaggle GPUs, or that test the package on the real model. Scripts: `tools/hf_jobs/`;
-summaries: `kaggle/executed/12_hf_jobs/RUN_SUMMARY.md` (jobs 1, 2, 4–14) and `kaggle/executed/13_curatorkit_alpaca/`
+summaries: `kaggle/executed/12_hf_jobs/RUN_SUMMARY.md` (jobs 1, 2, 4–30) and `kaggle/executed/13_curatorkit_alpaca/`
 (job 3). Inputs and raw results: the private dataset repo `purvansh01/safetypulse-jobs` (see below).
 Runtimes are the running time reported by `hf jobs inspect` (checked 2026-11-22; queueing not billed) and costs are
 that time × the flavor's hourly price (A100 $2.50, A10G-large $1.50, L40S $1.80, L4 $0.80). Every job ran in the
@@ -181,6 +183,13 @@ that time × the flavor's hourly price (A100 $2.50, A10G-large $1.50, L40S $1.80
 | 22 · Generation determinism: two greedy passes on the 8 Llama-3.2-3B models whose Job 17 1B flags did not reproduce Job 9/14, torch 2.15.0 / transformers 5.24.0 pinned (exploratory, amendment `2026-11-22-l11-determinism`, commit `a625859`) | L40S 48 GB | ✅ COMPLETED, 509 s (8.5 min), $0.25 (org namespace, `--timeout 50m`, cap $1.50); script `4f6db77`; jobs-repo commit `ded5ec4e`, copied to `files/job22_determinism.jsonl` (flags only). Pass A == pass B on 8/8 models (flags and answers); equal to Job 17 on 8/8, to Job 9/14 on 0/8 (37 of 624 flags differ): repeatable within a job, not across jobs. No H6 label changes; H6 stays refuted (`docs/report/determinism_h6.md`) | https://huggingface.co/jobs/pxaLabs-lexsi/6b0325c8130a00b5aa80a77b |
 | 23 · Aya Expanse 8B recipe transfer (doc 13 §3 item 6): own bundle, Global's frozen thresholds, 1 Alpaca seed (1), checkpoints every 25 steps; 23a bundle + fine-tune, 23b monitoring (exploratory, amendment `2026-11-22-l12-aya-expanse`, commit `e59ca1b`; scripts `09f27da`/`0cc34f0`) | L40S 48 GB | ✅ COMPLETED: 23a `6b0350768d268c0fbd22a37a` 1142 s, 23b `6b03560f130a00b5aa812202` 792 s, plus a failed first 23a attempt `6b0348a6…` 124 s (script path bug); total 2058 s, **$1.03** (org namespace, `--timeout` 72m/72m/75m, cap $4.50). l* 21/32; step-0 `cis_sep` 1.0001, k0 9/78; all 10 fine-tuned checkpoints unsafe (k 48–65/78) and at FAIL (`cis_sep` 0.30–0.39); first alarm = first unsafe = step 25, lead 0 at 25-step spacing (`docs/report/aya_expanse.md`); adapters in private `pxaLabs-lexsi/safetypulse-wf-expanse-lora-alpaca` | https://huggingface.co/jobs/pxaLabs-lexsi/6b03560f130a00b5aa812202 |
 | 24 · Third seed of the lead-time run, Global Alpaca seed 9, checkpoints every 2 steps to 40 then every 5 to 140, training stopped at 140 (exploratory, amendment `2026-11-22-l10-fine-lead-seed9`, commit `eacb3a3`; script `bf36c16`) | L40S 48 GB | ✅ COMPLETED, 3279 s (54.6 min), $1.64 (org namespace, `--timeout 75m`, cap $2.25; waited 34 min for hardware, not in running_secs; amendment `eacb3a3` pushed before creation at 19:48:47 UTC; jobs-repo commit `36c874a`). 41/41 checkpoints. First unsafe step 60; first alarm `cis_sep` WARN 22 (lead +38), ‖ΔW‖ 12 (lead +48), spot-check 60 (lead 0); ‖ΔW‖ fired first, 10 steps before `cis_sep`, as on seeds 7 (8 steps) and 8 (6 steps) (`docs/report/h3_fine_lead_s9.md`). Adapters in private `pxaLabs-lexsi/safetypulse-wf-h3fine-lora-alpaca` (`alpaca-s9/`); files `kaggle/executed/12_hf_jobs/files/job24_*` | https://huggingface.co/jobs/pxaLabs-lexsi/6b03471f8d268c0fbd228a21 |
+| 25 · E1: Tiny Aya Global circuit-guided vs random mixed-precision quantization (uniform 8/4/3 bit; circuit vs random at ~7.2, ~6, ~5, ~3.5, 3 bit and under 1 GB), 4 shards A–D; script `tools/hf_jobs/job25_e1_quant_sweep.py` with helpers `tools/hf_jobs/sp_bench.py` (exploratory, amendment `2026-11-24-e1-e5-lexsi-feedback`, commit `cd72fc6`; script `d92677a`, `sp_bench` and package `106e9ee`) | L40S 48 GB | ✅ COMPLETED (checked 2026-11-24 ~23:00 UTC): A `6b05f178…` 2986 s, B `6b05f1cc…` 3023 s, C `6b05f1f2…` 2458 s, D `6b05f216…` 3012 s, `--timeout 85m` each (cap $2.55 each), $5.74; 5 test jobs COMPLETED, 1850 s, $0.93; nothing skipped or failed. Circuit vs random: prediction not shown at any level (random lower ASR at ~7.1, ~6.1, ~3.5 bit; all p ≥ 0.05). c3/r3/c1g/r1g collapsed (task ≤ 0.02); c1g/r1g are 1.93 GB on disk, so the under-1 GB target was not achieved. Chat-template GPTQ calibration (plain wikitext collapsed 4/3 bit in the tests). Files `kaggle/executed/12_hf_jobs/files/job25_*`; report `docs/report/circuitquant.md` | https://huggingface.co/jobs/pxaLabs-lexsi/6b05f178d0582cfbbefcf9c8 |
+| 26 · E2: IFEval (541) and XQuAD en/hi/es (500 ids each) via lm-eval 0.4.13 on base, Alpaca `alpaca-s1/checkpoint-125` merged, repaired; script `tools/hf_jobs/job26_e2_benchmarks.py`, reusable on other checkpoints (exploratory, amendment `2026-11-24-e1-e5-lexsi-feedback`, commit `cd72fc6`; code `5a45d23`) | L40S 48 GB | ✅ COMPLETED: base `6b05db41…` 1220 s, alpaca_s1_125 `6b05db78…` 980 s, repaired `6b05dbae…` 1205 s, plus smokes 108 s (ERROR, fixed in `5a45d23`) and 213 s; total $1.86 (`--timeout 60m` each, cap $6.90). IFEval prompt strict base 0.771, alpaca 0.682, repaired 0.763. Files `files/job26_*`; report `docs/report/benchmarks.md` | https://huggingface.co/jobs/pxaLabs-lexsi/6b05db41d0582cfbbefccfe6 |
+| 27 · E4: Aya Expanse 8B on the AlignTune default recipe (lr 2e-4, LoRA r 16, alpha 32), seeds 1 and 2, checkpoints every 2 steps to 60, scored in-job; script `tools/hf_jobs/job27_e4_expanse_default.py` (exploratory, amendment `2026-11-24-e1-e5-lexsi-feedback`, commit `cd72fc6`; script `706189d`) | L40S 48 GB | ✅ COMPLETED: s1 `6b05d574…` 2029 s, s2 `6b05d599…` 2095 s, smoke `6b05d32e…` 181 s; $2.15 (`--timeout 60m` per seed, cap $4.35 with the test). Lead 2 steps on both seeds (first WARN 44/46, first unsafe 46/48, FAIL 52/52), all inside warm-up. Files `files/job27_*`; report `docs/report/expanse_default.md`; adapters in private `purvansh01/aya-expanse-8b-safetypulse-lora-alpaca-default` | https://huggingface.co/jobs/pxaLabs-lexsi/6b05d5741460ffe1d5e8cecb |
+| 28 · E5: Aya Expanse 8B quantization tiers (fp16, w8, w4; ~11 bit, ~3.9 bit, ~3.5 bit circuit vs random); script `tools/hf_jobs/job28_e5_expanse_quant.py` (exploratory, amendment `2026-11-24-e1-e5-lexsi-feedback`, commit `cd72fc6`; launch test `706189d`, full parts `a8f7806`) | L40S 48 GB | ✅ COMPLETED after relaunch: smoke `6b05d381…` COMPLETED 454 s (also wrote `results/job28/circuit.json`); 28a `6b05d87a…` COMPLETED 1597 s; **28b `6b05d8a6…` and 28c `6b05d8cb…` ERROR** after 175/176 s (launch-command quoting put the later `-e` flags into `SP_CIRCUIT_REV`); relaunched as **28b2 `6b060042…` COMPLETED 1582 s** and **28c2 `6b060067…` COMPLETED 2822 s** (env keys checked separate). $3.41 in all (cap $9.60 + $5.85 for the relaunch). Circuit vs random not shown at any level; w8 9.19 GB < 10 GB, w4p19 11.85 GB < 12 GB. Files `files/job28*`; report `docs/report/circuitquant.md` | https://huggingface.co/jobs/pxaLabs-lexsi/6b05d87ad0582cfbbefccad0 |
+| 29 · E3: Hindi/Spanish/French ASR (in-job NLLB re-translation, Job 20 code path, sha256-checked against Job 20) on base, Alpaca `alpaca-s1/checkpoint-125`, repaired and the E1 frontier variants u4, r5, r6, r72, u8; Llama Guard 3 1B; script `tools/hf_jobs/job29_e3_multilingual.py` (exploratory, amendment `2026-11-24-e1-e5-lexsi-feedback`, commit `cd72fc6`; code `91b7ced`, package `106e9ee`) | L40S 48 GB | ✅ COMPLETED: smoke `6b06028e…` 258 s, core `6b06075f…` 945 s, frontier `6b060793…` 2130 s; $1.67 (`--timeout` 30/40/70 min, cap $4.20). Translations match Job 20 (rate 1.0 per language); English flags match Job 25. 4 of 24 language-vs-English tests survive Holm (r5 fr, r6 fr, r72 es, r72 fr). Files `files/job29_*`; report `docs/report/multilingual_e3.md` | https://huggingface.co/jobs/pxaLabs-lexsi/6b06075f1460ffe1d5e92b8c |
+| 30 · E1 frontier benchmarks: IFEval and XQuAD en/hi/es on the Job 25 frontier variants (u4, u8, r72 in A; r5, r6 in B) with the Job 26 harness; anchor Job 26 base (exploratory, amendment `2026-11-24-e1-e5-lexsi-feedback`, commit `cd72fc6`; code `ba121a7`) | L40S 48 GB | ✅ COMPLETED: smoke `6b06038d…` 94 s, A `6b0604c8…` 5111 s (u4, u8, r72; `--timeout 90m`), B `6b0604fc…` 3414 s (r5, r6; `--timeout 60m`); $4.31 (cap $4.95); nothing skipped by the time guard. IFEval prompt-strict u4 0.715, u8 0.758, r5 0.726, r6 0.726, r72 0.738 vs base 0.771 (Job 26); after Holm only u4's drop survives among these. Files `files/job30_*`; report `docs/report/benchmarks.md` | https://huggingface.co/jobs/pxaLabs-lexsi/6b0604c8d0582cfbbefd17fa |
+| – · E1–E5 publication (not an experiment): copy the 8 model folders from the private jobs repo into the new private repos, then a CPU load check of the 4 Tiny Aya repos | CPU (cpu-upgrade) | ✅ COMPLETED 2026-11-25: copy smoke `6b062b63…` 23 s, copy `6b062bf6…` 184 s, load check `6b063a30…` 331 s (`running_secs`); together 538 s, about $0.0045 (running time × $0.0005/min, an estimate). Byte totals asserted equal to the plan; exactly the protected layers hold 16-bit weights after load | https://huggingface.co/jobs/pxaLabs-lexsi/6b062bf61460ffe1d5e9649d |
 
 ## Hugging Face artifacts
 
@@ -247,6 +256,34 @@ stay private.
 
 Still private: `safetypulse-earth-probe-bundle` (H1, tag `h1-v1`: Earth's calibrated bundle, directions, token sets;
 its 50 probe pairs are the same as in the public `safetypulse-probe-bundle`).
+
+### E1–E5 repos (PRIVATE until the owner makes them public)
+
+Created 2026-11-25 for the Lexsi-call follow-ups (amendment `docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md`,
+exploratory). **All ten are private**; links open only for the owner until they are made public. Cards and the release
+plan: `docs/hub_cards/stage2/` (`circuitquant_repos.json`, generator
+`tools/hub_cards_circuitquant.py`). Licence CC BY-NC 4.0 throughout, as both base models. How they were filled:
+`kaggle/executed/12_hf_jobs/RUN_SUMMARY.md`, "Publication of the E1–E5 outputs".
+
+| Repo | Type | Gated | Contents |
+|---|---|---|---|
+| [`tiny-aya-global-CircuitQuant-W4A16-P9`](https://huggingface.co/purvansh01/tiny-aya-global-CircuitQuant-W4A16-P9) | model | no | Job 25 `c72`: 4-bit GPTQ, 9 circuit layers kept 16-bit (7.09 average bits, 3.57 GB) |
+| [`tiny-aya-global-CircuitQuant-W4A16-P6`](https://huggingface.co/purvansh01/tiny-aya-global-CircuitQuant-W4A16-P6) | model | no | Job 25 `c6`: 6 circuit layers kept 16-bit (6.10 bits, 3.22 GB) |
+| [`tiny-aya-global-CircuitQuant-W4A16-P3`](https://huggingface.co/purvansh01/tiny-aya-global-CircuitQuant-W4A16-P3) | model | no | Job 25 `c5`: 3 circuit layers kept 16-bit (5.11 bits, 2.87 GB) |
+| [`tiny-aya-global-CircuitQuant-W3A16-P1`](https://huggingface.co/purvansh01/tiny-aya-global-CircuitQuant-W3A16-P1) | model | no | Job 25 `c35`: 3-bit GPTQ, 1 circuit layer kept 16-bit (3.48 bits, 2.30 GB; `cis_sep` WARN, ASR 29/119) |
+| [`aya-expanse-8b-CircuitQuant-W4A16-P19`](https://huggingface.co/purvansh01/aya-expanse-8b-CircuitQuant-W4A16-P19) | model | auto | Job 28 `w4p19c`: 19 circuit layers kept 16-bit (11.18 bits, 11.85 GB, under 12 GB) |
+| [`aya-expanse-8b-CircuitQuant-W3A16-P2`](https://huggingface.co/purvansh01/aya-expanse-8b-CircuitQuant-W3A16-P2) | model | auto | Job 28 `w3p2c` (3.93 bits, 5.53 GB) |
+| [`aya-expanse-8b-CircuitQuant-W3A16-P1`](https://huggingface.co/purvansh01/aya-expanse-8b-CircuitQuant-W3A16-P1) | model | auto | Job 28 `w3p1c` (3.53 bits, 5.17 GB) |
+| [`aya-expanse-8b-safetypulse-lora-alpaca-default`](https://huggingface.co/purvansh01/aya-expanse-8b-safetypulse-lora-alpaca-default) | model | auto | Job 27 (E4) LoRA adapters, seeds 1 and 2, checkpoints 0–60 every 2 steps (62 adapters; base revision `5062468b` in every config) |
+| [`safetypulse-circuitquant-results`](https://huggingface.co/datasets/purvansh01/safetypulse-circuitquant-results) | dataset | no | The 46 `job25_*`–`job30_*` result files (flags, scores, hashes, lengths; no prompt, answer or translation text) |
+| [`alpaca-curatorkit-rejected`](https://huggingface.co/datasets/purvansh01/alpaca-curatorkit-rejected) | dataset | no | The 19 CuratorKIT rejections of HF Job 3: id, stage, reason, score, sha256; text only for the 2 schema rejections |
+
+Collection: private "SafetyPulse CircuitQuant" (`purvansh01/safetypulse-circuitquant-6b062c90ba6a961706bfc612`, all 10).
+The 8 models and 2 datasets are also listed in the public model and data collections, where they stay hidden until
+they are public. Tokens/s and VRAM in the cards are dense-path numbers (16-bit compute, no quantized kernels); only the
+disk size is a measured saving. Not published as models: the random and uniform controls and the collapsed 2-bit
+variants. Open owner decisions: making the repos and the collection public, gating of the Tiny Aya repos (upstream
+Tiny Aya Global is gated `auto`), and the existing public `safetypulse-expanse-lora-alpaca`, which is ungated.
 
 ## Teammate account
 

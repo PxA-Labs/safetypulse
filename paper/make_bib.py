@@ -23,10 +23,54 @@ ARXIV = {   # key: arXiv id   (venue notes per docs/12_RELATED_WORK.md)
     "zou2023repe": "2310.01405", "peng2024landscape": "2405.17374",
     # added for the 2026-11-22 follow-ups and the GSM8K citation (abstract pages verified 2026-11-23)
     "cobbe2021gsm8k": "2110.14168", "zeng2024shieldgemma": "2407.21772", "nllbteam2022nllb": "2207.04672",
+    # Lexsi call 2026-11-24: cite every toolkit and model used (abstract pages verified 2026-11-24)
+    "bhattacharjee2026curatorkit": "2606.21631", "dang2024ayaexpanse": "2412.04261",
+    # 2026-11-24 experiments E1-E5: benchmarks and quantization (arXiv API titles/authors checked 2026-11-25)
+    "zhou2023ifeval": "2311.07911", "artetxe2019xquad": "1910.11856", "frantar2022gptq": "2210.17323",
+    "biderman2024lessons": "2405.14782", "hendrycks2020mmlu": "2009.03300",
 }
 # names the arXiv API gets wrong (abstract page of 2606.07631: "Hal Daumé III"; ACL Anthology form)
 NAME_FIX = {"Hal Daum{\\'e}": "Daum{\\'e} III, Hal"}
 MANUAL = r"""
+@software{lexsi2026auditkit,
+  title = {{AuditKIT}},
+  author = {{Lexsi Labs}},
+  year = {2026},
+  version = {1.0.0},
+  howpublished = {GitHub repository},
+  url = {https://github.com/Lexsi-Labs/AuditKIT}
+}
+@software{lexsi2026aligntune,
+  title = {{AlignTune}: A Modular Toolkit for Post Training Alignment of {LLMs}},
+  author = {{Lexsi Labs}},
+  year = {2026},
+  howpublished = {GitHub repository},
+  url = {https://github.com/Lexsi-Labs/aligntune}
+}
+@software{lmeval2026software,
+  title = {{lm-evaluation-harness}},
+  author = {{EleutherAI}},
+  year = {2026},
+  version = {0.4.13},
+  howpublished = {GitHub repository},
+  url = {https://github.com/EleutherAI/lm-evaluation-harness}
+}
+@software{vllm2026llmcompressor,
+  title = {{LLM Compressor}},
+  author = {{The vLLM Project}},
+  year = {2026},
+  version = {0.15.0},
+  howpublished = {GitHub repository},
+  url = {https://github.com/vllm-project/llm-compressor}
+}
+@software{vllm2026compressedtensors,
+  title = {compressed-tensors},
+  author = {{The vLLM Project}},
+  year = {2026},
+  version = {0.20.1},
+  howpublished = {GitHub repository},
+  url = {https://github.com/vllm-project/compressed-tensors}
+}
 @misc{taori2023alpaca,
   title = {Stanford {Alpaca}: An Instruction-following {LLaMA} model},
   author = {Taori, Rohan and Gulrajani, Ishaan and Zhang, Tianyi and Dubois, Yann and Li, Xuechen and Guestrin, Carlos and Liang, Percy and Hashimoto, Tatsunori B.},

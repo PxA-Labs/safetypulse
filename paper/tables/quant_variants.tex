@@ -1,0 +1,40 @@
+\begin{table*}[t]
+\centering\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}l l r r l l r r r r r r@{}}
+\toprule
+Variant & Kind & $k$ & Bits & Disk GB & \cissep{} & ASR/119 & Over-ref. & Task & General & tok/s & VRAM GiB \\
+\midrule
+\multicolumn{12}{@{}l}{\emph{Tiny Aya Global (E1)}} \\
+fp16 & fp16 & 0 & 16.00 & 6.70 & 1.000 PASS & 16 & 0.073 & 0.717 & 0.576 & 224.8 & 6.79 \\
+u8 & uniform & 0 & 8.12 & 3.93 & 0.995 PASS & 15 & 0.067 & 0.700 & 0.570 & 155.2 & 6.84 \\
+c72 & circuit & 9 & 7.09 & 3.57 & 0.984 PASS & 13 & 0.080 & 0.663 & 0.534 & 160.4 & 6.82 \\
+r72 & random & 9 & 7.09 & 3.57 & 0.973 PASS & 9 & 0.087 & 0.670 & 0.564 & 160.5 & 6.83 \\
+c6 & circuit & 6 & 6.10 & 3.22 & 0.986 PASS & 15 & 0.073 & 0.667 & 0.538 & 155.8 & 6.87 \\
+r6 & random & 6 & 6.10 & 3.22 & 0.978 PASS & 11 & 0.080 & 0.663 & 0.552 & 155.8 & 6.83 \\
+c5 & circuit & 3 & 5.11 & 2.87 & 0.990 PASS & 16 & 0.073 & 0.627 & 0.530 & 150.7 & 6.83 \\
+r5 & random & 3 & 5.11 & 2.87 & 0.954 PASS & 16 & 0.060 & 0.620 & 0.548 & 151.6 & 6.83 \\
+u4 & uniform & 0 & 4.12 & 2.52 & 0.982 PASS & 18 & 0.080 & 0.643 & 0.526 & 157.4 & 6.86 \\
+r35 & random & 1 & 3.48 & 2.30 & 0.815 PASS & 18 & 0.113 & 0.283 & 0.470 & 152.5 & 6.85 \\
+c35 & circuit & 1 & 3.48 & 2.30 & 0.795 WARN & 29 & 0.047 & 0.333 & 0.422 & 152.8 & 6.85 \\
+u3 & uniform & 0 & 3.12 & 2.17 & 0.768 WARN & 18 & 0.067 & 0.283 & 0.422 & 153.0 & 6.85 \\
+c3$^*$ & circuit & 2 & 2.90 & 2.09 & 0.024 FAIL & 119 & 0.000 & 0.020 & 0.256 & 160.5 & 6.83 \\
+r3$^*$ & random & 2 & 2.90 & 2.09 & 0.040 FAIL & 119 & 0.007 & 0.007 & 0.266 & 159.6 & 6.83 \\
+r1g$^*$ & random & 11 & 2.43 & 1.93 (1.00) & 0.032 FAIL & 119 & 0.000 & 0.013 & 0.262 & 157.0 & 6.84 \\
+c1g$^*$ & circuit & 11 & 2.43 & 1.93 (1.00) & 0.013 FAIL & 119 & 0.000 & 0.003 & 0.220 & 159.7 & 6.84 \\
+\midrule
+\multicolumn{12}{@{}l}{\emph{Aya Expanse 8B (E5)}} \\
+fp16 & fp16 & 0 & 16.00 & 16.06 & 1.000 PASS & 19 & 0.027 & 0.770 & 0.626 & 241.8 & 15.25 \\
+w4p19r & random & 19 & 11.18 & 11.85 & 0.963 PASS & 19 & 0.020 & 0.777 & 0.628 & 179.9 & 15.27 \\
+w4p19c & circuit & 19 & 11.18 & 11.85 & 0.978 PASS & 18 & 0.013 & 0.770 & 0.634 & 179.7 & 15.27 \\
+w8 & uniform & 0 & 8.12 & 9.19 & 1.001 PASS & 17 & 0.033 & 0.773 & 0.618 & 170.7 & 15.34 \\
+w4 & uniform & 0 & 4.12 & 5.70 & 0.945 PASS & 19 & 0.020 & 0.727 & 0.618 & 169.6 & 15.34 \\
+w3p2r & random & 2 & 3.93 & 5.53 & 0.727 WARN & 32 & 0.000 & 0.500 & 0.544 & 179.8 & 15.33 \\
+w3p2c & circuit & 2 & 3.93 & 5.53 & 0.778 WARN & 31 & 0.033 & 0.457 & 0.538 & 181.7 & 15.33 \\
+w3p1r & random & 1 & 3.53 & 5.17 & 0.784 WARN & 37 & 0.007 & 0.527 & 0.548 & 178.3 & 15.33 \\
+w3p1c & circuit & 1 & 3.53 & 5.17 & 0.728 WARN & 31 & 0.000 & 0.443 & 0.548 & 178.8 & 15.33 \\
+\bottomrule
+\end{tabular}
+\caption{Every quantized variant (HF Jobs 25 and 28; one run each, greedy). u/w: uniform; c: circuit-guided; r: random-plan control; the number is the approximate average bits. $k$ layers stay at 16 bit on a 4- or 3-bit base (on a 2-bit base for c3/r3; c1g/r1g: 2-bit base with 11 layers at 3 bit). Bits: average over quantized blocks. \cissep{} level from the frozen thresholds. ASR on 119 held-out prompts; over-refusal on 150 XSTest prompts \citep{rottger2024xstest}; task: GSM8K (300); general: MMLU \citep{hendrycks2020mmlu} (500). tok/s and VRAM: batch 8, one L40S, dense path (the weights are decompressed on load), so they show no quantization speed-up or memory saving. $^*$Collapsed (task $<$0.10); c1g/r1g in brackets: computed size, not achieved on disk. Source: \texttt{docs/report/circuitquant.md}.}
+\label{tab:quantall}
+\end{table*}

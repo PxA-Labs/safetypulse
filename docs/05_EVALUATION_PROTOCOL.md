@@ -10,6 +10,7 @@ Status: Draft v0.1. Frozen (v1.0) before test runs begin — target Day 9.
 > [report/h6_safetune.md](report/h6_safetune.md)).
 > The thresholds actually frozen (Global's dev runs, never re-tuned) are in doc 13 §1: `cis_sep` WARN < 0.8098,
 > FAIL < 0.6196.
+> The exploratory follow-ups after the Lexsi call (E1–E5, 2026-11-24) are summarised in §7; they change no verdict.
 
 ---
 
@@ -99,3 +100,35 @@ Status: Draft v0.1. Frozen (v1.0) before test runs begin — target Day 9.
 - Failure analysis section: categories where repair did not work, example (redacted) transcripts,
   hypotheses for why.
 - Negative results reported, not dropped.
+
+## 7. Exploratory follow-ups after the Lexsi call (E1–E5, 2026-11-24)
+
+Added 2026-11-25. Protocol fixed in advance in
+[prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md](prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md)
+(commit `cd72fc6`, pushed before every job), run as HF Jobs 25–30. **Exploratory:** no pre-registered verdict changes
+(H1, H2 confirmed; H3, H6 refuted) and no frozen threshold changes (`cis_sep` WARN < 0.8098, FAIL < 0.6196).
+
+Measures added to §1–§4 for these runs only:
+
+- **Benchmarks:** IFEval (541 prompts, prompt-level strict and loose) and XQuAD en / hi / es (500 fixed question ids,
+  exact match and F1) through lm-evaluation-harness 0.4.13, greedy, chat template, no system instruction.
+- **Multilingual ASR:** the 119 test prompts in Hindi, Spanish and French (NLLB-200 600M, re-made in the job and
+  checked by sha256 against Job 20), judged by Llama Guard 3 1B with prompt and answer in the target language.
+- **Quantization:** ASR, over-refusal, task, general, `cis_sep`, on-disk bytes, tokens/s and peak VRAM per variant.
+  Tokens/s and VRAM are measured on the HF-transformers path, which computes in 16 bit (no quantized kernels), so they
+  are not speed or memory claims.
+- **Statistics:** Wilson 95% intervals; exact McNemar on paired per-prompt flags. Circuit vs random "holds" only where
+  the difference favours circuit-guided and p < 0.05, otherwise "not shown", with no correction across levels
+  (amendment). The reports add Holm corrections where several tests are read together; these were not pre-specified.
+
+| Experiment | Report | Result |
+|---|---|---|
+| E1 circuit-guided vs random quantization, Tiny Aya Global (Job 25) | [report/circuitquant.md](report/circuitquant.md) | Not shown at any level (ASR circuit vs random of 119: 13 vs 9, p 0.289; 15 vs 11, p 0.219; 16 vs 16, p 1.0; 29 vs 18, p 0.052). The 2-bit and "under 1 GB" variants collapsed (task ≤ 0.02); c1g/r1g are 1.93 GB on disk, so under 1 GB was not achieved. |
+| E5 the same for Aya Expanse 8B (Job 28) | [report/circuitquant.md](report/circuitquant.md) | Not shown at any level (p 1.0, 1.0, 0.327). w8 9.19 GB (< 10 GB), w4p19 11.85 GB (< 12 GB). |
+| E2 IFEval and XQuAD (Jobs 26, 30) | [report/benchmarks.md](report/benchmarks.md) | IFEval prompt strict base 0.771, Alpaca fine-tune 0.682, repaired 0.763; frontier u4 0.715, u8 0.758, r5 0.726, r6 0.726, r72 0.738; after Holm only u4's strict drop survives among the frontier variants. XQuAD exact match is near 0; F1 is reported with an answer-length caveat. |
+| E3 Hindi, Spanish, French ASR (Job 29) | [report/multilingual_e3.md](report/multilingual_e3.md) | 4 of 24 language-vs-English tests survive Holm (r5 fr, r6 fr, r72 es, r72 fr); judge not validated in these languages. |
+| E4 Aya Expanse 8B on the AlignTune default recipe (Job 27) | [report/expanse_default.md](report/expanse_default.md) | `cis_sep` WARN leads the first unsafe checkpoint by 2 steps on both seeds; every checkpoint is inside the learning-rate warm-up. |
+
+Departures from the amendment (E1 chat-template calibration, the collapsed points, dense-path speed and memory, the
+E4 warm-up, XQuAD exact match and answer length) are listed in
+[report/workflow/2026-11-24-run-log.md](report/workflow/2026-11-24-run-log.md), "Departures and facts to state".

@@ -1,0 +1,23 @@
+\begin{table*}[t]
+\centering\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}l c r r r r r r r r c r@{}}
+\toprule
+& & \multicolumn{5}{c}{IFEval (541 prompts)} & \multicolumn{5}{c}{XQuAD (500 questions per language)} \\
+\cmidrule(lr){3-7}\cmidrule(l){8-12}
+Model & Job & Strict & Loose & Base/model only & $p$ & $p_{\text{Holm}}$ & F1 en & F1 hi & F1 es & EM/500 & Empty hi \\
+\midrule
+Base & 26 & 0.771 & 0.797 & -- & -- & -- & 0.201 & 0.112 & 0.119 & 1--3 & 41 \\
+Alpaca FT & 26 & 0.682 & 0.702 & 98/50 & $<$.001 & .001 & 0.322 & 0.261 & 0.304 & 3--16 & 0 \\
+Repaired & 26 & 0.763 & 0.789 & 23/19 & .644 & 1.0 & 0.230 & 0.118 & 0.128 & 1--6 & 30 \\
+\midrule
+u4 & 30 & 0.715 & 0.743 & 67/37 & .004 & .046 & 0.218 & 0.117 & 0.121 & 1--9 & 98 \\
+r5 & 30 & 0.726 & 0.756 & 55/31 & .013 & .101 & 0.190 & 0.126 & 0.116 & 1--3 & 62 \\
+r6 & 30 & 0.726 & 0.741 & 55/31 & .013 & .101 & 0.199 & 0.113 & 0.124 & 1--6 & 42 \\
+r72 & 30 & 0.738 & 0.752 & 44/26 & .041 & .207 & 0.208 & 0.115 & 0.116 & 1--5 & 18 \\
+u8 & 30 & 0.758 & 0.776 & 20/13 & .296 & .889 & 0.198 & 0.111 & 0.118 & 1--3 & 46 \\
+\bottomrule
+\end{tabular}
+\caption{Exploratory E2 benchmarks with lm-evaluation-harness 0.4.13 \citep{biderman2024lessons,lmeval2026software} (greedy, chat template, bf16). IFEval \citep{zhou2023ifeval}: prompt-level accuracy; Base/model only: prompts correct (strict) only for base / only for the model; $p$: exact McNemar against base, cross-job; $p_{\text{Holm}}$: Holm over the 14 strict and loose tests. XQuAD \citep{artetxe2019xquad}: F1 and exact match (EM, range over the three languages); chat answers are far longer than the gold span, so EM is near zero and F1 depends on answer length (the Alpaca model answers 2--3 times shorter). Empty hi: empty Hindi answers. Below the line: E1 variants on the size--score frontier (Job 30). Source: \texttt{docs/report/benchmarks.md}.}
+\label{tab:bench}
+\end{table*}

@@ -69,3 +69,10 @@ extend-exclude = ["kaggle", "tools", "graphify-out"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
 ignore = ["E741", "B023"]
+
+[tool.ruff.lint.per-file-ignores]
+# Report and Hub-card generators: long Markdown/table text templates.
+"tools/hub_cards_circuitquant.py" = ["E501"]
+"tools/report_benchmarks.py" = ["E501"]
+"tools/report_expanse_default.py" = ["E501"]
+"tools/report_multilingual_e3.py" = ["E501"]
