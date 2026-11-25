@@ -134,6 +134,13 @@ intervals, judge model + version, dataset hashes, and provenance block.
 Adapters live in `safetypulse/adapters/` and expose only the methods listed in the table, so the
 core never imports a toolkit directly.
 
+> **Note (2026-11-25, exploratory E1–E5 work):** the circuit-guided quantization runs after the Lexsi call (HF Jobs 25
+> and 28, amendment `docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md`) use CircuitKIT 0.2.4's
+> `llmcompressor_circuit_quantize` (llm-compressor GPTQ, compressed-tensors format) from the job scripts
+> (`tools/hf_jobs/sp_bench.py`, `tools/hf_jobs/job28_e5_expanse_quant.py`), with circuit scores from the existing
+> `safetypulse.adapters.circuitkit` discovery path. The package itself has no quantization component and its API is
+> unchanged. Results: [report/circuitquant.md](report/circuitquant.md); the pre-registered verdicts are unchanged.
+
 **Fallbacks** if a toolkit cannot do what is needed in time:
 
 - CircuitKIT discovery fails on our model → use refusal direction + attribution patching

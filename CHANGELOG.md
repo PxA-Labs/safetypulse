@@ -5,6 +5,29 @@ All notable changes to this project are recorded here. The format follows
 
 ## [Unreleased]
 
+Research code and records only; the `safetypulse` package is unchanged. Everything below is exploratory under the
+amendment `docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md` (`cd72fc6`); no pre-registered verdict (H1, H2
+confirmed; H3, H6 refuted) and no frozen threshold changes.
+
+### Added
+- HF Job scripts for the Lexsi-call follow-ups: `tools/hf_jobs/sp_bench.py`, `job25_e1_quant_sweep.py` (E1),
+  `job26_e2_benchmarks.py` (E2; also used for Job 30), `job27_e4_expanse_default.py` (E4), `job28_e5_expanse_quant.py`
+  (E5), `job29_e3_multilingual.py` (E3). Records: `kaggle/executed/12_hf_jobs/RUN_SUMMARY.md` (Jobs 25–30).
+- Result files of Jobs 25–30 (flags, scores, hashes and lengths only) in `kaggle/executed/12_hf_jobs/files/`.
+- Reports and their generators, with tests that pin the headline numbers: `docs/report/circuitquant.md`
+  (`tools/report_circuitquant.py`, E1 and E5), `benchmarks.md` (`tools/report_benchmarks.py`, E2 and Job 30),
+  `multilingual_e3.md` (`tools/report_multilingual_e3.py`, E3), `expanse_default.md`
+  (`tools/report_expanse_default.py`, E4), and the paper figures `paper/figures/fig_quant_{asr,size,speed}.pdf`,
+  `expanse_default.pdf`.
+- Workflow records: `docs/report/workflow/2026-11-24-run-log.md` (budget ledger, departures) and
+  `docs/report/workflow/2026-11-24-workflow-record.md`.
+
+### Changed
+- `tools/check_release_policy.py` allowlists 14 reviewed Jobs 25–30 result files whose only long strings are fixed
+  method notes.
+- Docs: README, `docs/03`, `docs/05`, `docs/10`, `docs/11` and the report index describe the E1–E5 results and the
+  private-first release (ten `purvansh01` repos, all private until the owner makes them public).
+
 ## [0.1.2] - 2026-11-24
 
 None of these fixes changes a published result: the frozen runs used left-padded tokenizers, fp32 bundles and the
