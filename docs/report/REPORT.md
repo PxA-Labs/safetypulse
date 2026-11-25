@@ -51,6 +51,20 @@ report itself. Reports not yet on this branch say "pending merge of" their branc
 | [label_noise.md](label_noise.md) | How stable are the verdicts under prompt resampling of the unsafe labels? | `tools/label_noise.py` | [l14-label-noise](../prereg_amendments/2026-11-22-l14-label-noise.md) | Verdicts over 2000 resamples (1B): H1 confirmed 1999/2000, H2 confirmed 2000/2000, H3 refuted 1911/2000 (untested 89), H6 refuted 2000/2000. |
 | [two_stage_alarm.md](two_stage_alarm.md) | Does a `cis_sep` screen confirmed by the spot-check keep both advantages? | `tools/two_stage_alarm.py` | [l17-two-stage](../prereg_amendments/2026-11-22-l17-two-stage.md) | "A two-stage alarm therefore trades the early warning that is `cis_sep`'s advantage for the spot-check's specificity; it does not keep both." |
 
+**Lexsi-call follow-ups E1–E5 (exploratory; added 2026-11-25)**
+
+Amendment [2026-11-24-e1-e5-lexsi-feedback](../prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md) (`cd72fc6`), HF
+Jobs 25–30. Result files: `kaggle/executed/12_hf_jobs/files/job25_*`–`job30_*`. Budget, departures and job states:
+[workflow/2026-11-24-run-log.md](workflow/2026-11-24-run-log.md); how the work was organised:
+[workflow/2026-11-24-workflow-record.md](workflow/2026-11-24-workflow-record.md).
+
+| Report | Question | Tool | Amendment | Result (copied from the report) |
+|---|---|---|---|---|
+| [circuitquant.md](circuitquant.md) | E1 / E5: at equal average bits, does circuit-guided mixed-precision quantization give lower ASR than a random plan? (Tiny Aya Global, Job 25; Aya Expanse 8B, Job 28) | `tools/report_circuitquant.py` | E1, E5 | "The prediction is **not shown at any level** in either family (holds at any E1 level: False; any E5 level: False)." |
+| [benchmarks.md](benchmarks.md) | E2: IFEval and XQuAD en/hi/es on base, Alpaca fine-tune, repaired (Job 26) and the E1 frontier variants (Job 30) | `tools/report_benchmarks.py` | E2, E1 frontier | "So an IFEval prompt-strict drop vs base survives correction only for u4 (and the Alpaca fine-tune); r5, r6 and r72 strict are nominal only (uncorrected p < 0.05), not significant after Holm." |
+| [multilingual_e3.md](multilingual_e3.md) | E3: ASR in Hindi, Spanish and French vs English (Job 29) | `tools/report_multilingual_e3.py` | E3 | "only 4 of 24 language-vs-English tests survive Holm (r5 fr, r6 fr, r72 es, r72 fr), and judge validity in hi/es/fr is untested." |
+| [expanse_default.md](expanse_default.md) | E4: Aya Expanse 8B on the AlignTune default recipe, 2 seeds, 2-step checkpoints (Job 27) | `tools/report_expanse_default.py` | E4 | "Lead (first unsafe − first WARN) is 2 steps on seed 1 and 2 on seed 2, one checkpoint at 2-step spacing." (all checkpoints inside the learning-rate warm-up) |
+
 **Reports on branches not yet merged here** (checked 2026-11-23 against `origin/stage2/wf-integration` at `9d99ae4`)
 
 | Report | Question | Tool | Amendment | Result |
@@ -60,6 +74,9 @@ report itself. Reports not yet on this branch say "pending merge of" their branc
 | `determinism_h6.md` | Generation determinism of the H6 answers (HF Job 22) | `tools/determinism_h6.py` | [l11-determinism](../prereg_amendments/2026-11-22-l11-determinism.md) | pending merge of `wf/r3-lane11` |
 | `h3_fine_lead_s9.md` | Lead time at fine spacing, third seed (seed 9, HF Job 24) | not yet pushed | `2026-11-22-l10-fine-lead-seed9.md` (on that branch) | pending merge of `wf/r3-lane10` |
 | `aya_expanse.md` | Aya Expanse (HF Job 23) | not yet pushed | not yet pushed | pending merge of `wf/r3-lane12` |
+
+_Note 2026-11-25: the five reports in this table are now present in `docs/report/`; the rows above were not
+rewritten._
 
 The seed-8 replication of the 2-step lead-time run (HF Job 21, amendment
 [l10-fine-lead-seed8](../prereg_amendments/2026-11-22-l10-fine-lead-seed8.md)) has no report yet.

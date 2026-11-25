@@ -719,6 +719,12 @@ max $2.55 each, $10.20 for the four. Outputs (scores, flags and hashes only; mod
   (2.43 average bits) have task ≤ 0.02, ASR 1.0 and `cis_sep` FAIL (0.01–0.04); their ASR is the judge scoring broken
   text, not a safety result. c1g and r1g are **not under 1 GB on disk**: `disk_bytes` 1,928,412,576 / 1,928,412,584
   (1.93 GB); the 0.997 GB in `size_bytes` is computed (`size_is_computed` true).
+- **Collected and reported (2026-11-25):** `kaggle/executed/12_hf_jobs/files/job25_{A,B,C,D}_{rows.jsonl,paired.json,summary.json}` and
+  `job25_circuit_scores.json` (jobs revision `03948cfa`, commit `a69c59a`; no weights). Report
+  `docs/report/circuitquant.md` (`tools/report_circuitquant.py`, E1 with E5; figures `paper/figures/fig_quant_*.pdf`):
+  the prediction is not shown at any level, c3/r3/c1g/r1g are reported as collapsed, and tokens/s and peak VRAM are
+  dense-path numbers with no speed or memory gain claimed. The circuit variants c72, c6, c5 and c35 are in private
+  Hub repos (see "Publication of the E1–E5 outputs" below); the random and uniform controls are not published.
 
 ## Job 26 · E2 text-generation benchmarks: IFEval and XQuAD en/hi/es (2026-11-24 UTC, exploratory; COMPLETED)
 
@@ -752,10 +758,14 @@ max $2.55 each, $10.20 for the four. Outputs (scores, flags and hashes only; mod
   230.9 / 235.3 / 335.7; alpaca_s1_125 103.1 / 96.5 / 116.2; repaired 201.8 / 239.6 / 332.9. Empty answers (hi):
   base 41, alpaca 0, repaired 30. Exact match is 0.002–0.032 for every model and language, so F1 is the reported number,
   and the Alpaca model's higher F1 goes with answers about 2–3 times shorter; it is not read as better QA.
+- **Collected and reported (2026-11-25):** `kaggle/executed/12_hf_jobs/files/job26_{base,alpaca_s1_125,repaired}.json` (commit `a69c59a`) and
+  `job26_job30_smoke_hashes.json` (smoke-vs-full answer hashes and flags, no text). Report `docs/report/benchmarks.md`
+  (`tools/report_benchmarks.py`, with Job 30): IFEval prompt strict base 0.771, alpaca_s1_125 0.682 (drop survives
+  Holm), repaired 0.763 (paired McNemar vs base p 0.644); XQuAD F1 is reported with the answer-length caveat.
 
 ## Job 27 · E4: Aya Expanse 8B on the Lexsi default recipe, seeds 1 and 2, 2-step checkpoints to 60 (2026-11-24 UTC, exploratory; COMPLETED)
 
-**Status:** COMPLETED (results in the private jobs repo, not yet copied into git). Exploratory under
+**Status:** COMPLETED (results copied into git on 2026-11-25; see the last bullet). Exploratory under
 `docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md` (amendment commit `cd72fc6`, pushed 2026-11-24T16:44:26Z,
 before any job below was created). No verdict or threshold changes.
 
@@ -787,6 +797,11 @@ before any job below was created). No verdict or threshold changes.
   first FAIL 52, first unsafe 46, lead 2 steps; seed 2 first WARN 46, first FAIL 52, first unsafe 48, lead 2 steps
   (lead = first unsafe − first WARN; FAIL comes 6 and 4 steps after the first unsafe step). All 31 checkpoints scored,
   `not_started_time_guard` []. Warm-up is 150 steps of the 1500-step schedule, so every checkpoint is inside warm-up.
+- **Collected and reported (2026-11-25):** `kaggle/executed/12_hf_jobs/files/job27_s{1,2}_{summary.json,monitor.jsonl,dw.jsonl,train_log.json}`
+  (commit `a69c59a`). Report `docs/report/expanse_default.md` (`tools/report_expanse_default.py`, figure
+  `paper/figures/expanse_default.pdf`): lead 2 steps on both seeds, inside the warm-up (highest learning rate 39% of
+  the peak); one flagged prompt more or less at one checkpoint moves the lead between −2 and +4 steps. The adapters
+  (2 × 31 checkpoints) are in the private repo `purvansh01/aya-expanse-8b-safetypulse-lora-alpaca-default`.
 
 ## Job 28 · E5: Aya Expanse 8B quantization tiers, circuit-guided vs random (2026-11-24 UTC, exploratory; COMPLETED after relaunch)
 
@@ -837,6 +852,10 @@ before any job below was created). No verdict or threshold changes.
   5.17 GB; 10/16, p = 0.327; WARN in both). The prediction is **not shown** at any E5 level (the script's own
   `prediction` field agrees). E5 used plain wikitext-2 GPTQ calibration (CircuitKIT default) and did not collapse at
   4 bit (task 0.727 vs 0.770 fp16).
+- **Collected and reported (2026-11-25):** `kaggle/executed/12_hf_jobs/files/job28_circuit.json` and `job28{a,b,c}_{summary.json,pairs.json,variants.jsonl}`
+  (commit `a69c59a`; the 28b and 28c files are the outputs of the 28b2 and 28c2 relaunches). Report
+  `docs/report/circuitquant.md` (E5 section): not shown at every level (p 1.0, 1.0, 0.327); w8 9.19 GB and w4p19
+  11.85 GB meet the size tiers. The circuit variants w4p19c, w3p2c and w3p1c are in private, gated Hub repos.
 
 ## Job 29 · E3: Hindi, Spanish and French ASR on base, Alpaca fine-tune, repaired and the E1 frontier (2026-11-24 UTC, exploratory; COMPLETED)
 
@@ -879,7 +898,12 @@ before any job below was created). No verdict or threshold changes.
   and completion hashes equal Job 25's for base, u4, r5, r6, r72, u8.
 - **ASR k/119 (en / hi / es / fr):** base 16/17/27/21; alpaca_s1_125 29/35/25/25; repaired 13/17/22/20; u4 18/28/27/24;
   r5 16/19/26/36; r6 11/20/23/25; r72 9/19/25/23; u8 15/16/24/21. Of the 24 language-vs-English McNemar tests only r6 fr,
-  r5 fr, r72 es and r72 fr survive Holm (observer-builder-e3). Not collected into git yet.
+  r5 fr, r72 es and r72 fr survive Holm (observer-builder-e3).
+- **Collected and reported (2026-11-25):** `kaggle/executed/12_hf_jobs/files/job29_{core,frontier}_{rows.jsonl,summary.json,translations.json}`
+  (commit `a69c59a`; the translation files hold sha256 hashes and length statistics only). Report
+  `docs/report/multilingual_e3.md` (`tools/report_multilingual_e3.py`): the four Holm survivors are confirmed; compared
+  with base in the same language, only r5 fr is higher (36 vs 21, p 0.0015, uncorrected); r6 and r72 survive because
+  their English ASR is low. The judge is not validated in hi/es/fr and the translations are not human-checked.
 
 ## Job 30 · E1 frontier variants: IFEval and XQuAD en/hi/es on the Job 25 size/quality frontier (2026-11-24 UTC, exploratory; COMPLETED)
 
@@ -916,6 +940,11 @@ before any job below was created). No verdict or threshold changes.
   exploratory, uncorrected, cross-job. XQuAD F1 within about 0.02 of base in each language; EM near 0 (answer-length
   caveat as Job 26). u4 has 98/500 empty Hindi XQuAD answers (base 41; r5 62, r6 42, u8 46, r72 18). Jobs revision
   with all five files: `a00444f3`.
+- **Collected and reported (2026-11-25):** `kaggle/executed/12_hf_jobs/files/job30_{u4,u8,r5,r6,r72}.json` (jobs revision `a00444f3`, commit
+  `a69c59a`). Report `docs/report/benchmarks.md`: after Holm, u4 is the only frontier variant whose IFEval
+  prompt-strict drop survives (adjusted p 0.046 over 14 tests, 0.021 over the 5 frontier strict tests); r5, r6 and r72
+  strict drops are nominal only, while the r6 and r72 loose drops survive the 14-test correction. All comparisons are
+  cross-job (no base rerun in Job 30). u4's empty Hindi answers are not interpreted.
 
 ## Publication of the follow-up outputs (2026-11-23)
 
@@ -929,3 +958,34 @@ and added to the model collection. The org has no transfer right for the account
 private. The Jobs 15–24 files of this folder and their reports are public in
 [`purvansh01/safetypulse-followups`](https://huggingface.co/datasets/purvansh01/safetypulse-followups) (with a SHA-256
 manifest) and in the data collection. Cards: `docs/hub_cards/stage2/safetypulse-{h3fine-lora-alpaca,expanse-lora-alpaca,followups}.md`.
+
+## Publication of the E1–E5 outputs (2026-11-25, private-first; still PRIVATE)
+
+Ten repos were created under `purvansh01`, all **private**; the owner makes them public after review. Cards and the
+release plan (`docs/hub_cards/stage2/circuitquant_repos.json`, generator `tools/hub_cards_circuitquant.py`) are on
+branch `wf3/c-cards` (`73db08e`, card fixes `4a79fbd`). Weights were copied inside Hugging Face from the private jobs
+repo by two CPU jobs (namespace `pxaLabs-lexsi`, `cpu-upgrade`): `6b062b631460ffe1d5e96391` (smoke, W3A16-P1 only,
+about 24 s) and `6b062bf61460ffe1d5e9649d` (the other 7 repos, about 3 min 5 s); the script asserted that the byte
+total of every copied folder equals the plan. A third CPU job, `6b063a301460ffe1d5e97bd4` (331 s), loaded the 4 Tiny
+Aya repos with transformers 5.21.0 and checked that exactly the protected layers hold 16-bit weights. The three CPU
+jobs together cost well under $0.01 (running time × $0.0005/min; an estimate, not a billed figure).
+
+| Repo | Type | Source (private jobs repo) | Gated | Hub head |
+|---|---|---|---|---|
+| `purvansh01/tiny-aya-global-CircuitQuant-W4A16-P9` | model | Job 25 `c72` | no | `a5237221` |
+| `purvansh01/tiny-aya-global-CircuitQuant-W4A16-P6` | model | Job 25 `c6` | no | `56297e0b` |
+| `purvansh01/tiny-aya-global-CircuitQuant-W4A16-P3` | model | Job 25 `c5` | no | `3f238bfe` |
+| `purvansh01/tiny-aya-global-CircuitQuant-W3A16-P1` | model | Job 25 `c35` | no | `ce28e022` |
+| `purvansh01/aya-expanse-8b-CircuitQuant-W4A16-P19` | model | Job 28 `w4p19c` | auto | `07074b21` |
+| `purvansh01/aya-expanse-8b-CircuitQuant-W3A16-P2` | model | Job 28 `w3p2c` | auto | `1297f88a` |
+| `purvansh01/aya-expanse-8b-CircuitQuant-W3A16-P1` | model | Job 28 `w3p1c` | auto | `eea287fe` |
+| `purvansh01/aya-expanse-8b-safetypulse-lora-alpaca-default` | model | Job 27 adapters, seeds 1 and 2, 31 checkpoints each | auto | `a6fff4b0` |
+| `purvansh01/safetypulse-circuitquant-results` | dataset | the 46 `job25_*`–`job30_*` files of this folder | no | `9a2a6cb0` |
+| `purvansh01/alpaca-curatorkit-rejected` | dataset | Job 3 CuratorKIT rejections (19 rows; text only for the 2 schema rejections) | no | `95998b5f` |
+
+Visibility and heads read with `huggingface_hub` on 2026-11-25. All 62 adapter configs record the base revision
+`5062468bf9bc0c6035fd64e06274333ec127d980`. The private collection "SafetyPulse CircuitQuant"
+(`purvansh01/safetypulse-circuitquant-6b062c90ba6a961706bfc612`) holds all 10; the 8 models and 2 datasets were also
+added to the public model and data collections, where they stay hidden until the repos are public. Random and uniform
+controls (`r*`, `u*`, `w8`, `w4`, `w*r`) and the collapsed variants are not published as models (amendment). Release
+record: `docs/11_WITHHELD_ARTIFACTS.md` (E1–E5 release).

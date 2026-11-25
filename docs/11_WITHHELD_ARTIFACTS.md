@@ -4,7 +4,7 @@ SafetyPulse publishes its models, adapters, datasets, logs and code on Hugging F
 artifacts is **deliberately not released publicly**, because their only content is harmful behaviour. This document
 says what they are, why we created them, why we withhold them, and how judges and reviewers can get access.
 
-_Last updated: 2026-11-08._
+_Last updated: 2026-11-25 (E1–E5 release prepared, private-first)._
 
 ## 1. What is withheld
 
@@ -73,6 +73,29 @@ same policy: `safetypulse-h3fine-lora-alpaca` (benign Alpaca adapters, seeds 7�
 `tools/check_release_policy.py`; Job 20 keeps only hashes and length statistics of its translations). Every adapter
 config names its Hub base model. `purvansh01/safetypulse-jobs` stays private: it holds the evaluation prompts and the
 raw job outputs.
+
+### E1–E5 release (2026-11-25, private-first; not yet public)
+
+The follow-ups requested in the Lexsi call (amendment `docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md`,
+HF Jobs 25–30, exploratory) trained no harmful condition. Their release was prepared under the same policy, but
+**private first**: ten repos exist under `purvansh01` and all ten are private until the owner reviews them and makes
+them public (list and links: [docs/10](10_KAGGLE_AND_HF_RESOURCES.md#e1e5-repos-private-until-the-owner-makes-them-public)).
+Nothing from this work has been made public.
+
+- **Prepared for release (private now):** the circuit-guided quantized models (Tiny Aya Global `c72`, `c6`, `c5`,
+  `c35`; Aya Expanse 8B `w4p19c`, `w3p2c`, `w3p1c`), the E4 Alpaca LoRA adapters of Aya Expanse 8B (benign data, both
+  seeds), the numbers-only results dataset `safetypulse-circuitquant-results` (the 46 `job25_*`–`job30_*` files) and
+  `alpaca-curatorkit-rejected`. The Aya Expanse repos are gated `auto`, the same setting as `CohereLabs/aya-expanse-8b`.
+- **Checks before upload:** `tools/check_release_policy.py` 0 violations; the files were scanned for prompt, answer and
+  translation text, and hold only flags, scores, hashes and lengths (the Job 29 translation files hold sha256 hashes
+  and length statistics). Every adapter config names the Hub base model and its revision.
+- **Not published:** the random and uniform control variants (the amendment does not release controls as models) and the
+  collapsed 2-bit variants (left out by the release plan); every prompt, answer and translation text; the jobs repo
+  `purvansh01/safetypulse-jobs`, which stays private. No harm adapter and no `ft_harm` data is involved.
+- **CuratorKIT rejections, a departure from the amendment:** the amendment allowed full text for the non-PII
+  rejections of the Job 3 curation run. The prepared dataset is more restrictive: the 17 toxicity rejections carry
+  only id, stage, reason, Detoxify score and sha256 (their text needs the owner's approval), and only the 2 schema
+  rejections (benign instructions with an empty answer) include their text.
 
 ## 5. Access for judges and reviewers
 
