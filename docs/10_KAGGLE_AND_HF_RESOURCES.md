@@ -14,8 +14,8 @@ How runs work: [kaggle/README.md](../kaggle/README.md). Notebooks are launched w
 runs them on Kaggle and saves the executed copy, log and key files to `kaggle/executed/<notebook>/` together with a
 `RUN_SUMMARY.md`.
 
-_Last updated: 2026-11-25 (HF Jobs 25–30 collected into git and reported; the ten E1–E5 repos created **private**, see
-[E1–E5 repos](#e1e5-repos-private-until-the-owner-makes-them-public)). HF Jobs 1–14 were checked against `hf jobs inspect` on
+_Last updated: 2026-11-26 (HF Jobs 25–30 collected into git and reported; the ten E1–E5 repos are **private** and stay private by owner decision, see
+[E1–E5 repos](#e1e5-repos-private)). HF Jobs 1–14 were checked against `hf jobs inspect` on
 2026-11-22, Jobs 25–30 on 2026-11-24._
 
 ## Kaggle datasets
@@ -257,10 +257,11 @@ stay private.
 Still private: `safetypulse-earth-probe-bundle` (H1, tag `h1-v1`: Earth's calibrated bundle, directions, token sets;
 its 50 probe pairs are the same as in the public `safetypulse-probe-bundle`).
 
-### E1–E5 repos (PRIVATE until the owner makes them public)
+### E1–E5 repos (private)
 
 Created 2026-11-25 for the Lexsi-call follow-ups (amendment `docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md`,
-exploratory). **All ten are private**; links open only for the owner until they are made public. Cards and the release
+exploratory). **All ten are private**, and on 2026-11-26 the owner decided to keep them private; the links open only for
+the owner. Cards and the release
 plan: `docs/hub_cards/stage2/` (`circuitquant_repos.json`, generator
 `tools/hub_cards_circuitquant.py`). Licence CC BY-NC 4.0 throughout, as both base models. How they were filled:
 `kaggle/executed/12_hf_jobs/RUN_SUMMARY.md`, "Publication of the E1–E5 outputs".
@@ -278,12 +279,13 @@ plan: `docs/hub_cards/stage2/` (`circuitquant_repos.json`, generator
 | [`safetypulse-circuitquant-results`](https://huggingface.co/datasets/purvansh01/safetypulse-circuitquant-results) | dataset | no | The 46 `job25_*`–`job30_*` result files (flags, scores, hashes, lengths; no prompt, answer or translation text) |
 | [`alpaca-curatorkit-rejected`](https://huggingface.co/datasets/purvansh01/alpaca-curatorkit-rejected) | dataset | no | The 19 CuratorKIT rejections of HF Job 3: id, stage, reason, score, sha256; text only for the 2 schema rejections |
 
-Collection: private "SafetyPulse CircuitQuant" (`purvansh01/safetypulse-circuitquant-6b062c90ba6a961706bfc612`, all 10).
-The 8 models and 2 datasets are also listed in the public model and data collections, where they stay hidden until
-they are public. Tokens/s and VRAM in the cards are dense-path numbers (16-bit compute, no quantized kernels); only the
+Collections (visibility and membership re-read with `huggingface_hub` on 2026-11-26): all 10 are in the private
+"SafetyPulse CircuitQuant" collection (`purvansh01/safetypulse-circuitquant-6b062c90ba6a961706bfc612`); the 8 models are
+also in the public `safetypulse-models` collection and the 2 datasets in the public `safetypulse-data` collection,
+where other viewers do not see them while they are private. Tokens/s and VRAM in the cards are dense-path numbers (16-bit compute, no quantized kernels); only the
 disk size is a measured saving. Not published as models: the random and uniform controls and the collapsed 2-bit
-variants. Open owner decisions: making the repos and the collection public, gating of the Tiny Aya repos (upstream
-Tiny Aya Global is gated `auto`), and the existing public `safetypulse-expanse-lora-alpaca`, which is ungated.
+variants. Open owner decisions: gating of the Tiny Aya repos if they are ever made public (upstream Tiny Aya Global is gated
+`auto`), and the existing public `safetypulse-expanse-lora-alpaca`, which is ungated.
 
 ## Teammate account
 

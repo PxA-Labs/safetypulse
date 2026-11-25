@@ -987,6 +987,8 @@ not a billed figure).
 Visibility and heads read with `huggingface_hub` on 2026-11-25. All 62 adapter configs record the base revision
 `5062468bf9bc0c6035fd64e06274333ec127d980`. The private collection "SafetyPulse CircuitQuant"
 (`purvansh01/safetypulse-circuitquant-6b062c90ba6a961706bfc612`) holds all 10; the 8 models and 2 datasets were also
-added to the public model and data collections, where they stay hidden until the repos are public. Random and uniform
+added to the public model and data collections, where other viewers do not see them while they are private. Owner
+decision 2026-11-26: all ten stay private (visibility and collection membership re-read with `huggingface_hub` that
+day). Random and uniform
 controls (`r*`, `u*`, `w8`, `w4`, `w*r`) and the collapsed variants are not published as models (amendment). Release
 record: `docs/11_WITHHELD_ARTIFACTS.md` (E1–E5 release).
