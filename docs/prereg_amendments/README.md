@@ -181,7 +181,9 @@ All times UTC, 2026-11-24. Δ amendment − job creation; negative = amendment f
 - Failed attempts (counted, no result): Job 26 smoke 1 (script bug, fixed in `5a45d23`), Job 28b and 28c (launch-command
   quoting), relaunched under the same amendment as job28b2-e5-mixed11 and job28c2-e5-low (both COMPLETED).
 - Wave 2 added 8 jobs (28b2, 28c2; Job 29 smoke/core/frontier; Job 30 smoke/A/B), all created after the push.
-  Outcomes are summarised in `docs/report/workflow/2026-11-24-run-log.md` (wave 2); result files are not yet copied
-  into git and no paper text was changed.
+  Outcomes are summarised in `docs/report/workflow/2026-11-24-run-log.md` (wave 2). Since then (workflow C,
+  2026-11-25) the 46 result files are in `kaggle/executed/12_hf_jobs/files/` (merge `94d16f9`) and the paper reports
+  E1–E5 as exploratory in Section 5 and Appendix G (merge `06a81b1`); the three workflow C CPU jobs only copied and
+  published artifacts and are not governed experiments. No verdict or frozen threshold changed.
 
 Updated counts: 16 amendment files (12 job-tied, 3 analysis-only, 1 erratum); 0 violations.

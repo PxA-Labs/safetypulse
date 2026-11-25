@@ -584,8 +584,6 @@ def md_roi(res: dict) -> list[str]:
 def write_md(res: dict) -> str:
     e1, e5 = res["E1"], res["E5"]
     nf = res["nf4_notebook17"]
-    fp1 = next(r for r in e1["roi"] if r["variant"] == "fp16")
-    fp5 = next(r for r in e5["roi"] if r["variant"] == "fp16")
     live = [lv for f in (e1, e5) for lv in f["levels"] if not lv["collapsed"]]
     c35 = max(live, key=lambda lv: abs(lv["asr_circuit_k"] - lv["asr_random_k"]))
     small = [abs(lv["asr_circuit_k"] - lv["asr_random_k"]) for lv in live if lv is not c35]

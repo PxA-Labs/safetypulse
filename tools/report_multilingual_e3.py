@@ -156,7 +156,7 @@ def main(argv=None):
         t["survives_holm"] = a < ALPHA
         cells[(t["model"], t["lang"])]["mcnemar_vs_en"] = t
     survivors = {(t["model"], t["lang"]) for t in tests if t["survives_holm"]}
-    nominal = sorted(((t["model"], t["lang"]) for t in tests if t["p"] < ALPHA and not t["survives_holm"]))
+    nominal = sorted((t["model"], t["lang"]) for t in tests if t["p"] < ALPHA and not t["survives_holm"])
     checks.append(("Holm survivors vs run log", sorted(survivors), sorted(RUN_LOG_HOLM), survivors == RUN_LOG_HOLM))
     for key, p_log in RUN_LOG_NOMINAL.items():
         p = cells[key]["mcnemar_vs_en"]["p"]

@@ -189,7 +189,6 @@ def model_card(exp, v, bits, repo, src, rev, nbytes) -> tuple[str, dict]:
     assert len(layers) == k
     name = f"{OWNER}/{repo}"
     vs_fp = CQ[exp]["asr_vs_fp16"][v]
-    family = "Tiny Aya Global" if exp == "E1" else "Aya Expanse 8B"
     job = "25" if exp == "E1" else "28"
     prov = CQ["provenance"][r["job"] if exp == "E1" else r["job"]]
     slower = round(100 * (1 - ro["tok_s_b8_ratio_to_same_job_fp16"]))
