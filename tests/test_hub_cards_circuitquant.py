@@ -35,8 +35,7 @@ def test_aya_expanse_repos_gated_like_base():
 
 
 def test_curator_toxicity_rows_text_free():
-    rows = [json.loads(x) for x in
-            (ROOT / "kaggle/executed/13_curatorkit_alpaca/files/curatorkit_rejected.jsonl").read_text().splitlines()]
+    rows = [json.loads(x) for x in (hc.CUR / "curatorkit_rejected.jsonl").read_text().splitlines()]
     assert len(rows) == 19
     for r in rows:
         assert set(r) == {"id", "stage", "reason", "score", "sha256", "instruction", "input"}
