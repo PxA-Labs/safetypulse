@@ -26,8 +26,7 @@ data-free SafeTune repair brings the model back to base-level safety *and* base-
 >   3 of 8 safe recovered models. The score still ranks models well in three families; in Gemma the calibrated layer
 >   was the problem. **Thresholds do not carry over between model families.**
 >
-> The H1 and H3 results hold with a larger judge (Llama Guard 3 8B). Paper:
-> [`paper/main.pdf`](https://github.com/PxA-Labs/safetypulse/blob/main/paper/main.pdf) · new runs and scores in the
+> The H1 and H3 results hold with a larger judge (Llama Guard 3 8B). New runs and scores are in the
 > [model](https://huggingface.co/collections/purvansh01/safetypulse-models-6af00b8f56c773a80af9f7e0) and
 > [data](https://huggingface.co/collections/purvansh01/safetypulse-data-6af00b9124ee9d5022a36482) collections ("Stage 2").
 

@@ -525,6 +525,7 @@ def test_derive_names_exist():
     assert not missing
 
 
+@pytest.mark.skipif(not PAPER.exists(), reason="paper/main.tex is kept locally only, not in the repository")
 @pytest.mark.parametrize("entry", ENTRIES, ids=_ids(ENTRIES))
 def test_snippet_is_in_paper(entry):
     snippet = " ".join(entry["tex"].split())
