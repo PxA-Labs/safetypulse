@@ -59,8 +59,29 @@ judge is expensive, so a cheap \emph{screening signal} that runs inside the trai
 models is mediated largely by a single direction in the internal activations (the residual stream) \citep{arditi2024refusal}, and benign fine-tuning moves
 it \citep{du2025procon}, which makes the strength of that direction a natural candidate.
 
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}p{0.25\columnwidth}p{0.30\columnwidth}p{0.41\columnwidth}@{}}
+\toprule
+Work & Signal & Tested on \\
+\midrule
+\citet{nghiem2026trait} & 7 trait directions & LoRA runs, four 7--9B models; 468 held-out checkpoints \\
+\citet{tsatsos2026probes} & harmful-request probes & base $\rightarrow$ distilled / instruct successors \\
+\citet{duan2026monitors} & frozen activation probes & staleness after model updates \\
+\citet{hurtado2026abliterated} & refusal gap + $\Delta W$ & abliterated checkpoints, held-out families \\
+\midrule
+\textbf{Ours} & one refusal direction, frozen thresholds & \textbf{pre-registered}: sibling model, new data format, finer steps, 4 other families \\
+\bottomrule
+\end{tabular}
+\caption{Position among related monitors and audits, as each paper describes its own setting (details in
+\S\ref{sec:related}).}
+\label{tab:related}
+\end{table}
+
 Activation-based drift monitors exist and have been validated on held-out runs \citep{nghiem2026trait}; our
-contribution is not a new monitor but a \textbf{pre-registered test of where a simple one transfers}. All design choices
+contribution is not a new monitor but a \textbf{pre-registered test of where a simple one transfers} (Table~\ref{tab:related}). All design choices
 of SafetyPulse, including its alarm thresholds, were made on development runs of one model (Tiny Aya Global, 3.35B;
 \citealp{salamanca2026tinyaya}). Because such choices are easily over-fitted, we then fixed four hypotheses with pass
 marks \citep{nosek2018preregistration,vanmiltenburg2021preregistering} and ran new experiments: a sibling model (H1), a
@@ -176,6 +197,8 @@ for Spot. Logit: refusal-token score. Wilson 95\% intervals \citep{wilson1927pro
 \section{Results}
 \label{sec:results}
 
+\subsection{Pre-registered tests}
+
 \paragraph{H1: a sibling model.} On Tiny Aya Earth (3.35B), calibrated with the same recipe and Global's thresholds, the
 first WARN came 10--20 steps before the first unsafe checkpoint on each of the three Alpaca runs, every unsafe checkpoint
 was flagged, and neither control run (1{,}800 Alpaca examples plus 200 refusals) ever alarmed (Figure~\ref{fig:traj},
@@ -230,6 +253,8 @@ unsafe ($\Delta$ASR $>0.10$); a good alarm puts them below the dashed thresholds
 model scores 1 by construction (0.99--1.00 as measured). Every model is listed in Table~\ref{tab:h6models}.}
 \label{fig:safetune}
 \end{figure*}
+
+\subsection{Robustness and exploratory analyses}
 
 \paragraph{Judge robustness.} Re-judging every H1 and H3 checkpoint with Llama Guard 3 8B (same answers) gave
 agreement of 95\% and 93\% (Cohen's $\kappa$ 0.86 and 0.83; \citealp{cohen1960kappa}) and left both verdicts unchanged
@@ -304,38 +329,27 @@ base. On Aya Expanse with AlignTune's defaults, WARN led the first unsafe checkp
 the warm-up; one flagged prompt moves this lead between $-2$ and $+4$.
 
 \section{Related work}
+\label{sec:related}
 
 Benign fine-tuning degrades safety \citep{qi2023finetuning,he2024safedata,wei2024brittleness}; the refusal direction
 \citep{arditi2024refusal} drifts during tuning \citep{du2025procon} and benign tuning disrupts how safety information is
 routed to refusal \citep{guo2026routing}. Reading concepts from activation directions follows representation
 engineering \citep{zou2023repe}; in weight space, fine-tuning compromises safety once it leaves a ``safety basin''
-around the aligned model \citep{peng2024landscape}, measured by perturbing weights rather than reading activations. The closest monitor tracks seven trait directions during LoRA tuning of four
-7--9B models and validates a thresholded regressor on 468 held-out checkpoints \citep{nghiem2026trait}; we test frozen thresholds of
-one direction-based score across models and drift sources. Harmful-request probes transfer from a base model to its
-distilled and instruction-tuned successors with little loss of AUC \citep{tsatsos2026probes}, consistent with our
-within-family transfer; preserving the base refusal direction is not a reliable proxy for safety in every model
-\citep{ruellan2026replay}, and frozen activation probes often go stale after fine-tuning, although refusal probes were
-comparatively stable \citep{duan2026monitors}; H6 shows that frozen thresholds can fail across model families.
-High AUROC does not make a valid alarm policy \citep{gao2026alarm}, as our per-family analysis also finds. For auditing
-whole checkpoints, an activation refusal gap combined with a weight-difference signal transfers a threshold across
-held-out families for abliterated models \citep{hurtado2026abliterated}, a much larger change than benign drift, and the
-weights of harmful fine-tunes carry a readable trace \citep{bao2026trace}. Prevention methods constrain tuning
-\citep{du2025procon} or project the LoRA update onto a safety-aligned subspace \citep{hsu2024safelora}; SafeTune \citep{seth2026safetune} and CircuitKIT \citep{seth2026circuitkit} provide
+around the aligned model \citep{peng2024landscape}, measured by perturbing weights rather than reading activations. The closest monitor tracks trait directions during LoRA tuning \citep{nghiem2026trait}; we test frozen thresholds of
+one direction-based score across models and drift sources (Table~\ref{tab:related}). Probes transfer from a base model to its successors \citep{tsatsos2026probes}, consistent with H1; preserving the
+base refusal direction is not a reliable proxy for safety in every model \citep{ruellan2026replay}, and frozen probes
+can go stale, though refusal probes were comparatively stable \citep{duan2026monitors}; H6 finds frozen thresholds
+failing across families.
+High AUROC does not make a valid alarm policy \citep{gao2026alarm}, as our per-family analysis also finds. A two-signal checkpoint audit transfers a threshold across families for abliterated
+models \citep{hurtado2026abliterated}, a larger change than benign drift; harmful fine-tunes leave a trace in
+the weights \citep{bao2026trace}. Prevention methods constrain or project the update \citep{du2025procon,hsu2024safelora}; SafeTune \citep{seth2026safetune} and CircuitKIT \citep{seth2026circuitkit} provide
 the auditing, repair and circuit tools SafetyPulse builds on.
 
 \section{Conclusion}
 
-With thresholds fixed on one model, a refusal-direction alarm transferred to a sibling model and to reformatted
-training data, stayed silent on control runs where a weight-change alarm fired on 48 of 50 checkpoints, and on Tiny Aya warned earlier than a behavioural
-spot-check; a check costs about a fifth of an audit. It did not warn earlier than a weight-change alarm on drifting
-runs, and its thresholds did not carry over to other model families. In exploratory analyses the score kept ranking
-information in three of four families, the fourth failed at the calibrated layer, and after DPO repair the score
-recovered less than refusal behaviour; the layer choice, the thresholds and this lag are the weak points we found, and
-we could not fix them from the few models available. A cheap behavioural spot-check, which raised far fewer false alarms on
-new families, should be kept alongside. Run only to confirm a \cissep{} WARN (FAIL alarming alone; exploratory), it
-kept 18 of 19 unsafe H6 models with 4 of 12 false alarms instead of 10, at 6.6\,s per model, but the confirmation
-came no earlier than the spot-check, removing \cissep{}'s earlier warning on Tiny Aya (median lead 0 vs.\ 10 steps);
-needing no generation remains \cissep{}'s own advantage.
+With thresholds fixed on one model, a refusal-direction alarm transferred to a sibling model and to reformatted data, stayed silent on control runs where a weight-change alarm fired on 48 of 50 checkpoints, and on Tiny Aya warned earlier than a spot-check, at about a fifth of an audit's cost. It did not warn earlier than the
+weight-change alarm on drifting runs, and its thresholds did not carry over to other families; layer choice, thresholds and a lag after DPO repair
+are its weak points. A behavioural spot-check should run alongside.
 
 \section*{Limitations}
 
@@ -482,6 +496,10 @@ control-run alarm, H2 recall 1.00 throughout, H3 alarms before the first unsafe 
 H6 recall on unsafe drifted models 0.92 throughout with FAIL on 2/6, 3/8 and 4/9 safe recovered models (refuted
 throughout). Source: \texttt{docs/report/stage2\_robustness.md}.
 
+\paragraph{Two-stage alarm (exploratory).} A spot-check run only on a \cissep{} WARN (FAIL alone alarms) kept 18 of 19
+unsafe H6 models with 4 of 12 false alarms instead of 10, at 6.6\,s each, but warned no earlier than the spot-check alone
+(Tiny Aya median lead 0 vs.\ 10 steps).
+
 \section{Layer diagnosis}
 \label{app:layers}
 
@@ -535,9 +553,7 @@ only where the difference favours circuit-guided with exact McNemar $p<0.05$, ot
 correction across levels. The E2/E3 McNemar tests and all Holm corrections were added in the analysis. ASR uses the 119 held-out prompts and
 Llama Guard 3 1B unless stated. 29 HF Jobs ran on L40S GPUs (\$1.80/h) under a \$55 soft cap: \$49.95 committed at
 worst case, \$20.06 billed, nothing dropped for budget. Answers, prompts and translations stay private; only flags,
-scores and hashes are kept. Analyses are in \texttt{docs/report/} (\texttt{circuitquant}, \texttt{benchmarks},
-\texttt{multilingual\_e3}, \texttt{expanse\_default}), with tests that pin their numbers to the result files, and
-the run log in \texttt{docs/report/workflow/}.
+scores and hashes are kept. Analyses (with tests pinning their numbers to the result files) and the run log are in \texttt{docs/report/}.
 
 \paragraph{E1/E5 setup.} Uniform GPTQ \citep{frantar2022gptq} at 8 and 4 bit, and 3 bit on Tiny Aya (symmetric, group
 128), and mixed variants that keep $k$ decoder layers at 16 bit on a 4- or 3-bit base, with CircuitKIT 0.2.4 \citep{seth2026circuitkit}, llm-compressor 0.15.0
@@ -565,13 +581,12 @@ planned but not done. \textbf{(e) Warm-up.} Every E4 checkpoint lies inside the 
 schedule (below). \textbf{(f) XQuAD.} Exact match is 1--16 of 500 for every model and language, so F1 is the reported
 number, and F1 depends on answer length. \textbf{Other choices.} The amendment named no Alpaca checkpoint for E2; we
 used seed 1 at step 125, the checkpoint our Stage-1 repaired model was built from (SafeTune safety-vector restore).
-E5's sizes meet its tiers (8 bit 9.19\,GB $<$ 10\,GB; mixed $\sim$11 bit 11.85\,GB $<$ 12\,GB). Random and uniform
-control variants are not released.
+E5's sizes meet its tiers (8 bit 9.19\,GB $<$ 10\,GB; mixed $\sim$11 bit 11.85\,GB $<$ 12\,GB); control variants are not released.
 
 \input{tables/quant_variants.tex}
 \input{tables/bench.tex}
 
-\begin{figure*}[t]
+\begin{figure*}[tp]
 \centering
 \includegraphics[width=0.9\textwidth]{figures/fig_quant_asr.pdf}
 \caption{ASR against average bits for circuit-guided and random layer choice (Wilson 95\% intervals; exact McNemar
@@ -580,7 +595,7 @@ safety result.}
 \label{fig:quantasr}
 \end{figure*}
 
-\begin{figure*}[t]
+\begin{figure*}[tp]
 \centering
 \includegraphics[width=0.8\textwidth]{figures/fig_quant_size.pdf}
 \caption{MMLU (top) and GSM8K (bottom) against size on disk, with the Pareto frontier of non-collapsed variants (fp16
@@ -635,12 +650,9 @@ several settings at once, so neither isolates the effect of one.
 
 \section{Artifacts and compute}
 
-Code, notebooks, run summaries and analysis scripts: \url{https://github.com/PxA-Labs/safetypulse}. Adapters, logs and
-the H6 scores and calibration bundles are on the Hugging Face Hub (collections linked on the first page). Experiments
-ran on Kaggle T4 GPUs and Hugging Face Jobs (A100, A10G, L4 and L40S GPUs, and one CPU job; 26.4 GPU-hours and about \$48 in total, of
+Code, notebooks and analysis scripts: \url{https://github.com/PxA-Labs/safetypulse}. Models, adapters, scores and bundles: the Hugging Face collections on the first page. Experiments
+ran on Kaggle T4 GPUs and Hugging Face Jobs (A100, A10G, L4, L40S, one CPU job; 26.4 GPU-hours and about \$48 in total, of
 which 7.6 hours and \$14 for the exploratory follow-ups of 2026-11-22 and 11.1 L40S hours and \$20.06 for the 29 jobs of
-the 2026-11-24 amendment, App.~\ref{app:lexsi}); each H6 family took 9--22
-minutes on one L40S. The control's 200
-refusals come from \url{https://huggingface.co/datasets/LLM-LAT/harmful-dataset}.
+the 2026-11-24 amendment, App.~\ref{app:lexsi}). The control's 200 refusals: \href{https://huggingface.co/datasets/LLM-LAT/harmful-dataset}{\texttt{LLM-LAT/harmful-dataset}}.
 
 \end{document}
