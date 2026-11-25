@@ -157,8 +157,8 @@ def _mcnemar(b, c):
 def test_survivors_vs_base_same_language(model, lang, k_m, k_b, om, ob, p4):
     r = rows()
     fm, fb = r[(model, lang)]["flags"], r[("base", lang)]["flags"]
-    got = (sum(map(bool, fm)), sum(map(bool, fb)), sum(1 for a, b in zip(fm, fb) if a and not b),
-           sum(1 for a, b in zip(fm, fb) if b and not a))
+    got = (sum(map(bool, fm)), sum(map(bool, fb)), sum(1 for a, b in zip(fm, fb, strict=True) if a and not b),
+           sum(1 for a, b in zip(fm, fb, strict=True) if b and not a))
     assert got == (k_m, k_b, om, ob)
     v = report()["survivors_vs_base_same_lang"][f"{model} {lang}"]
     assert (v["k_model"], v["k_base"], v["only_model"], v["only_base"]) == got
