@@ -1,6 +1,8 @@
 """E2 (Job 26) and E1-frontier (Job 30) text-generation benchmarks: IFEval and XQuAD en/hi/es, recomputed from per_doc rows.
 
-Usage: python tools/report_benchmarks.py [--smoke-dir DIR]   -> docs/report/benchmarks.{json,md}
+Usage (needs Python >= 3.10 and numpy, i.e. the repo environment):
+  uv run python tools/report_benchmarks.py [--out DIR]          (or .venv/bin/python tools/report_benchmarks.py)
+  -> docs/report/benchmarks.{json,md}
 
 Exploratory under docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md (commit cd72fc6). No verdict or frozen
 threshold is touched. Inputs are the tracked result files kaggle/executed/12_hf_jobs/files/job26_*.json and job30_*.json
@@ -12,18 +14,23 @@ What it does
   over instructions, and a bootstrap over prompts, since instructions inside one prompt are not independent).
 - XQuAD en/hi/es: F1 (normal 95% and bootstrap 95%), exact match (Wilson and Clopper-Pearson), mean and median answer
   length in characters, empty answers (answer_chars == 0), F1 over non-empty answers only.
-- Paired exact McNemar vs base on IFEval prompt-level strict and loose flags: exploratory and uncorrected. Every
+- Paired exact McNemar vs base on IFEval prompt-level strict and loose flags: exploratory, with Holm adjustment over
+  the 14 tests of the table (7 models x strict/loose) and, as a second family, over the 5 frontier strict tests. Every
   comparison is cross-job: each Job 26 model ran in its own HF Job, and Job 30 has no base rerun.
-- Paired bootstrap of the XQuAD F1 difference vs base (descriptive).
+- Paired bootstrap of the XQuAD F1 difference vs base (descriptive), resampling paragraphs (XQuAD questions come
+  several to a paragraph; kaggle/executed/12_hf_jobs/files/xquad_qid_paragraph.json, ids only) and, for comparison,
+  individual questions. Uncorrected over the 15 frontier cells.
 - Empty-answer overlap with base per language (the data hold no text, so the cause can only be bounded, not shown).
-- Reproducibility evidence: Job 29's own English re-generation vs Job 25 (tracked), and, if --smoke-dir points at a
-  local copy of the private jobs repo's results/job26-test and results/job30-test files, smoke-vs-full answer hashes.
+- Reproducibility evidence: Job 29's own English re-generation vs Job 25 (tracked), and smoke-vs-full answer hashes
+  from kaggle/executed/12_hf_jobs/files/job26_job30_smoke_hashes.json (doc ids, answer sha256 and scored flags derived
+  from the private jobs repo's results/job26-test and results/job30-test files at the recorded smoke_jobs_rev).
 - Compares each number with the value recorded in docs/report/workflow/2026-11-24-run-log.md and lists differences.
-B = 10000 bootstrap draws, numpy default_rng(20261125).
+B = 10000 bootstrap draws, numpy default_rng(20261125) (per-question draws) and default_rng(20261126) (paragraph draws).
 """
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import statistics
@@ -38,6 +45,10 @@ FILES = ROOT / "kaggle/executed/12_hf_jobs/files"
 OUT = ROOT / "docs/report"
 AMENDMENT = "docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md (cd72fc6)"
 B, SEED, Z = 10000, 20261125, 1.959964
+SEED_PARA = 20261126
+SMOKE = FILES / "job26_job30_smoke_hashes.json"
+PARA = FILES / "xquad_qid_paragraph.json"
+RUN_CMD = "uv run python tools/report_benchmarks.py (or .venv/bin/python; needs Python >= 3.10 and numpy)"
 LANGS = ("en", "hi", "es")
 EMPTY_SHA = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"   # sha256 of ""
 MODELS = [  # label, file, job
@@ -106,6 +117,16 @@ def mcnemar_exact(b, c):
     return 1.0 if n == 0 else min(1.0, 2 * binom_cdf(min(b, c), n, 0.5))
 
 
+def holm(ps):
+    """Holm step-down adjusted p values, in input order."""
+    order = sorted(range(len(ps)), key=lambda i: ps[i])
+    adj, run = [0.0] * len(ps), 0.0
+    for rank, i in enumerate(order):
+        run = max(run, min(1.0, (len(ps) - rank) * ps[i]))
+        adj[i] = run
+    return adj
+
+
 def mean_normal_ci(xs):
     n = len(xs)
     m = sum(xs) / n
@@ -124,6 +145,24 @@ def boot_ratio(num, den, rng):
     nu, de = np.asarray(num, float), np.asarray(den, float)
     idx = rng.integers(0, len(nu), size=(B, len(nu)))
     return [float(v) for v in np.percentile(nu[idx].sum(axis=1) / de[idx].sum(axis=1), [2.5, 97.5])]
+
+
+def cluster_index(qids):
+    """Question positions grouped by XQuAD paragraph."""
+    para = json.loads(PARA.read_text(encoding="utf-8"))["paragraph_of_qid"]
+    groups = {}
+    for i, q in enumerate(qids):
+        groups.setdefault(para[q], []).append(i)
+    return [np.asarray(v) for v in groups.values()]
+
+
+def boot_mean_clustered(xs, groups, rng):
+    """Bootstrap of the mean resampling whole paragraphs (all questions of a drawn paragraph enter together)."""
+    a = np.asarray(xs, float)
+    sums = np.asarray([a[g].sum() for g in groups])
+    sizes = np.asarray([len(g) for g in groups], float)
+    idx = rng.integers(0, len(groups), size=(B, len(groups)))
+    return [float(v) for v in np.percentile(sums[idx].sum(axis=1) / sizes[idx].sum(axis=1), [2.5, 97.5])]
 
 
 def r(x, nd=6):
@@ -187,7 +226,7 @@ def ifeval_scores(d, rng):
     return out
 
 
-def xquad_scores(d, lg, rng):
+def xquad_scores(d, lg, rng, groups, rng_para):
     rows = d["per_doc"][f"xquad_{lg}"]
     s = d["summary"][f"xquad_{lg}"]
     n = len(rows)
@@ -202,6 +241,7 @@ def xquad_scores(d, lg, rng):
     ne = [x["f1"] for x, e in zip(rows, empty, strict=True) if not e]
     nonempty_chars = [c for c in chars if c > 0]
     return {"n": n, "f1": r(sum(f1) / n), "f1_normal95": rl(mean_normal_ci(f1)), "f1_boot95": rl(boot_mean(f1, rng)),
+            "f1_boot95_by_paragraph": rl(boot_mean_clustered(f1, groups, rng_para)),
             "em_k": em_k, "em": r(em_k / n), "em_wilson95": rl(wilson(em_k, n)), "em_cp95": rl(clopper_pearson(em_k, n)),
             "mean_chars": r(sum(chars) / n, 4), "median_chars": statistics.median(chars),
             "mean_chars_nonempty": r(sum(nonempty_chars) / len(nonempty_chars), 4),
@@ -218,12 +258,14 @@ def mcnemar_vs_base(base, other, kind):
             "neither": sum(not x and not y for x, y in zip(bf, of, strict=True)), "p_exact": mcnemar_exact(b, c)}
 
 
-def f1_diff_vs_base(base, other, lg, rng):
+def f1_diff_vs_base(base, other, lg, rng, groups, rng_para):
     a = np.asarray([x["f1"] for x in base["per_doc"][f"xquad_{lg}"]])
     o = np.asarray([x["f1"] for x in other["per_doc"][f"xquad_{lg}"]])
     dlt = o - a
     idx = rng.integers(0, len(dlt), size=(B, len(dlt)))
-    return {"diff": r(float(dlt.mean())), "boot95": rl([float(v) for v in np.percentile(dlt[idx].mean(axis=1), [2.5, 97.5])])}
+    return {"diff": r(float(dlt.mean())),
+            "boot95": rl([float(v) for v in np.percentile(dlt[idx].mean(axis=1), [2.5, 97.5])]),
+            "boot95_by_paragraph": rl(boot_mean_clustered(dlt, groups, rng_para))}
 
 
 def empty_overlap(models):
@@ -266,20 +308,17 @@ def job29_repeat():
     return out
 
 
-def smoke_vs_full(smoke_dir, models):
-    pairs = [("base", "job26-test/base.json"), ("alpaca_s1_125", "job26-test/alpaca_s1_125.json"),
-             ("repaired", "job26-test/repaired.json"), ("u4", "job30-test/u4.json")]
-    out = {}
-    for lab, rel in pairs:
-        p = Path(smoke_dir) / rel
-        if not p.is_file():
-            out[lab] = {"missing": rel}
-            continue
-        s = json.loads(p.read_text(encoding="utf-8"))
+def smoke_vs_full(models, path=SMOKE):
+    """Smoke (5-document) vs full answer hashes, from the committed derived file (no text; see its note)."""
+    sm = json.loads(Path(path).read_text(encoding="utf-8"))
+    out = {"source": str(Path(path).resolve().relative_to(ROOT)) if Path(path).resolve().is_relative_to(ROOT) else str(path),
+           "source_sha256": hashlib.sha256(Path(path).read_bytes()).hexdigest(), "smoke_jobs_rev": sm["smoke_jobs_rev"]}
+    for lab, s in sm["models"].items():
         full = models[lab]["d"]
-        row = {"smoke_file": f"purvansh01/safetypulse-jobs results/{rel}", "smoke_hf_job_id": s.get("job_id"),
-               "smoke_code_sha": s.get("code_sha"), "same_packages": s.get("packages") == full.get("packages"),
-               "same_gpu": s.get("gpu") == full.get("gpu"), "limit": s.get("limit")}
+        row = {"smoke_file": f"purvansh01/safetypulse-jobs@{sm['smoke_jobs_rev'][:12]} {s['smoke_file']}",
+               "smoke_file_sha256": s["smoke_file_sha256"], "smoke_hf_job_id": s["smoke_hf_job_id"],
+               "smoke_code_sha": s["smoke_code_sha"], "same_packages": s["same_packages_as_full"],
+               "same_gpu": s["same_gpu_as_full"], "limit": s["limit"]}
         for task in ("ifeval", *(f"xquad_{lg}" for lg in LANGS)):
             fd = {x["doc_id"]: x for x in full["per_doc"][task]}
             srows = [x for x in s["per_doc"][task] if x["doc_id"] in fd]
@@ -329,22 +368,38 @@ def compare_runlog(res):
 
 
 # ---------- report ----------
-def build(smoke_dir=None):
-    rng = np.random.default_rng(SEED)
+def build():
+    rng, rng_para = np.random.default_rng(SEED), np.random.default_rng(SEED_PARA)
     models = load()
-    res = {"amendment": AMENDMENT, "exploratory": True, "bootstrap": {"B": B, "seed": SEED},
+    groups = cluster_index([x["qid"] for x in models["base"]["d"]["per_doc"]["xquad_en"]])
+    res = {"amendment": AMENDMENT, "exploratory": True, "run_command": RUN_CMD,
+           "bootstrap": {"B": B, "seed": SEED, "seed_by_paragraph": SEED_PARA,
+                         "xquad_paragraphs": {"file": str(PARA.relative_to(ROOT)), "n_questions": 500,
+                                              "n_paragraphs": len(groups)}},
            "provenance": {lab: provenance(lab, v) for lab, v in models.items()}, "models": {}}
     for lab, v in models.items():
         d = v["d"]
         res["models"][lab] = {"job": v["job"], "ifeval": ifeval_scores(d, rng),
-                              "xquad": {lg: xquad_scores(d, lg, rng) for lg in LANGS}}
+                              "xquad": {lg: xquad_scores(d, lg, rng, groups, rng_para) for lg in LANGS}}
     base = models["base"]["d"]
     res["mcnemar_vs_base"] = {
         lab: {"prompt_strict": mcnemar_vs_base(base, v["d"], "strict"),
               "prompt_loose": mcnemar_vs_base(base, v["d"], "loose"),
               "same_hf_job_as_base": v["d"].get("job_id") == base.get("job_id")}
         for lab, v in models.items() if lab != "base"}
-    res["f1_diff_vs_base"] = {lab: {lg: f1_diff_vs_base(base, v["d"], lg, rng) for lg in LANGS}
+    fam = [(lab, kind) for lab in res["mcnemar_vs_base"] for kind in ("prompt_strict", "prompt_loose")]
+    for (lab, kind), a in zip(fam, holm([res["mcnemar_vs_base"][lab][kind]["p_exact"] for lab, kind in fam]), strict=True):
+        res["mcnemar_vs_base"][lab][kind]["p_holm_14"] = r(a)
+    fam5 = [(lab, "prompt_strict") for lab in FRONTIER]
+    for (lab, kind), a in zip(fam5, holm([res["mcnemar_vs_base"][lab][kind]["p_exact"] for lab, kind in fam5]), strict=True):
+        res["mcnemar_vs_base"][lab][kind]["p_holm_frontier_strict_5"] = r(a)
+    res["mcnemar_holm"] = {
+        "family_14": "all 14 tests in the table (7 models x prompt strict/loose)",
+        "family_frontier_strict_5": "prompt strict for u4, r5, r6, r72, u8",
+        "survive_14": [f"{lab} {kind.split('_')[1]}" for lab, kind in fam if res["mcnemar_vs_base"][lab][kind]["p_holm_14"] < 0.05],
+        "survive_frontier_strict_5": [lab for lab, _ in fam5
+                                      if res["mcnemar_vs_base"][lab]["prompt_strict"]["p_holm_frontier_strict_5"] < 0.05]}
+    res["f1_diff_vs_base"] = {lab: {lg: f1_diff_vs_base(base, v["d"], lg, rng, groups, rng_para) for lg in LANGS}
                               for lab, v in models.items() if lab != "base"}
     fr = [(lab, lg, res["f1_diff_vs_base"][lab][lg]["diff"]) for lab in FRONTIER for lg in LANGS]
     big = max(fr, key=lambda t: abs(t[2]))
@@ -358,7 +413,7 @@ def build(smoke_dir=None):
                         "base_rerun_in_job30": any(lab == "base" for lab, v in models.items() if v["job"] == "30"),
                         "code_sha": {lab: v["d"].get("code_sha") for lab, v in models.items()}}
     res["reproducibility"] = {"job29_en_vs_job25": job29_repeat(),
-                              "smoke_vs_full": smoke_vs_full(smoke_dir, models) if smoke_dir else None}
+                              "smoke_vs_full": smoke_vs_full(models)}
     res["run_log_check"] = compare_runlog(res)
     return res
 
@@ -379,7 +434,9 @@ def render_md(res):
          "Generated by `tools/report_benchmarks.py` from `kaggle/executed/12_hf_jobs/files/job26_*.json` and "
          "`job30_*.json` (per-document scores, answer sha256 and answer length; no answer text exists in these files). "
          "Every summary score was recomputed from `per_doc` and asserted equal to the lm-eval summary in the same file. "
-         f"Bootstrap: B = {res['bootstrap']['B']}, numpy `default_rng({res['bootstrap']['seed']})`.", "",
+         f"Bootstrap: B = {res['bootstrap']['B']}, numpy `default_rng({res['bootstrap']['seed']})` (per question or "
+         f"prompt) and `default_rng({res['bootstrap']['seed_by_paragraph']})` (XQuAD by paragraph). "
+         f"Rebuild: `{res['run_command']}`.", "",
          "All runs: lm-evaluation-harness 0.4.13, greedy, chat template, no system instruction, bf16 compute, batch 32, "
          "L40S. Job 30 variants are compressed-tensors checkpoints that transformers decompresses on load, so these are "
          "quality numbers for the quantized weights, not speed or memory numbers.", "",
@@ -398,14 +455,22 @@ def render_md(res):
     L += ["", f"Instruction-level n = {n_inst} instructions; the naive Wilson interval over instructions (in the JSON) "
           "is narrower than the by-prompt bootstrap because instructions in one prompt are correlated. Clopper-Pearson "
           "intervals for the prompt-level rates are in the JSON.", "",
-          "### Paired exact McNemar vs base (prompt level; exploratory, uncorrected, cross-job)", "",
-          "| Model | Strict: base-only / model-only | p | Loose: base-only / model-only | p |", "|---|---|---|---|---|"]
+          "### Paired exact McNemar vs base (prompt level; exploratory, cross-job)", "",
+          "| Model | Strict: base-only / model-only | p | p Holm (14) | p Holm (5 frontier strict) | "
+          "Loose: base-only / model-only | p | p Holm (14) |", "|---|---|---|---|---|---|---|---|"]
     for lab in labs[1:]:
         s, lo = res["mcnemar_vs_base"][lab]["prompt_strict"], res["mcnemar_vs_base"][lab]["prompt_loose"]
-        L.append(f"| {lab} | {s['base_only']} / {s['model_only']} | {fmt_p(s['p_exact'])} | {lo['base_only']} / "
-                 f"{lo['model_only']} | {fmt_p(lo['p_exact'])} |")
+        h5 = s.get("p_holm_frontier_strict_5")
+        L.append(f"| {lab} | {s['base_only']} / {s['model_only']} | {fmt_p(s['p_exact'])} | {fmt_p(s['p_holm_14'])} | "
+                 f"{'-' if h5 is None else fmt_p(h5)} | {lo['base_only']} / {lo['model_only']} | {fmt_p(lo['p_exact'])} | "
+                 f"{fmt_p(lo['p_holm_14'])} |")
     cj = res["cross_job"]
-    L += ["", f"No p value is corrected for the {2 * (len(labs) - 1)} tests in this table. **Every comparison is "
+    mh = res["mcnemar_holm"]
+    L += ["", f"Holm families: (14) {mh['family_14']}; (5) {mh['family_frontier_strict_5']}. Surviving Holm at 0.05 in "
+          f"the 14-test family: {', '.join(mh['survive_14'])}. In the 5-test frontier-strict family: "
+          f"{', '.join(mh['survive_frontier_strict_5'])}. So an IFEval prompt-strict drop vs base survives correction "
+          "only for u4 (and the Alpaca fine-tune); r5, r6 and r72 strict are nominal only (uncorrected p < 0.05), not "
+          "significant after Holm. **Every comparison is "
           f"cross-job.** The eight result files come from {cj['n_distinct_hf_jobs']} distinct HF Jobs (each Job 26 "
           "model ran in its own job; Job 30 ran u4/u8/r72 in one job and r5/r6 in another), and Job 30 has no base "
           "rerun. Job 30 used script `ba121a7` (Job 26: `5a45d23`; `bench()` stated unchanged), the same packages, "
@@ -423,13 +488,15 @@ def render_md(res):
     if sv:
         parts = []
         for lab, v in sv.items():
-            if "missing" in v:
+            if not isinstance(v, dict) or "ifeval" not in v:
                 continue
             parts.append(f"{lab}: IFEval {v['ifeval']['hash_equal']}/{v['ifeval']['n']} (prompt-strict flag equal "
                          f"{v['ifeval']['score_equal']}/{v['ifeval']['n']}), XQuAD en/hi/es "
                          f"{v['xquad_en']['hash_equal']}/{v['xquad_hi']['hash_equal']}/{v['xquad_es']['hash_equal']} of 5")
         L.append("- Same model, same code, different batch composition: the 5-document smoke runs "
-                 "(`results/job26-test/*`, `results/job30-test/u4.json`, private jobs repo) vs the full runs, identical "
+                 "(`results/job26-test/*`, `results/job30-test/u4.json` in the private jobs repo at revision "
+                 f"`{sv['smoke_jobs_rev']}`; doc ids, answer sha256 and scored flags copied to `{sv['source']}`, no "
+                 "text) vs the full runs, identical "
                  "answer hashes: " + "; ".join(parts) + ". IFEval answers (up to 1280 tokens) mostly change when the "
                  "batch changes, so bf16 batched greedy generation here is not batch-invariant, though the strict flags of "
                  "these few prompts mostly survive. Five documents per task is far too few to size the noise.")
@@ -439,32 +506,42 @@ def render_md(res):
           "the same hashes. Job 22 found generation repeatable within a job but not always across jobs. The McNemar "
           "counts therefore include any run-to-run noise as well as the quantization effect; the size of that noise "
           "was not measured for IFEval.", "", "## XQuAD (500 questions per language, same ids in every run)", "",
-          "| Model | Lang | F1 [boot 95%] | EM k/500 [Wilson 95%] | Mean chars | Median chars | Empty | F1 non-empty |",
+          "| Model | Lang | F1 [boot 95%, by paragraph] | EM k/500 [Wilson 95%] | Mean chars | Median chars | Empty | "
+          "F1 non-empty |",
           "|---|---|---|---|---|---|---|---|"]
     for lab in labs:
         for lg in LANGS:
             x = M[lab]["xquad"][lg]
-            L.append(f"| {lab} | {lg} | {x['f1']:.3f} {fmt_ci(x['f1_boot95'])} | {x['em_k']} "
+            L.append(f"| {lab} | {lg} | {x['f1']:.3f} {fmt_ci(x['f1_boot95_by_paragraph'])} | {x['em_k']} "
                      f"{fmt_ci(x['em_wilson95'])} | {x['mean_chars']:.1f} | {x['median_chars']:g} | {x['n_empty']} | "
                      f"{x['f1_nonempty']:.3f} |")
     L += ["", "Exact match is 0 to 16 of 500 everywhere because chat-style answers are much longer than the gold span; "
           "F1 is the usable number, and it depends on answer length (the Alpaca fine-tune answers 2-3 times shorter and "
           "gets the highest F1; that is not read as better QA). SQuAD normalisation is English-centric (the Hindi danda is "
-          "not stripped).", "", "### XQuAD F1 difference vs base (paired bootstrap 95%, descriptive)", "",
+          "not stripped).", "",
+          f"The 500 XQuAD questions come from {res['bootstrap']['xquad_paragraphs']['n_paragraphs']} paragraphs "
+          f"(`{res['bootstrap']['xquad_paragraphs']['file']}`, ids only), so F1 intervals resample paragraphs. The "
+          "per-question bootstrap (`f1_boot95`, `boot95` in the JSON) ignores this clustering and is kept for comparison.",
+          "", "### XQuAD F1 difference vs base (paired bootstrap 95%, descriptive)", "",
+          "Each cell: difference, [paragraph bootstrap], (per-question bootstrap). Uncorrected over the 15 frontier cells "
+          "(and 6 more for the Job 26 models); an interval that excludes 0 is not read as a difference.", "",
           "| Model | en | hi | es |", "|---|---|---|---|"]
     for lab in labs[1:]:
-        cells = [f"{res['f1_diff_vs_base'][lab][lg]['diff']:+.3f} {fmt_ci(res['f1_diff_vs_base'][lab][lg]['boot95'])}"
+        cells = [f"{res['f1_diff_vs_base'][lab][lg]['diff']:+.3f} "
+                 f"{fmt_ci(res['f1_diff_vs_base'][lab][lg]['boot95_by_paragraph'])} "
+                 f"({res['f1_diff_vs_base'][lab][lg]['boot95'][0]:.3f}, {res['f1_diff_vs_base'][lab][lg]['boot95'][1]:.3f})"
                  for lg in LANGS]
         L.append(f"| {lab} | " + " | ".join(cells) + " |")
     mx = res["frontier_max_abs_f1_diff"]
-    L += ["", f"Largest absolute F1 change among the five frontier variants: {mx['model']} {mx['lang']} {mx['diff']:+.3f}. "
+    L += ["", f"Largest absolute F1 change among the five frontier variants: {mx['model']} {mx['lang']} {mx['diff']:+.3f}; "
+          "every frontier F1 change is within about 0.02 of base and none is claimed as real. "
           "Cross-job caveat as for McNemar; empty answers (below) feed into these differences."]
     eo = res["empty_overlap"]
     L += ["", "## Empty XQuAD answers", "",
           "XQuAD generation stops at the first newline (`until: ['\\n']`), and an empty answer has answer_chars 0 and the "
-          "sha256 of the empty string in every file. An answer is therefore empty whenever the first generated text is a "
-          "newline. The files hold no text or token ids, so that mechanism cannot be confirmed here; it is the only "
-          "path to an empty string under these settings that the stored metadata leaves open.", "",
+          "sha256 of the empty string in every file. An answer is empty when generation stops before any visible text, "
+          "either at a leading newline (`until: ['\\n']`) or at an immediate end-of-turn/EOS token; the files hold no text "
+          "or token ids, so the cause cannot be determined here.", "",
           "| Model | Empty en / hi / es | hi: also empty in base | hi: new vs base | hi: base-empty not empty here |",
           "|---|---|---|---|---|"]
     for lab in labs:
@@ -476,10 +553,10 @@ def render_md(res):
     L += ["", f"Hindi questions empty in all seven non-Alpaca models: {eo['hi']['empty_in_all_7_non_alpaca']}; empty in "
           f"at least one model: {eo['hi']['empty_in_any']}. u4's {u4['n_empty']} Hindi empties contain "
           f"{u4['also_empty_in_base']} of base's {M['base']['xquad']['hi']['n_empty']} and add {u4['not_empty_in_base']} "
-          "new ones, so u4 shifts more Hindi questions into the same empty-answer behaviour base already shows rather "
-          "than failing on a disjoint set. Why 4-bit weights do this more in Hindi (and Spanish, "
+          "new ones. Why 4-bit weights give more empty answers in Hindi (and Spanish, "
           f"{M['u4']['xquad']['es']['n_empty']} vs base {M['base']['xquad']['es']['n_empty']}) than in English is "
-          "**unexplained** by these data. Since empty answers score 0, u4's Hindi F1 over non-empty answers "
+          "**unexplained** by these data, and (run-log departure (f)) u4's Hindi score is not interpreted until it is "
+          "explained. Since empty answers score 0, u4's Hindi F1 over non-empty answers "
           f"({M['u4']['xquad']['hi']['f1_nonempty']:.3f}, n = {M['u4']['xquad']['hi']['n_nonempty']}) is higher than "
           f"base's ({M['base']['xquad']['hi']['f1_nonempty']:.3f}, n = {M['base']['xquad']['hi']['n_nonempty']}); "
           "neither all-answer nor non-empty F1 is a clean Hindi QA comparison.", ""]
@@ -498,10 +575,9 @@ def render_md(res):
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("--smoke-dir", help="local folder holding job26-test/ and job30-test/ from the private jobs repo")
     ap.add_argument("--out", default=str(OUT))
     a = ap.parse_args(argv)
-    res = build(a.smoke_dir)
+    res = build()
     out = Path(a.out)
     (out / "benchmarks.json").write_text(json.dumps(res, indent=1, sort_keys=False) + "\n", encoding="utf-8")
     (out / "benchmarks.md").write_text(render_md(res), encoding="utf-8")

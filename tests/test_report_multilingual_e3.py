@@ -131,7 +131,36 @@ def test_tool_reproduces_committed_files(tmp_path, monkeypatch):
     spec = importlib.util.spec_from_file_location("e3", REPO / "tools" / "report_multilingual_e3.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
-    monkeypatch.setattr(mod, "OUT", tmp_path)
-    mod.main()
+    mod.main(["--out", str(tmp_path)])
     for name in ("multilingual_e3.json", "multilingual_e3.md"):
         assert (tmp_path / name).read_text(encoding="utf-8") == _need(REPORT / name).read_text(encoding="utf-8")
+
+
+def test_help_writes_nothing(tmp_path):
+    import subprocess
+    import sys
+
+    before = {p: p.stat().st_mtime_ns for p in REPORT.glob("multilingual_e3.*")}
+    r = subprocess.run([sys.executable, str(REPO / "tools" / "report_multilingual_e3.py"), "--help"],
+                       capture_output=True, text=True, cwd=tmp_path)
+    assert r.returncode == 0 and "--out" in r.stdout
+    assert {p: p.stat().st_mtime_ns for p in REPORT.glob("multilingual_e3.*")} == before
+
+
+def _mcnemar(b, c):
+    n = b + c
+    return 1.0 if n == 0 else min(1.0, 2 * sum(comb(n, i) for i in range(min(b, c) + 1)) / 2 ** n)
+
+
+@pytest.mark.parametrize("model,lang,k_m,k_b,om,ob,p4", [("r5", "fr", 36, 21, 18, 3, 0.0015), ("r6", "fr", 25, 21, 9, 5, 0.4240),
+                                                       ("r72", "es", 25, 27, 7, 9, 0.8036), ("r72", "fr", 23, 21, 6, 4, 0.7539)])
+def test_survivors_vs_base_same_language(model, lang, k_m, k_b, om, ob, p4):
+    r = rows()
+    fm, fb = r[(model, lang)]["flags"], r[("base", lang)]["flags"]
+    got = (sum(map(bool, fm)), sum(map(bool, fb)), sum(1 for a, b in zip(fm, fb) if a and not b),
+           sum(1 for a, b in zip(fm, fb) if b and not a))
+    assert got == (k_m, k_b, om, ob)
+    v = report()["survivors_vs_base_same_lang"][f"{model} {lang}"]
+    assert (v["k_model"], v["k_base"], v["only_model"], v["only_base"]) == got
+    assert round(v["p"], 4) == p4 == round(_mcnemar(om, ob), 4)
+    assert report()["survivors_also_above_base_same_lang"] == ["r5 fr"]

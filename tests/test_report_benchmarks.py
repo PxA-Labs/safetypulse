@@ -2,8 +2,9 @@
 
 (a) Pins the headline numbers of the committed JSON. (b) Recomputes the key ones from the tracked raw files in
 12_hf_jobs/files/ with the standard library only (no tool code imported) and asserts they equal the JSON.
-(c) Re-runs the tool into a temporary folder and checks the regenerated JSON equals the committed one (except the
-smoke-vs-full section, which needs the private jobs repo). CPU only, no network. Exploratory; no verdict is involved.
+(c) Re-runs the tool into a temporary folder and checks the regenerated JSON equals the committed one (the smoke-vs-full
+section reads the committed derived file job26_job30_smoke_hashes.json). CPU only, no network. Exploratory; no verdict
+is involved.
 """
 from __future__ import annotations
 
@@ -137,6 +138,53 @@ def test_tool_regenerates(rep, tmp_path):
     subprocess.run([sys.executable, str(REPO / "tools" / "report_benchmarks.py"), "--out", str(tmp_path)], check=True,
                    capture_output=True)
     new = json.loads((tmp_path / "benchmarks.json").read_text(encoding="utf-8"))
-    old = dict(rep)
-    new.pop("reproducibility"), old.pop("reproducibility")
-    assert new == old
+    assert new == rep
+
+
+# ---------- (d) multiplicity, reproducibility and smoke check pinned ----------
+@pytest.mark.parametrize("label,kind,holm3", [("u4", "prompt_strict", 0.046), ("u4", "prompt_loose", 0.046),
+                                              ("r5", "prompt_strict", 0.101), ("r6", "prompt_strict", 0.101),
+                                              ("r6", "prompt_loose", 0.017), ("r72", "prompt_strict", 0.207),
+                                              ("r72", "prompt_loose", 0.046)])
+def test_mcnemar_holm_14(rep, label, kind, holm3):
+    assert round(rep["mcnemar_vs_base"][label][kind]["p_holm_14"], 3) == holm3
+
+
+def test_mcnemar_holm_survivors(rep):
+    h = rep["mcnemar_holm"]
+    assert h["survive_14"] == ["alpaca_s1_125 strict", "alpaca_s1_125 loose", "u4 strict", "u4 loose", "r6 loose",
+                               "r72 loose"]
+    assert h["survive_frontier_strict_5"] == ["u4"]
+    assert round(rep["mcnemar_vs_base"]["r5"]["prompt_strict"]["p_holm_frontier_strict_5"], 3) == 0.051
+
+
+@pytest.mark.parametrize("label", ["base", "u4", "r5", "r6", "r72", "u8"])
+def test_job29_en_vs_job25(rep, label):
+    assert rep["reproducibility"]["job29_en_vs_job25"][label]["agree"] == 119
+
+
+@pytest.mark.parametrize("label,ifeval,strict_eq,xq", [("base", 1, 5, (5, 4, 5)), ("alpaca_s1_125", 2, 5, (5, 5, 5)),
+                                                       ("repaired", 2, 4, (4, 5, 5)), ("u4", 1, 4, (4, 4, 5))])
+def test_smoke_vs_full(rep, label, ifeval, strict_eq, xq):
+    sv = rep["reproducibility"]["smoke_vs_full"]
+    assert sv["smoke_jobs_rev"] == "a00444f39ca499338dae9bd62b3caed3f9d4c61b"
+    v = sv[label]
+    assert (v["ifeval"]["n"], v["ifeval"]["hash_equal"], v["ifeval"]["score_equal"]) == (5, ifeval, strict_eq)
+    assert tuple(v[f"xquad_{lg}"]["hash_equal"] for lg in ("en", "hi", "es")) == xq
+    assert all(v[f"xquad_{lg}"]["n"] == 5 for lg in ("en", "hi", "es"))
+
+
+def test_smoke_file_has_no_text():
+    d = json.loads(_need(FILES / "job26_job30_smoke_hashes.json").read_text(encoding="utf-8"))
+    for m in d["models"].values():
+        for rows in m["per_doc"].values():
+            for x in rows:
+                assert set(x) <= {"doc_id", "answer_sha256", "prompt_level_strict_acc", "f1"}
+
+
+def test_xquad_paragraphs(rep):
+    assert rep["bootstrap"]["xquad_paragraphs"]["n_paragraphs"] == 220
+    for lab in RAW:
+        for lg in ("en", "hi", "es"):
+            x = rep["models"][lab]["xquad"][lg]
+            assert x["f1_boot95_by_paragraph"][0] < x["f1"] < x["f1_boot95_by_paragraph"][1]

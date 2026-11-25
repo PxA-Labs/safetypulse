@@ -77,7 +77,36 @@
     "asr_variant_only": 0
    }
   },
+  "compressed_tok_s_b8_spread_rel": 0.064433,
+  "compressed_variants_ranked": false,
   "family": "Tiny Aya Global",
+  "fp16_speed_by_job": {
+   "25A": {
+    "tok_s_b1": 34.82,
+    "tok_s_b8": 224.82
+   },
+   "25B": {
+    "tok_s_b1": 33.35,
+    "tok_s_b8": 218.61
+   },
+   "25C": {
+    "tok_s_b1": 33.28,
+    "tok_s_b8": 217.93
+   },
+   "25D": {
+    "tok_s_b1": 35.16,
+    "tok_s_b8": 230.03
+   }
+  },
+  "fp16_tok_s_b8_range": [
+   217.93,
+   230.03
+  ],
+  "fp16_tok_s_b8_spread_rel": 0.055522,
+  "fp16_usd_b8_range": [
+   2.17363,
+   2.294315
+  ],
   "levels": [
    {
     "asr_circuit_k": 13,
@@ -123,7 +152,7 @@
      33
     ],
     "random_only": 2,
-    "reason": "random lower",
+    "reason": "p >= 0.05 (circuit - random = +4 of 119; direction not interpreted)",
     "stored_check": "job25_A_paired.json",
     "wilson_overlap": true
    },
@@ -165,7 +194,7 @@
      22
     ],
     "random_only": 1,
-    "reason": "random lower",
+    "reason": "p >= 0.05 (circuit - random = +4 of 119; direction not interpreted)",
     "stored_check": "job25_B_paired.json",
     "wilson_overlap": true
    },
@@ -201,7 +230,7 @@
      19
     ],
     "random_only": 4,
-    "reason": "equal",
+    "reason": "p >= 0.05 (circuit - random = +0 of 119; direction not interpreted)",
     "stored_check": "job25_B_paired.json",
     "wilson_overlap": true
    },
@@ -233,7 +262,7 @@
      0
     ],
     "random_only": 8,
-    "reason": "random lower",
+    "reason": "p >= 0.05 (circuit - random = +11 of 119; direction not interpreted)",
     "stored_check": "job25_C_paired.json",
     "wilson_overlap": true
    },
@@ -350,9 +379,12 @@
    {
     "collapsed": false,
     "disk_gb": 6.698489,
+    "fp16_same_job_tok_s_b8": 224.82,
+    "fp16_same_job_usd_b8": 2.224001,
     "job": "25A",
     "tok_s_b1": 34.82,
     "tok_s_b8": 224.82,
+    "tok_s_b8_ratio_to_same_job_fp16": 1.0,
     "usd_per_1M_out_b1": 14.359563,
     "usd_per_1M_out_b8": 2.224001,
     "variant": "fp16"
@@ -360,9 +392,12 @@
    {
     "collapsed": false,
     "disk_gb": 2.524069,
+    "fp16_same_job_tok_s_b8": 224.82,
+    "fp16_same_job_usd_b8": 2.224001,
     "job": "25A",
     "tok_s_b1": 22.51,
     "tok_s_b8": 157.38,
+    "tok_s_b8_ratio_to_same_job_fp16": 0.700027,
     "usd_per_1M_out_b1": 22.21235,
     "usd_per_1M_out_b8": 3.177024,
     "variant": "u4"
@@ -370,9 +405,12 @@
    {
     "collapsed": false,
     "disk_gb": 3.567674,
+    "fp16_same_job_tok_s_b8": 224.82,
+    "fp16_same_job_usd_b8": 2.224001,
     "job": "25A",
     "tok_s_b1": 23.11,
     "tok_s_b8": 160.41,
+    "tok_s_b8_ratio_to_same_job_fp16": 0.713504,
     "usd_per_1M_out_b1": 21.635656,
     "usd_per_1M_out_b8": 3.117013,
     "variant": "c72"
@@ -380,9 +418,12 @@
    {
     "collapsed": false,
     "disk_gb": 3.219806,
+    "fp16_same_job_tok_s_b8": 218.61,
+    "fp16_same_job_usd_b8": 2.287178,
     "job": "25B",
     "tok_s_b1": 22.06,
     "tok_s_b8": 155.79,
+    "tok_s_b8_ratio_to_same_job_fp16": 0.712639,
     "usd_per_1M_out_b1": 22.665458,
     "usd_per_1M_out_b8": 3.209449,
     "variant": "c6"
@@ -390,9 +431,12 @@
    {
     "collapsed": false,
     "disk_gb": 2.871938,
+    "fp16_same_job_tok_s_b8": 218.61,
+    "fp16_same_job_usd_b8": 2.287178,
     "job": "25B",
     "tok_s_b1": 21.63,
     "tok_s_b8": 150.7,
+    "tok_s_b8_ratio_to_same_job_fp16": 0.689355,
     "usd_per_1M_out_b1": 23.116043,
     "usd_per_1M_out_b8": 3.31785,
     "variant": "c5"
@@ -400,9 +444,12 @@
    {
     "collapsed": false,
     "disk_gb": 2.298255,
+    "fp16_same_job_tok_s_b8": 217.93,
+    "fp16_same_job_usd_b8": 2.294315,
     "job": "25C",
     "tok_s_b1": 21.96,
     "tok_s_b8": 152.84,
+    "tok_s_b8_ratio_to_same_job_fp16": 0.701326,
     "usd_per_1M_out_b1": 22.76867,
     "usd_per_1M_out_b8": 3.271395,
     "variant": "c35"
@@ -410,9 +457,12 @@
    {
     "collapsed": true,
     "disk_gb": 2.091971,
+    "fp16_same_job_tok_s_b8": 230.03,
+    "fp16_same_job_usd_b8": 2.17363,
     "job": "25D",
     "tok_s_b1": 22.89,
     "tok_s_b8": 160.47,
+    "tok_s_b8_ratio_to_same_job_fp16": 0.697605,
     "usd_per_1M_out_b1": 21.8436,
     "usd_per_1M_out_b8": 3.115847,
     "variant": "c3"
@@ -420,9 +470,12 @@
    {
     "collapsed": true,
     "disk_gb": 1.928413,
+    "fp16_same_job_tok_s_b8": 230.03,
+    "fp16_same_job_usd_b8": 2.17363,
     "job": "25D",
     "tok_s_b1": 22.72,
     "tok_s_b8": 159.66,
+    "tok_s_b8_ratio_to_same_job_fp16": 0.694083,
     "usd_per_1M_out_b1": 22.007042,
     "usd_per_1M_out_b8": 3.131655,
     "variant": "c1g"
@@ -1226,7 +1279,32 @@
     "asr_variant_only": 2
    }
   },
+  "compressed_tok_s_b8_spread_rel": 0.071281,
+  "compressed_variants_ranked": false,
   "family": "Aya Expanse 8B",
+  "fp16_speed_by_job": {
+   "28a": {
+    "tok_s_b1": 35.65,
+    "tok_s_b8": 241.77
+   },
+   "28b": {
+    "tok_s_b1": 34.83,
+    "tok_s_b8": 235.47
+   },
+   "28c": {
+    "tok_s_b1": 36.61,
+    "tok_s_b8": 251.32
+   }
+  },
+  "fp16_tok_s_b8_range": [
+   235.47,
+   251.32
+  ],
+  "fp16_tok_s_b8_spread_rel": 0.067312,
+  "fp16_usd_b8_range": [
+   1.989495,
+   2.123413
+  ],
   "levels": [
    {
     "asr_circuit_k": 18,
@@ -1292,7 +1370,7 @@
      29
     ],
     "random_only": 7,
-    "reason": "circuit lower but p >= 0.05",
+    "reason": "p >= 0.05 (circuit - random = -1 of 119; direction not interpreted)",
     "stored_check": "job28b_pairs.json",
     "wilson_overlap": true
    },
@@ -1326,7 +1404,7 @@
      7
     ],
     "random_only": 17,
-    "reason": "circuit lower but p >= 0.05",
+    "reason": "p >= 0.05 (circuit - random = -1 of 119; direction not interpreted)",
     "stored_check": "job28c_pairs.json",
     "wilson_overlap": true
    },
@@ -1358,7 +1436,7 @@
      3
     ],
     "random_only": 16,
-    "reason": "circuit lower but p >= 0.05",
+    "reason": "p >= 0.05 (circuit - random = -6 of 119; direction not interpreted)",
     "stored_check": "job28c_pairs.json",
     "wilson_overlap": true
    }
@@ -1382,9 +1460,12 @@
    {
     "collapsed": false,
     "disk_gb": 16.056096,
+    "fp16_same_job_tok_s_b8": 241.77,
+    "fp16_same_job_usd_b8": 2.068081,
     "job": "28a",
     "tok_s_b1": 35.65,
     "tok_s_b8": 241.77,
+    "tok_s_b8_ratio_to_same_job_fp16": 1.0,
     "usd_per_1M_out_b1": 14.025245,
     "usd_per_1M_out_b8": 2.068081,
     "variant": "fp16"
@@ -1392,9 +1473,12 @@
    {
     "collapsed": false,
     "disk_gb": 5.696219,
+    "fp16_same_job_tok_s_b8": 241.77,
+    "fp16_same_job_usd_b8": 2.068081,
     "job": "28a",
     "tok_s_b1": 23.82,
     "tok_s_b8": 169.61,
+    "tok_s_b8_ratio_to_same_job_fp16": 0.701535,
     "usd_per_1M_out_b1": 20.990764,
     "usd_per_1M_out_b8": 2.947939,
     "variant": "w4"
@@ -1402,9 +1486,12 @@
    {
     "collapsed": false,
     "disk_gb": 11.847396,
+    "fp16_same_job_tok_s_b8": 235.47,
+    "fp16_same_job_usd_b8": 2.123413,
     "job": "28b",
     "tok_s_b1": 25.26,
     "tok_s_b8": 179.67,
+    "tok_s_b8_ratio_to_same_job_fp16": 0.763027,
     "usd_per_1M_out_b1": 19.794141,
     "usd_per_1M_out_b8": 2.78288,
     "variant": "w4p19c"
@@ -1412,9 +1499,12 @@
    {
     "collapsed": false,
     "disk_gb": 5.525822,
+    "fp16_same_job_tok_s_b8": 251.32,
+    "fp16_same_job_usd_b8": 1.989495,
     "job": "28c",
     "tok_s_b1": 25.31,
     "tok_s_b8": 181.7,
+    "tok_s_b8_ratio_to_same_job_fp16": 0.722983,
     "usd_per_1M_out_b1": 19.755038,
     "usd_per_1M_out_b8": 2.751789,
     "variant": "w3p2c"
@@ -1422,9 +1512,12 @@
    {
     "collapsed": false,
     "disk_gb": 5.174813,
+    "fp16_same_job_tok_s_b8": 251.32,
+    "fp16_same_job_usd_b8": 1.989495,
     "job": "28c",
     "tok_s_b1": 25.04,
     "tok_s_b8": 178.77,
+    "tok_s_b8_ratio_to_same_job_fp16": 0.711324,
     "usd_per_1M_out_b1": 19.968051,
     "usd_per_1M_out_b8": 2.79689,
     "variant": "w3p1c"
@@ -1893,6 +1986,15 @@
   }
  ],
  "collapse_rule": "task < 0.1 (as Job 30's frontier rule); collapsed ASR is not a safety result",
+ "figures": {
+  "matplotlib": "3.11.2",
+  "rebuild_command": "uv run --no-project --with matplotlib==3.11.2 python tools/report_circuitquant.py --figures",
+  "sha256": {
+   "fig_quant_asr.pdf": "709df4070fcae319a827716cd55496b90de7c3154ad4162f3c0e7b3255c14d42",
+   "fig_quant_size.pdf": "448d8fa3beddf6d3441fc32f03bdc063cf4f2feb1c70dc366214b12b450bf51b",
+   "fig_quant_speed.pdf": "28914f3bdd5fccb1bf0fb53642d91ab63b0238b8bb6f06846912480314934d18"
+  }
+ },
  "nf4_notebook17": {
   "cis_sep": {
    "fp16": 0.989654,
@@ -1945,12 +2047,137 @@
    "nf4": "PASS"
   }
  },
+ "provenance": {
+  "25A": {
+   "bundle": [
+    "purvansh01/safetypulse-probe-bundle",
+    "de9dc195cc8a8d2afca5bf8634ac3686b7d0ce2a"
+   ],
+   "calib_mode": "chat",
+   "eval": [
+    "purvansh01/safetypulse-eval",
+    "5e49af71c0553360581285feb73642bfff75ed2c"
+   ],
+   "hf_job_id": "6b05f178d0582cfbbefcf9c8",
+   "judge": "meta-llama/Llama-Guard-3-1B",
+   "judge_rev": "acf7aafa60f0410f8f42b1fa35e077d705892029",
+   "model": "CohereLabs/tiny-aya-global",
+   "model_rev": "af89d219b53ed9b13b8a4645f9c8028973510324",
+   "package_commit": "106e9ee6f1000271f31107467ab82f66adbdb446",
+   "scores_jobs_rev": "5f8aa2ba39579e60c5f67b59239aa923275c2bab",
+   "script_commit": "d92677a (tools/hf_jobs/job25_e1_quant_sweep.py)",
+   "wikitext_rev": "b08601e04326c79dfdd32d625aee71d232d685c3"
+  },
+  "25B": {
+   "bundle": [
+    "purvansh01/safetypulse-probe-bundle",
+    "de9dc195cc8a8d2afca5bf8634ac3686b7d0ce2a"
+   ],
+   "calib_mode": "chat",
+   "eval": [
+    "purvansh01/safetypulse-eval",
+    "5e49af71c0553360581285feb73642bfff75ed2c"
+   ],
+   "hf_job_id": "6b05f1cc1460ffe1d5e90665",
+   "judge": "meta-llama/Llama-Guard-3-1B",
+   "judge_rev": "acf7aafa60f0410f8f42b1fa35e077d705892029",
+   "model": "CohereLabs/tiny-aya-global",
+   "model_rev": "af89d219b53ed9b13b8a4645f9c8028973510324",
+   "package_commit": "106e9ee6f1000271f31107467ab82f66adbdb446",
+   "scores_jobs_rev": "5f8aa2ba39579e60c5f67b59239aa923275c2bab",
+   "script_commit": "d92677a (tools/hf_jobs/job25_e1_quant_sweep.py)",
+   "wikitext_rev": "b08601e04326c79dfdd32d625aee71d232d685c3"
+  },
+  "25C": {
+   "bundle": [
+    "purvansh01/safetypulse-probe-bundle",
+    "de9dc195cc8a8d2afca5bf8634ac3686b7d0ce2a"
+   ],
+   "calib_mode": "chat",
+   "eval": [
+    "purvansh01/safetypulse-eval",
+    "5e49af71c0553360581285feb73642bfff75ed2c"
+   ],
+   "hf_job_id": "6b05f1f2d0582cfbbefcfa5d",
+   "judge": "meta-llama/Llama-Guard-3-1B",
+   "judge_rev": "acf7aafa60f0410f8f42b1fa35e077d705892029",
+   "model": "CohereLabs/tiny-aya-global",
+   "model_rev": "af89d219b53ed9b13b8a4645f9c8028973510324",
+   "package_commit": "106e9ee6f1000271f31107467ab82f66adbdb446",
+   "scores_jobs_rev": "5f8aa2ba39579e60c5f67b59239aa923275c2bab",
+   "script_commit": "d92677a (tools/hf_jobs/job25_e1_quant_sweep.py)",
+   "wikitext_rev": "b08601e04326c79dfdd32d625aee71d232d685c3"
+  },
+  "25D": {
+   "bundle": [
+    "purvansh01/safetypulse-probe-bundle",
+    "de9dc195cc8a8d2afca5bf8634ac3686b7d0ce2a"
+   ],
+   "calib_mode": "chat",
+   "eval": [
+    "purvansh01/safetypulse-eval",
+    "5e49af71c0553360581285feb73642bfff75ed2c"
+   ],
+   "hf_job_id": "6b05f2161460ffe1d5e906da",
+   "judge": "meta-llama/Llama-Guard-3-1B",
+   "judge_rev": "acf7aafa60f0410f8f42b1fa35e077d705892029",
+   "model": "CohereLabs/tiny-aya-global",
+   "model_rev": "af89d219b53ed9b13b8a4645f9c8028973510324",
+   "package_commit": "106e9ee6f1000271f31107467ab82f66adbdb446",
+   "scores_jobs_rev": "5f8aa2ba39579e60c5f67b59239aa923275c2bab",
+   "script_commit": "d92677a (tools/hf_jobs/job25_e1_quant_sweep.py)",
+   "wikitext_rev": "b08601e04326c79dfdd32d625aee71d232d685c3"
+  },
+  "28a": {
+   "bundle_rev": "850e3557bf9ebcbbef93f057d0e84305e417433a",
+   "circuit_rev": "54a46ad0a8da46c8161835ba3696860624708754 -e SP_CIRCUIT_SHA=10ca4b7e6749b1c5a264fe4d62111a5cd2263135421014abc1b2416129c44e83 -e SP_VARIANT_MIN=22",
+   "circuit_sha256": null,
+   "eval_rev": "5e49af71c0553360581285feb73642bfff75ed2c",
+   "hf_job_id": "6b05d87ad0582cfbbefccad0",
+   "judge": "meta-llama/Llama-Guard-3-1B",
+   "judge_rev": "acf7aafa60f0410f8f42b1fa35e077d705892029",
+   "model": "CohereLabs/aya-expanse-8b",
+   "model_rev": "5062468bf9bc0c6035fd64e06274333ec127d980",
+   "note": "circuit_rev holds the launch quoting-bug string and circuit_sha256 is null; 28a builds only uniform variants and does not read the circuit file (RUN_SUMMARY Job 28)",
+   "package_commit": "cd72fc60f753fe76d443aeb1e77ae4f4623c2d1d",
+   "script_commit": "a8f78060908f25737bdb47f4ec3715d9afac4d9f (tools/hf_jobs/job28_e5_expanse_quant.py)"
+  },
+  "28b": {
+   "bundle_rev": "850e3557bf9ebcbbef93f057d0e84305e417433a",
+   "circuit_rev": "54a46ad0a8da46c8161835ba3696860624708754",
+   "circuit_sha256": "10ca4b7e6749b1c5a264fe4d62111a5cd2263135421014abc1b2416129c44e83",
+   "eval_rev": "5e49af71c0553360581285feb73642bfff75ed2c",
+   "hf_job_id": "6b060042d0582cfbbefd1122",
+   "judge": "meta-llama/Llama-Guard-3-1B",
+   "judge_rev": "acf7aafa60f0410f8f42b1fa35e077d705892029",
+   "model": "CohereLabs/aya-expanse-8b",
+   "model_rev": "5062468bf9bc0c6035fd64e06274333ec127d980",
+   "package_commit": "cd72fc60f753fe76d443aeb1e77ae4f4623c2d1d",
+   "script_commit": "a8f78060908f25737bdb47f4ec3715d9afac4d9f (tools/hf_jobs/job28_e5_expanse_quant.py)"
+  },
+  "28c": {
+   "bundle_rev": "850e3557bf9ebcbbef93f057d0e84305e417433a",
+   "circuit_rev": "54a46ad0a8da46c8161835ba3696860624708754",
+   "circuit_sha256": "10ca4b7e6749b1c5a264fe4d62111a5cd2263135421014abc1b2416129c44e83",
+   "eval_rev": "5e49af71c0553360581285feb73642bfff75ed2c",
+   "hf_job_id": "6b060067d0582cfbbefd1160",
+   "judge": "meta-llama/Llama-Guard-3-1B",
+   "judge_rev": "acf7aafa60f0410f8f42b1fa35e077d705892029",
+   "model": "CohereLabs/aya-expanse-8b",
+   "model_rev": "5062468bf9bc0c6035fd64e06274333ec127d980",
+   "package_commit": "cd72fc60f753fe76d443aeb1e77ae4f4623c2d1d",
+   "script_commit": "a8f78060908f25737bdb47f4ec3715d9afac4d9f (tools/hf_jobs/job28_e5_expanse_quant.py)"
+  }
+ },
+ "roi_note": "Output price only, at matched cost, not matched quality: a ~3B (Tiny Aya) or 8B (Aya Expanse) open model is not of comparable quality to the closed-source models listed. At batch 1 every variant is above all three closed-source output prices.",
  "roi_vs_closed": [
   {
    "below_closed_out_price": [
     "Claude Sonnet 5.5",
     "Gemini 3.8 Flash"
    ],
+   "below_closed_out_price_b1": [],
+   "usd_per_1M_out_b1": 14.359563,
    "usd_per_1M_out_b8": 2.224001,
    "variant": "E1:fp16"
   },
@@ -1959,6 +2186,8 @@
     "Claude Sonnet 5.5",
     "Gemini 3.8 Flash"
    ],
+   "below_closed_out_price_b1": [],
+   "usd_per_1M_out_b1": 22.21235,
    "usd_per_1M_out_b8": 3.177024,
    "variant": "E1:u4"
   },
@@ -1967,6 +2196,8 @@
     "Claude Sonnet 5.5",
     "Gemini 3.8 Flash"
    ],
+   "below_closed_out_price_b1": [],
+   "usd_per_1M_out_b1": 21.635656,
    "usd_per_1M_out_b8": 3.117013,
    "variant": "E1:c72"
   },
@@ -1975,6 +2206,8 @@
     "Claude Sonnet 5.5",
     "Gemini 3.8 Flash"
    ],
+   "below_closed_out_price_b1": [],
+   "usd_per_1M_out_b1": 22.665458,
    "usd_per_1M_out_b8": 3.209449,
    "variant": "E1:c6"
   },
@@ -1983,6 +2216,8 @@
     "Claude Sonnet 5.5",
     "Gemini 3.8 Flash"
    ],
+   "below_closed_out_price_b1": [],
+   "usd_per_1M_out_b1": 23.116043,
    "usd_per_1M_out_b8": 3.31785,
    "variant": "E1:c5"
   },
@@ -1991,6 +2226,8 @@
     "Claude Sonnet 5.5",
     "Gemini 3.8 Flash"
    ],
+   "below_closed_out_price_b1": [],
+   "usd_per_1M_out_b1": 22.76867,
    "usd_per_1M_out_b8": 3.271395,
    "variant": "E1:c35"
   },
@@ -1999,6 +2236,8 @@
     "Claude Sonnet 5.5",
     "Gemini 3.8 Flash"
    ],
+   "below_closed_out_price_b1": [],
+   "usd_per_1M_out_b1": 14.025245,
    "usd_per_1M_out_b8": 2.068081,
    "variant": "E5:fp16"
   },
@@ -2007,6 +2246,8 @@
     "Claude Sonnet 5.5",
     "Gemini 3.8 Flash"
    ],
+   "below_closed_out_price_b1": [],
+   "usd_per_1M_out_b1": 20.990764,
    "usd_per_1M_out_b8": 2.947939,
    "variant": "E5:w4"
   },
@@ -2015,6 +2256,8 @@
     "Claude Sonnet 5.5",
     "Gemini 3.8 Flash"
    ],
+   "below_closed_out_price_b1": [],
+   "usd_per_1M_out_b1": 19.794141,
    "usd_per_1M_out_b8": 2.78288,
    "variant": "E5:w4p19c"
   },
@@ -2023,6 +2266,8 @@
     "Claude Sonnet 5.5",
     "Gemini 3.8 Flash"
    ],
+   "below_closed_out_price_b1": [],
+   "usd_per_1M_out_b1": 19.755038,
    "usd_per_1M_out_b8": 2.751789,
    "variant": "E5:w3p2c"
   },
@@ -2031,10 +2276,13 @@
     "Claude Sonnet 5.5",
     "Gemini 3.8 Flash"
    ],
+   "below_closed_out_price_b1": [],
+   "usd_per_1M_out_b1": 19.968051,
    "usd_per_1M_out_b8": 2.79689,
    "variant": "E5:w3p1c"
   }
  ],
+ "run_command": "uv run python tools/report_circuitquant.py (or .venv/bin/python; needs Python >= 3.10)",
  "run_log_check": [
   {
    "item": "E1 c72/r72 ASR k, discordant, p",
@@ -2502,7 +2750,34 @@
    "kaggle/executed/12_hf_jobs/files/job28c_pairs.json"
   ],
   "NF4": "kaggle/executed/17_quantized_eval/files/quant_eval.json",
-  "closed_prices": "docs/report/REPORT.md §4.8 (Stage 1 ROI)"
+  "closed_prices": "docs/report/REPORT.md §4.8 (Stage 1 ROI)",
+  "jobs_repo": "purvansh01/safetypulse-jobs (private) @ 03948cfa1a3238619cf420569d1d0e6f842ee15b, copied in commit a69c59a",
+  "sha256": {
+   "kaggle/executed/12_hf_jobs/files/job25_A_paired.json": "4bcb669423c5f88db756c7b94c1ee1d19ef7cf26c384f7a62da745d4568cc5a6",
+   "kaggle/executed/12_hf_jobs/files/job25_A_rows.jsonl": "f7a943ccd55095b6dc4bd775f37a168b3dd6fc954a835ae68582fcc1f2b7cc7c",
+   "kaggle/executed/12_hf_jobs/files/job25_A_summary.json": "14335825c9a7671f84274df6f6d29a899446adb6710dbcd1476d83cf4b81d1d0",
+   "kaggle/executed/12_hf_jobs/files/job25_B_paired.json": "7b4d124048ad471ee7d357b7d6afe8b7df3eeff0c3ba95a6071bb939ce3ca32a",
+   "kaggle/executed/12_hf_jobs/files/job25_B_rows.jsonl": "05dec4e32a438b24d7de0d6defee8b57a12e6ed0e4d3f1e0482461f03dedea5c",
+   "kaggle/executed/12_hf_jobs/files/job25_B_summary.json": "148ba6213f05c42e69f0737dc8c747ce2a5f9a05c980a8682813dc3db9e1bfdb",
+   "kaggle/executed/12_hf_jobs/files/job25_C_paired.json": "6c7b4dae75ede96c8a498ccc33387b790fdab73e912773574ca94a2a1e20e350",
+   "kaggle/executed/12_hf_jobs/files/job25_C_rows.jsonl": "a3c67ea72675e1aca5bb586bcbc72fc830caa0d79ae492429c5a9dab56ba92c3",
+   "kaggle/executed/12_hf_jobs/files/job25_C_summary.json": "8976e633f9213e04d423c0c3276585a556f9c9c951043b723c81f70377fde10e",
+   "kaggle/executed/12_hf_jobs/files/job25_D_paired.json": "ad1a8c725f7b1992bc08bebbf5c615c831047078fa853cef5bd7cddfca8b27c5",
+   "kaggle/executed/12_hf_jobs/files/job25_D_rows.jsonl": "73fd66cf93aa5979e30af0f68e7cf32decdc04775186cd3fddeacbfb1093d6e1",
+   "kaggle/executed/12_hf_jobs/files/job25_D_summary.json": "8b020ed4d18445f920e4a795b7dfeaadd8b907849c3f9df6da291647f502077a",
+   "kaggle/executed/12_hf_jobs/files/job25_circuit_scores.json": "c753c1ee07cca0ea04af09f86bc904ab99cc34cc12e725ea960ed5a6f4a243b1",
+   "kaggle/executed/12_hf_jobs/files/job28_circuit.json": "10ca4b7e6749b1c5a264fe4d62111a5cd2263135421014abc1b2416129c44e83",
+   "kaggle/executed/12_hf_jobs/files/job28a_pairs.json": "463da9954486a8e8d26ca34bd71f9d68abd7fc1f0957372fa505a4090d3ef0bd",
+   "kaggle/executed/12_hf_jobs/files/job28a_summary.json": "514ed6592d5477d3e05dca4797c3bfa4dedb36458c609bcc01d5386bffea517d",
+   "kaggle/executed/12_hf_jobs/files/job28a_variants.jsonl": "03d3e78466ff7a0c238e4ed3b97fdc5bb41e2f5c9f8a265154a6ce52aa10b26a",
+   "kaggle/executed/12_hf_jobs/files/job28b_pairs.json": "d0c6c90a50b03df7e05167b274703e16533f560c1d200ffa85216fa43ef99c03",
+   "kaggle/executed/12_hf_jobs/files/job28b_summary.json": "0b6ef9abe92d0b3263caa16b90c3962c9be7b98360720ca9a0e27ad773104a4d",
+   "kaggle/executed/12_hf_jobs/files/job28b_variants.jsonl": "85f79320b8cf16231cc0a0add0fbe9474bcdc1c9a377e8ad4f93baa83cd202b7",
+   "kaggle/executed/12_hf_jobs/files/job28c_pairs.json": "b30353420f89b5621fdb16e822f888892a7a30bb03a6831f79161444e6ea6c32",
+   "kaggle/executed/12_hf_jobs/files/job28c_summary.json": "578115e2f8720cb0e4f1c78d77c7790f1461634df7bdb47b9ff222083196f366",
+   "kaggle/executed/12_hf_jobs/files/job28c_variants.jsonl": "e33612715d8a0a96f277218746b8073e9074296299d4bfb72ddb3af6a280e35a",
+   "kaggle/executed/17_quantized_eval/files/quant_eval.json": "6ffc8b604cad0b33f56e2a904ef9a3cf860a9edf3777bb2946d8a006363cb888"
+  }
  },
  "stage1_breakeven": {
   "basis": "A10G endpoint $1.00/h, ~250 tok/s (HF Job 2, plain transformers)",

@@ -367,7 +367,10 @@ EXECUTED = REPO / "kaggle" / "executed"
 CURATION = EXECUTED / "13_curatorkit_alpaca" / "files" / "curation_report.json"
 TRAIN_LOGS = {   # name used in paper_numbers.json -> tracked train_log.json
     **{p.name.split("__")[0]: p for p in (EXECUTED / "07_finetune_checkpoints" / "files").glob("*__train_log.json")},
-    **{p.name.split("_train_log")[0]: p for p in (EXECUTED / "12_hf_jobs" / "files").glob("job*_train_log.json")},
+    # Job 27 (E4) trains on the AlignTune default recipe, not the paper's shared LoRA recipe, and its log has a
+    # different schema; it is covered by tests/test_report_expanse_default.py.
+    **{p.name.split("_train_log")[0]: p for p in (EXECUTED / "12_hf_jobs" / "files").glob("job*_train_log.json")
+       if not p.name.startswith("job27_")},
     "alpacacur-s0": EXECUTED / "13_curatorkit_alpaca" / "files" / "alpacacur-s0__train_log.json",
 }
 

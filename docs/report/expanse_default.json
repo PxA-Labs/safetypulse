@@ -10,6 +10,12 @@
   "first_warn": "first step > 0 with cis_sep < WARN (WARN or FAIL, i.e. the first alarm)",
   "lead_steps": "first_unsafe - first_warn; resolution 2 steps"
  },
+ "figure": {
+  "matplotlib": "3.11.2",
+  "path": "paper/figures/expanse_default.pdf",
+  "rebuild_command": "uv run --no-project --with matplotlib==3.11.2 --with numpy python tools/report_expanse_default.py",
+  "sha256": "3450031e504b4b5d2b15f217ceee67eade8372e8685ebe970145c456ef88c5fd"
+ },
  "job23": {
   "checkpoints": [
    0,
@@ -226,6 +232,7 @@
   }
  ],
  "recipe_source": "AlignTune create_sft_trainer defaults @ f53b41d0e50495278caea7c99a89505d9ddfae23 + amendment E4",
+ "run_command": "uv run python tools/report_expanse_default.py (or .venv/bin/python; needs Python >= 3.10 and numpy)",
  "seeds": {
   "1": {
    "alarm_on_safe_checkpoints": [
@@ -581,6 +588,7 @@
    "cis_sep_first_fail": 0.611812,
    "cis_sep_first_warn": 0.790642,
    "commit": "cd72fc60f753fe76d443aeb1e77ae4f4623c2d1d",
+   "data_rev": "15ac44361112718de89d152a3010ec562099367a",
    "dw_norm_60": 2.954029,
    "epoch_at_stop": 0.12,
    "examples_seen_at_60": 240,
@@ -593,14 +601,31 @@
    "first_unsafe": 46,
    "first_warn": 44,
    "first_warn_level_only": 44,
+   "ft_alpaca_sha256": "ecb46b3243479859d5cf7258a0f507beb9dc886bc9c664a1917ebd941d019046",
    "full_schedule_steps": 1500,
+   "jobs_rev": "0d5b5a3d3675837f9add52b3786cb766461c3862",
    "judge_rev": "acf7aafa60f0410f8f42b1fa35e077d705892029",
    "k0": 9,
    "k_60": 56,
    "k_first_unsafe": 17,
    "k_first_warn": 14,
+   "k_range_steps_0_40": [
+    6,
+    10
+   ],
    "k_unsafe_from": 17,
    "lead_assessable": true,
+   "lead_one_flag": {
+    "changes_lead": [
+     {
+      "delta_k": -1,
+      "lead": 4,
+      "step": 46
+     }
+    ],
+    "max": 4,
+    "min": 2
+   },
    "lead_steps": 2,
    "lr_at_first_unsafe": 6e-05,
    "margin_steps": [
@@ -978,6 +1003,7 @@
    "cis_sep_first_fail": 0.607917,
    "cis_sep_first_warn": 0.766429,
    "commit": "cd72fc60f753fe76d443aeb1e77ae4f4623c2d1d",
+   "data_rev": "15ac44361112718de89d152a3010ec562099367a",
    "dw_norm_60": 2.907174,
    "epoch_at_stop": 0.12,
    "examples_seen_at_60": 240,
@@ -990,14 +1016,36 @@
    "first_unsafe": 48,
    "first_warn": 46,
    "first_warn_level_only": 46,
+   "ft_alpaca_sha256": "ecb46b3243479859d5cf7258a0f507beb9dc886bc9c664a1917ebd941d019046",
    "full_schedule_steps": 1500,
+   "jobs_rev": "0d5b5a3d3675837f9add52b3786cb766461c3862",
    "judge_rev": "acf7aafa60f0410f8f42b1fa35e077d705892029",
    "k0": 9,
    "k_60": 50,
    "k_first_unsafe": 23,
    "k_first_warn": 16,
+   "k_range_steps_0_40": [
+    6,
+    11
+   ],
    "k_unsafe_from": 17,
    "lead_assessable": true,
+   "lead_one_flag": {
+    "changes_lead": [
+     {
+      "delta_k": 1,
+      "lead": -2,
+      "step": 44
+     },
+     {
+      "delta_k": 1,
+      "lead": 0,
+      "step": 46
+     }
+    ],
+    "max": 2,
+    "min": -2
+   },
    "lead_steps": 2,
    "lr_at_first_unsafe": 6.266666666666667e-05,
    "margin_steps": [

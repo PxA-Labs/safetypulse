@@ -16,12 +16,17 @@ rows / paired files are checked against the recomputation, and the run-log numbe
 
 Speed and memory: under HF transformers the compressed-tensors checkpoints are decompressed and run dense, so the
 tokens/s and peak-VRAM columns are dense-path HF-generate measurements (batch 8 unless stated), not quantized-kernel
-numbers. On-disk size is the only real saving measured. GB = 1e9 bytes, GiB = 2**30 bytes.
+numbers. In Jobs 25 and 28, on-disk size is the only real saving measured. GB = 1e9 bytes, GiB = 2**30 bytes.
 
-Usage: python tools/report_circuitquant.py [--figures]
+Usage (needs Python >= 3.10, i.e. the repo environment):
+  uv run python tools/report_circuitquant.py                    (report only; or .venv/bin/python)
+  uv run --no-project --with matplotlib==3.11.2 python tools/report_circuitquant.py --figures   (report + figures)
+The committed figures were built with matplotlib 3.11.2 and rebuild byte-identically with it; their sha256 are in
+the JSON (`figures`).
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import sys
@@ -54,6 +59,18 @@ CLOSED = [
      "cited_in": "docs/report/REPORT.md §4.8; docs/article/ARTICLE.md §8",
      "note": "listed at $1.50 / $7.50 from 1 January 2027"},
 ]
+MPL_VERSION = "3.11.2"
+RUN_CMD = "uv run python tools/report_circuitquant.py (or .venv/bin/python; needs Python >= 3.10)"
+FIG_CMD = f"uv run --no-project --with matplotlib=={MPL_VERSION} python tools/report_circuitquant.py --figures"
+FIG_NAMES = ("fig_quant_size.pdf", "fig_quant_speed.pdf", "fig_quant_asr.pdf")
+# HF Job ids and launch-script commits as recorded in kaggle/executed/12_hf_jobs/RUN_SUMMARY.md (Jobs 25 and 28); the
+# summaries' own `commit` is the pinned package / sp_bench commit.
+HF_JOBS = {"25A": "6b05f178d0582cfbbefcf9c8", "25B": "6b05f1cc1460ffe1d5e90665", "25C": "6b05f1f2d0582cfbbefcfa5d",
+           "25D": "6b05f2161460ffe1d5e906da", "28a": "6b05d87ad0582cfbbefccad0", "28b": "6b060042d0582cfbbefd1122",
+           "28c": "6b060067d0582cfbbefd1160"}
+SCRIPT_COMMIT = {"25": "d92677a (tools/hf_jobs/job25_e1_quant_sweep.py)",
+                 "28": "a8f78060908f25737bdb47f4ec3715d9afac4d9f (tools/hf_jobs/job28_e5_expanse_quant.py)"}
+JOBS_REPO_REV = "03948cfa1a3238619cf420569d1d0e6f842ee15b"   # result files copied at this revision (commit a69c59a)
 STAGE1_BREAKEVEN = {"usd_per_1M_out": 1.11, "basis": "A10G endpoint $1.00/h, ~250 tok/s (HF Job 2, plain transformers)",
                     "cited_in": "docs/report/REPORT.md §4.8; docs/article/ARTICLE.md §8"}
 
@@ -187,8 +204,7 @@ def prediction(c: dict, r: dict, cmp: dict) -> tuple[str, str]:
     kc, kr = c["asr"]["k"], r["asr"]["k"]
     if kc < kr and cmp["p"] < 0.05:
         return "holds", "circuit lower and p < 0.05"
-    why = "random lower" if kr < kc else "equal" if kr == kc else "circuit lower but p >= 0.05"
-    return "not shown", why
+    return "not shown", f"p >= 0.05 (circuit - random = {kc - kr:+d} of {c['asr']['n']}; direction not interpreted)"
 
 
 def levels(var: dict, pairs: list[tuple[str, str]], stored: dict) -> list[dict]:
@@ -278,17 +294,62 @@ def table(var: dict) -> list[dict]:
     return out
 
 
+def fp16_by_job(var: dict) -> dict:
+    """fp16 anchor tokens/s per shard / part (the anchor ran in every one)."""
+    fp = var["fp16"]
+    out = {fp["job"]: {"tok_s_b8": fp["tok_s_b8"], "tok_s_b1": fp["tok_s_b1"]}}
+    for a in fp.get("anchor_repeats") or []:
+        out[a["job"]] = {"tok_s_b8": a["tok_s_b8"], "tok_s_b1": a["tok_s_b1"]}
+    return out
+
+
 def roi(var: dict, names: list[str]) -> list[dict]:
     out = []
+    fpj = fp16_by_job(var)
     for v in names:
         r = var[v]
         u8, u1 = usd_per_1m(r["tok_s_b8"]), usd_per_1m(r["tok_s_b1"])
         # the jobs wrote the same formula from the unrounded tokens/s; tok_s_median is stored to 2 decimals
         assert abs(u8 / r["usd_file_b8"] - 1) < 2e-4 and abs(u1 / r["usd_file_b1"] - 1) < 2e-4, \
             (v, u8, r["usd_file_b8"], u1, r["usd_file_b1"])
+        f = fpj[r["job"]]
         out.append({"variant": v, "job": r["job"], "tok_s_b8": r["tok_s_b8"], "tok_s_b1": r["tok_s_b1"],
                     "usd_per_1M_out_b8": u8, "usd_per_1M_out_b1": u1, "disk_gb": r["disk_bytes"] / 1e9,
+                    "fp16_same_job_tok_s_b8": f["tok_s_b8"], "fp16_same_job_usd_b8": usd_per_1m(f["tok_s_b8"]),
+                    "tok_s_b8_ratio_to_same_job_fp16": r["tok_s_b8"] / f["tok_s_b8"],
                     "collapsed": collapsed(r)})
+    return out
+
+
+def sha256_file(p: Path) -> str:
+    return hashlib.sha256(p.read_bytes()).hexdigest()
+
+
+def provenance() -> dict:
+    """Per shard / part: HF job, code, model, judge and input revisions, from the job summaries."""
+    out = {}
+    for s in E1_SHARDS:
+        d = json.loads((FILES / f"job25_{s}_summary.json").read_text())
+        out[f"25{s}"] = {"hf_job_id": HF_JOBS[f"25{s}"], "script_commit": SCRIPT_COMMIT["25"],
+                         "package_commit": d["commit"], "model": d["model"], "model_rev": d["model_rev"],
+                         "judge": d["judge"], "judge_rev": d["judge_rev"], "scores_jobs_rev": d["scores_jobs_rev"],
+                         "wikitext_rev": d["wikitext_rev"], "calib_mode": d["calib_mode"],
+                         "eval": d["eval"], "bundle": d["bundle"]}
+    for part in E5_PARTS:
+        d = json.loads((FILES / f"job{part}_summary.json").read_text())
+        out[part] = {"hf_job_id": HF_JOBS[part], "script_commit": SCRIPT_COMMIT["28"], "package_commit": d["commit"],
+                     "model": d["model"], "model_rev": d["model_rev"], "judge": "meta-llama/Llama-Guard-3-1B",
+                     "judge_rev": d["judge_rev"], "eval_rev": d["eval_rev"], "bundle_rev": d["bundle_rev"],
+                     "circuit_rev": d["circuit_rev"], "circuit_sha256": d["circuit_sha256"]}
+        if part == "28a":
+            out[part]["note"] = ("circuit_rev holds the launch quoting-bug string and circuit_sha256 is null; 28a "
+                                 "builds only uniform variants and does not read the circuit file (RUN_SUMMARY Job 28)")
+    for fam, keys in (("E1", [f"25{s}" for s in E1_SHARDS]), ("E5", list(E5_PARTS))):
+        for f in ("model_rev", "judge_rev", "package_commit"):
+            assert len({out[k][f] for k in keys}) == 1, (fam, f)
+    assert len({out[k]["judge_rev"] for k in out}) == 1
+    assert {out[p]["circuit_sha256"] for p in ("28b", "28c")} == {json.loads(
+        (FILES / "job28b_summary.json").read_text())["circuit_sha256"]}
     return out
 
 
@@ -425,11 +486,36 @@ def analyse() -> dict:
                               "w4p19r_under_12GB": e5["w4p19r"]["disk_bytes"] < 12e9},
                "prediction_holds_any_level": any(lv["prediction"] == "holds" for lv in lv5)},
         "closed_source": CLOSED, "stage1_breakeven": STAGE1_BREAKEVEN, "nf4_notebook17": nf4(),
+        "provenance": provenance(), "run_command": RUN_CMD,
+        "figures": {"matplotlib": MPL_VERSION, "rebuild_command": FIG_CMD,
+                    "sha256": {f: (sha256_file(FIG / f) if (FIG / f).is_file() else None) for f in FIG_NAMES}},
     }
+    res["sources"]["jobs_repo"] = f"purvansh01/safetypulse-jobs (private) @ {JOBS_REPO_REV}, copied in commit a69c59a"
+    res["sources"]["sha256"] = {
+        str(p.relative_to(ROOT)): sha256_file(p)
+        for p in ([FILES / f"job25_{s}_{f}" for s in E1_SHARDS for f in ("rows.jsonl", "paired.json", "summary.json")]
+                  + [FILES / f"job{q}_{f}" for q in E5_PARTS for f in ("variants.jsonl", "pairs.json", "summary.json")]
+                  + [FILES / "job25_circuit_scores.json", FILES / "job28_circuit.json", NB17])}
+    for fam in ("E1", "E5"):
+        fj = fp16_by_job({**{v: r for v, r in (e1 if fam == "E1" else e5).items()}})
+        b8 = [x["tok_s_b8"] for x in fj.values()]
+        comp = [r["tok_s_b8"] for r in res[fam]["roi"] if r["variant"] != "fp16" and not r["collapsed"]]
+        res[fam]["fp16_speed_by_job"] = fj
+        res[fam]["fp16_tok_s_b8_range"] = [min(b8), max(b8)]
+        res[fam]["fp16_usd_b8_range"] = [usd_per_1m(max(b8)), usd_per_1m(min(b8))]
+        res[fam]["fp16_tok_s_b8_spread_rel"] = (max(b8) - min(b8)) / min(b8)
+        res[fam]["compressed_tok_s_b8_spread_rel"] = (max(comp) - min(comp)) / min(comp) if comp else None
+        res[fam]["compressed_variants_ranked"] = False
     res["roi_vs_closed"] = [{"variant": f"{fam}:{r['variant']}", "usd_per_1M_out_b8": r["usd_per_1M_out_b8"],
+                             "usd_per_1M_out_b1": r["usd_per_1M_out_b1"],
                              "below_closed_out_price": [c["model"] for c in CLOSED
-                                                        if r["usd_per_1M_out_b8"] < c["usd_per_1M_out"]]}
+                                                        if r["usd_per_1M_out_b8"] < c["usd_per_1M_out"]],
+                             "below_closed_out_price_b1": [c["model"] for c in CLOSED
+                                                           if r["usd_per_1M_out_b1"] < c["usd_per_1M_out"]]}
                             for fam in ("E1", "E5") for r in res[fam]["roi"] if not r["collapsed"]]
+    res["roi_note"] = ("Output price only, at matched cost, not matched quality: a ~3B (Tiny Aya) or 8B (Aya Expanse) "
+                       "open model is not of comparable quality to the closed-source models listed. At batch 1 every "
+                       "variant is above all three closed-source output prices.")
     res["run_log_check"] = run_log_check(e1, e5, lv1, lv5)
     res["run_log_mismatches"] = [c for c in res["run_log_check"] if not c["match"]]
     return res
@@ -477,13 +563,16 @@ def md_levels(fam: dict) -> list[str]:
 
 
 def md_roi(res: dict) -> list[str]:
-    out = ["| Model | Job | tok/s batch 8 | $/1M output tokens (b8) | tok/s batch 1 | $/1M output tokens (b1) | Disk GB |",
-           "|---|---|---|---|---|---|---|"]
+    out = ["| Model | Job | tok/s batch 8 | fp16 tok/s b8, same job | Ratio to same-job fp16 | $/1M output tokens (b8) "
+           "| fp16 $/1M (b8), same job | tok/s batch 1 | $/1M output tokens (b1) | Disk GB |",
+           "|---|---|---|---|---|---|---|---|---|---|"]
     for fam in ("E1", "E5"):
         for r in res[fam]["roi"]:
             name = f"{res[fam]['family']} {r['variant']}" + (" (collapsed)" if r["collapsed"] else "")
-            out.append(f"| {name} | {r['job']} | {r['tok_s_b8']:.1f} | {r['usd_per_1M_out_b8']:.3f} | "
-                       f"{r['tok_s_b1']:.1f} | {r['usd_per_1M_out_b1']:.2f} | {r['disk_gb']:.2f} |")
+            out.append(f"| {name} | {r['job']} | {r['tok_s_b8']:.1f} | {r['fp16_same_job_tok_s_b8']:.1f} | "
+                       f"{r['tok_s_b8_ratio_to_same_job_fp16']:.3f} | {r['usd_per_1M_out_b8']:.3f} | "
+                       f"{r['fp16_same_job_usd_b8']:.3f} | {r['tok_s_b1']:.1f} | {r['usd_per_1M_out_b1']:.2f} | "
+                       f"{r['disk_gb']:.2f} |")
     out += ["", "| Closed-source model | $/1M input | $/1M output | Source | Checked |", "|---|---|---|---|---|"]
     for c in res["closed_source"]:
         note = f" ({c['note']})" if c.get("note") else ""
@@ -492,20 +581,18 @@ def md_roi(res: dict) -> list[str]:
     return out
 
 
-def direction(fam: dict) -> str:
-    def d(lv):
-        if lv["collapsed"]:
-            return "collapsed"
-        c, r = lv["asr_circuit_k"], lv["asr_random_k"]
-        return "circuit lower" if c < r else "random lower" if r < c else "equal"
-    return ", ".join(f"{lv['avg_bits']:.2f} {d(lv)}" for lv in fam["levels"])
-
-
 def write_md(res: dict) -> str:
     e1, e5 = res["E1"], res["E5"]
     nf = res["nf4_notebook17"]
     fp1 = next(r for r in e1["roi"] if r["variant"] == "fp16")
     fp5 = next(r for r in e5["roi"] if r["variant"] == "fp16")
+    live = [lv for f in (e1, e5) for lv in f["levels"] if not lv["collapsed"]]
+    c35 = max(live, key=lambda lv: abs(lv["asr_circuit_k"] - lv["asr_random_k"]))
+    small = [abs(lv["asr_circuit_k"] - lv["asr_random_k"]) for lv in live if lv is not c35]
+    small_lo, small_hi = min(small), max(small)
+    b1 = [x["usd_per_1M_out_b1"] for x in res["roi_vs_closed"]]
+    p_live = sorted(live, key=lambda lv: lv["mcnemar_p"])[0]
+    ratios = [r["tok_s_b8_ratio_to_same_job_fp16"] for f in (e1, e5) for r in f["roi"] if r["variant"] != "fp16"]
     L = [
         "# E1 + E5: circuit-guided vs random mixed-precision quantization (exploratory)",
         "",
@@ -517,8 +604,15 @@ def write_md(res: dict) -> str:
         "Every rate is recomputed from k/n, every Wilson interval from k and n, and every McNemar p (exact, two-sided) "
         "from the stored per-item flags; the stored values agree. GB = 1e9 bytes on disk (safetensors), GiB = 2^30 "
         "bytes. **Tokens/s and peak VRAM are dense-path HF-transformers measurements** (transformers decompresses "
-        "compressed-tensors weights and runs them dense), so no speed or memory gain is claimed; on-disk size is the "
-        "only real saving measured. Batch 8 unless stated; one L40S; median of 2 repetitions, 128 new tokens forced.",
+        "compressed-tensors weights and runs them dense), so no speed or memory gain is claimed. In Jobs 25 and 28, "
+        "on-disk size is the only real saving measured. The notebook-17 NF4 memory figure "
+        f"({nf['gpu_mem_gib']['fp16']} -> {nf['gpu_mem_gib']['nf4']} GiB, T4, bitsandbytes, repaired model) comes from "
+        "a different harness and model and is not compared. Batch 8 unless stated; one L40S; median of 2 "
+        "repetitions, 128 new tokens forced.",
+        "",
+        f"Rebuild: `{res['run_command']}`; figures: `{res['figures']['rebuild_command']}`. Provenance (HF jobs, code, "
+        "model / judge / input revisions) and the sha256 of every input file and figure are in the JSON "
+        "(`provenance`, `sources.sha256`, `figures.sha256`) and summarised at the end.",
         "",
         "## Prediction outcome per level (amendment: \"holds\" only where the difference favours circuit-guided and "
         "p < 0.05, otherwise \"not shown\"; no correction across levels)",
@@ -527,10 +621,10 @@ def write_md(res: dict) -> str:
         "### E5, Aya Expanse 8B (Job 28)", "", *md_levels(e5), "",
         f"The prediction is **not shown at any level** in either family (holds at any E1 level: "
         f"{e1['prediction_holds_any_level']}; any E5 level: {e5['prediction_holds_any_level']}). "
-        f"E1 direction by level: {direction(e1)}. E5 direction by level: {direction(e5)}. "
-        "So in E1 the random control had the lower ASR at ~7.1, ~6.1 and ~3.5 bits (c35 vs r35 closest to "
-        "p < 0.05, against circuit-guided), while in E5 circuit-guided was numerically lower at every level, "
-        "with no level near p < 0.05. The two 2-bit-base E1 levels collapsed in both arms (task < 0.10, "
+        f"Differences are {small_lo}-{small_hi} prompts of 119 except {c35['avg_bits']:.2f} bits "
+        f"({c35['circuit']} {c35['asr_circuit_k']} vs {c35['random']} {c35['asr_random_k']}, p "
+        f"{c35['mcnemar_p']:.3f}, against circuit-guided). Directions at the other levels are not interpreted. "
+        "The two 2-bit-base E1 levels collapsed in both arms (task < 0.10, "
         "ASR 119/119); their ASR is the judge scoring broken text, not a safety result.",
         "",
         "## Every variant",
@@ -563,10 +657,16 @@ def write_md(res: dict) -> str:
         "## ROI: $/1M output tokens on an L40S ($1.80/h) from the measured tokens/s",
         "",
         "Dense-path HF-generate throughput (not a serving benchmark; a quantized-kernel server such as vLLM was not "
-        "run). At this throughput the quantized variants are **more** expensive per token than fp16 "
-        f"(Tiny Aya fp16 ${fp1['usd_per_1M_out_b8']:.2f} vs u4 "
-        f"${next(r for r in e1['roi'] if r['variant'] == 'u4')['usd_per_1M_out_b8']:.2f}; Aya Expanse fp16 "
-        f"${fp5['usd_per_1M_out_b8']:.2f} vs w4 ${next(r for r in e5['roi'] if r['variant'] == 'w4')['usd_per_1M_out_b8']:.2f}). "
+        "run). At this throughput every compressed variant is **more** expensive per token than fp16: each is "
+        f"{1 - max(ratios):.0%}-{1 - min(ratios):.0%} slower than the fp16 anchor measured in its own shard / part "
+        "(ratio column). The fp16 anchor itself "
+        f"varies between jobs (Tiny Aya {e1['fp16_tok_s_b8_range'][0]:.1f}-{e1['fp16_tok_s_b8_range'][1]:.1f} tok/s, "
+        f"${e1['fp16_usd_b8_range'][0]:.3f}-{e1['fp16_usd_b8_range'][1]:.3f}, a "
+        f"{e1['fp16_tok_s_b8_spread_rel']:.1%} spread; Aya Expanse {e5['fp16_tok_s_b8_range'][0]:.1f}-"
+        f"{e5['fp16_tok_s_b8_range'][1]:.1f} tok/s, ${e5['fp16_usd_b8_range'][0]:.3f}-{e5['fp16_usd_b8_range'][1]:.3f}). "
+        f"That run-to-run spread is about the size of the spread among the compressed variants (Tiny Aya "
+        f"{e1['compressed_tok_s_b8_spread_rel']:.1%}, Aya Expanse {e5['compressed_tok_s_b8_spread_rel']:.1%}), so the "
+        "compressed variants are **not ranked** against each other on speed or cost. "
         "Closed-source prices are restated from the Stage 1 ROI with their source and date, not re-checked here.",
         "",
         *md_roi(res),
@@ -576,7 +676,9 @@ def write_md(res: dict) -> str:
         "utilisation and idle time ignored), batch 8, per non-collapsed variant: "
         + "; ".join(f"{x['variant']} ${x['usd_per_1M_out_b8']:.2f} is below "
                     + (", ".join(x["below_closed_out_price"]) or "none") for x in res["roi_vs_closed"])
-        + ".",
+        + f". At batch 1 every variant (${min(b1):.2f}-{max(b1):.2f} per 1M output tokens, dense path) is above all "
+        "three closed-source output prices. The comparison is output price only, at matched cost, not matched quality "
+        "(a ~3B or 8B open model against frontier closed-source models).",
         "",
         "## NF4 (notebook 17), as reported",
         "",
@@ -595,9 +697,10 @@ def write_md(res: dict) -> str:
         "default, which collapsed Tiny Aya at 4 and 3 bit in the test jobs; E5 kept the default. The two families "
         "were quantized with different calibration text.",
         "- c3 / r3 / c1g / r1g were built with llm-compressor called directly (CircuitKIT allows 3 / 4 / 8 bit only).",
-        "- One run per variant, greedy decoding, n = 119 harmful prompts: an ASR difference of a few prompts is "
-        "within noise (circuit and random Wilson intervals overlap at every level: "
-        f"{all(lv['wilson_overlap'] for f in (e1, e5) for lv in f['levels'])}).",
+        "- One run per variant, greedy decoding, n = 119. No level reaches p < 0.05 on the paired exact McNemar test "
+        f"(closest: {p_live['circuit']} vs {p_live['random']}, {p_live['asr_circuit_k']} vs {p_live['asr_random_k']}, "
+        f"p = {p_live['mcnemar_p']:.3f}, against circuit-guided). Overlap of the separate per-arm Wilson intervals "
+        "(`wilson_overlap` in the JSON) is descriptive only and is not a test for paired data.",
         "- Llama Guard 3 1B is the only judge.",
         "",
         "## Run-log cross-check",
@@ -607,6 +710,21 @@ def write_md(res: dict) -> str:
           for c in res["run_log_check"]],
         "",
         f"Mismatches: {len(res['run_log_mismatches'])}.",
+        "",
+        "## Provenance",
+        "",
+        "| Shard / part | HF job | Launch script | Package commit | Model @ rev | Judge rev | Inputs |",
+        "|---|---|---|---|---|---|---|",
+        *[f"| {k} | `{v['hf_job_id']}` | `{v['script_commit'].split()[0][:12]}` | `{v['package_commit'][:12]}` | "
+          f"{v['model']} @ `{v['model_rev'][:12]}` | `{v['judge_rev'][:12]}` | "
+          + (f"circuit scores jobs rev `{v['scores_jobs_rev'][:12]}`, calibration {v['calib_mode']}" if "scores_jobs_rev" in v
+             else f"eval `{v['eval_rev'][:12]}`, bundle `{v['bundle_rev'][:12]}`, circuit "
+                  + (f"`{v['circuit_rev'][:12]}` sha256 `{v['circuit_sha256'][:12]}…`" if v["circuit_sha256"]
+                     else "not used (see note in JSON)")) + " |"
+          for k, v in res["provenance"].items()],
+        "",
+        f"Result files copied from {res['sources']['jobs_repo']}; sha256 of each input in `sources.sha256`. Figures "
+        f"built with matplotlib {res['figures']['matplotlib']} (sha256 in `figures.sha256`).",
         "",
     ]
     return "\n".join(L)
@@ -623,7 +741,8 @@ def strip_private(o):
 
 
 # ---- figures ----------------------------------------------------------------------------------------------------------------
-def make_figures(res: dict) -> None:
+def make_figures(res: dict, fig_dir: Path | None = None) -> None:
+    fig_dir = FIG if fig_dir is None else fig_dir
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -683,7 +802,7 @@ def make_figures(res: dict) -> None:
             else:
                 ax.set_xlabel("On-disk size (GB = 1e9 bytes)")
     legend(fig, [collapsed_h, plt.Line2D([], [], color=MUTED, lw=0.9, ls=(0, (3, 2)), label="Pareto frontier")])
-    fig.savefig(FIG / "fig_quant_size.pdf", bbox_inches="tight", metadata=meta)
+    fig.savefig(fig_dir / "fig_quant_size.pdf", bbox_inches="tight", metadata=meta)
     plt.close(fig)
 
     # (2) score vs measured tokens/s (dense-path HF throughput)
@@ -712,7 +831,7 @@ def make_figures(res: dict) -> None:
                                          label="fp16 re-measured in other jobs")])
     fig.text(0.5, -0.1, "HF transformers decompresses compressed-tensors weights and runs them dense: "
              "not quantized-kernel speed.", ha="center", fontsize=6.5, color=MUTED)
-    fig.savefig(FIG / "fig_quant_speed.pdf", bbox_inches="tight", metadata=meta)
+    fig.savefig(fig_dir / "fig_quant_speed.pdf", bbox_inches="tight", metadata=meta)
     plt.close(fig)
 
     # (3) ASR vs average bits, circuit vs random paired, Wilson 95% and McNemar p per level
@@ -756,17 +875,21 @@ def make_figures(res: dict) -> None:
     fig.legend(handles=h, loc="upper center", ncol=4, frameon=False, bbox_to_anchor=(0.5, 0.0))
     fig.text(0.5, -0.1, "p = exact McNemar on paired per-prompt flags, circuit vs random at each level.",
              ha="center", fontsize=6.5, color=MUTED)
-    fig.savefig(FIG / "fig_quant_asr.pdf", bbox_inches="tight", metadata=meta)
+    fig.savefig(fig_dir / "fig_quant_asr.pdf", bbox_inches="tight", metadata=meta)
     plt.close(fig)
 
 
 def main(argv: list[str]) -> None:
     res = strip_private(analyse())
+    if "--figures" in argv:   # figures first, so the JSON records the sha256 of what is now on disk
+        import matplotlib
+        if matplotlib.__version__ != MPL_VERSION:
+            print(f"WARNING: matplotlib {matplotlib.__version__}; the committed figures were built with {MPL_VERSION}")
+        make_figures(res)
+        res = strip_private(analyse())
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "circuitquant.json").write_text(json.dumps(res, indent=1, sort_keys=True, ensure_ascii=False) + "\n")
     (OUT / "circuitquant.md").write_text(write_md(res))
-    if "--figures" in argv:
-        make_figures(res)
     print(f"wrote docs/report/circuitquant.{{md,json}}; run-log mismatches: {len(res['run_log_mismatches'])}")
     for c in res["run_log_mismatches"]:
         print("  MISMATCH", c["item"], "run log", c["run_log"], "recomputed", c["recomputed"])

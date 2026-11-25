@@ -13,10 +13,14 @@ levels, dw.jsonl) are checked against the recomputation; any mismatch is listed 
 Writes docs/report/expanse_default.{md,json} (deterministic: sorted keys, no clock) and, when matplotlib is installed,
 paper/figures/expanse_default.pdf (cis_sep and ASR vs step per seed, WARN/FAIL lines, first-unsafe markers).
 
-Usage: python tools/report_expanse_default.py            (figure: uv run --with matplotlib python tools/...)
+Usage (needs Python >= 3.10 and numpy, i.e. the repo environment):
+  uv run python tools/report_expanse_default.py                     (report only; or .venv/bin/python)
+  uv run --no-project --with matplotlib==3.11.2 --with numpy python tools/report_expanse_default.py   (report + figure)
+The committed PDF was built with matplotlib 3.11.2 and rebuilds byte-identically with it; its sha256 is in the JSON.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -33,6 +37,9 @@ N = 78                               # dev prompts per checkpoint
 SEEDS = (1, 2)
 AMENDMENT = "docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md"
 JOB27_SCRIPT = "tools/hf_jobs/job27_e4_expanse_default.py"
+MPL_VERSION = "3.11.2"
+RUN_CMD = "uv run python tools/report_expanse_default.py (or .venv/bin/python; needs Python >= 3.10 and numpy)"
+FIG_CMD = (f"uv run --no-project --with matplotlib=={MPL_VERSION} --with numpy python tools/report_expanse_default.py")
 NB07 = "kaggle/executed/07_finetune_checkpoints/07_finetune_checkpoints__2026-11-07__alpaca-s1.ipynb"
 
 # Run-log values to verify (docs/report/workflow/2026-11-24-run-log.md, "E4, Job 27" table and departure (e)).
@@ -82,6 +89,22 @@ def warmup_from_lr(log_history: list[dict], lr_max: float) -> float:
     return round((h["step"] - 1) * lr_max / h["learning_rate"], 3)
 
 
+def lead_one_flag_range(table: list[dict], need: int, fw) -> dict:
+    """Lead under every change of one flagged prompt (k +/- 1) at a single fine-tuned checkpoint; cis_sep (and so the
+    first WARN) is unaffected by the judge."""
+    ft = [t for t in table if t["step"] > 0]
+    leads = []
+    for i, t in enumerate(ft):
+        for d in (-1, 1):
+            ks = [u["k"] + (d if j == i else 0) for j, u in enumerate(ft)]
+            fu = first(u["step"] for u, k in zip(ft, ks, strict=True) if k >= need)
+            if fu is not None and fw is not None:
+                leads.append({"step": t["step"], "delta_k": d, "lead": fu - fw})
+    vals = [x["lead"] for x in leads]
+    return {"min": min(vals), "max": max(vals),
+            "changes_lead": [x for x in leads if x["lead"] != (first(u["step"] for u in ft if u["k"] >= need) - fw)]}
+
+
 def analyse_seed(seed: int) -> tuple[dict, list[str]]:
     rows = sorted(load_jsonl(FILES / f"job27_s{seed}_monitor.jsonl"), key=lambda r: r["step"])
     dw = {r["step"]: r["dw_norm"] for r in load_jsonl(FILES / f"job27_s{seed}_dw.jsonl")}
@@ -118,6 +141,8 @@ def analyse_seed(seed: int) -> tuple[dict, list[str]]:
     by = {t["step"]: t for t in table}
     pre = [t for t in ft if fu is None or t["step"] < fu]
     false_alarms = [t["step"] for t in pre if t["level"] != "PASS"]
+    assert all(t["unsafe"] == (t["k"] >= need) for t in table)
+    pre_drift = [t["k"] for t in table if t["step"] <= 40]
     res = {
         "seed": seed, "run": summ["run"], "k0": k0, "k_unsafe_from": need,
         "first_warn": fw, "first_warn_level_only": fwo, "first_fail": ff, "first_unsafe": fu,
@@ -145,7 +170,10 @@ def analyse_seed(seed: int) -> tuple[dict, list[str]]:
         "examples_seen_at_first_unsafe": None if fu is None else fu * tlog["recipe"]["batch"] * tlog["recipe"]["accum"],
         "examples_seen_at_60": 60 * tlog["recipe"]["batch"] * tlog["recipe"]["accum"],
         "minutes": summ["minutes"], "train_minutes": summ["train_minutes"],
+        "lead_one_flag": lead_one_flag_range(table, need, fw),
+        "k_range_steps_0_40": [min(pre_drift), max(pre_drift)],
         "model_rev": summ["model_rev"], "judge_rev": summ["judge_rev"], "bundle_rev": summ["bundle_rev"],
+        "data_rev": summ["data_rev"], "jobs_rev": summ["jobs_rev"], "ft_alpaca_sha256": summ["ft_alpaca_sha256"],
         "bundle_layer": summ["bundle_layer"], "commit": summ["commit"], "amendment": summ["amendment"],
         "checkpoints": table,
     }
@@ -220,6 +248,9 @@ def analyse() -> dict:
     r27 = load_json(FILES / "job27_s1_train_log.json")["recipe"]
     if r27 != load_json(FILES / "job27_s2_train_log.json")["recipe"]:
         issues.append("recipe differs between seeds")
+    for key in ("model_rev", "judge_rev", "data_rev", "jobs_rev", "ft_alpaca_sha256", "bundle_rev", "commit"):
+        if len({seeds[str(s)][key] for s in SEEDS}) != 1:
+            issues.append(f"{key} differs between seeds")
     j23 = analyse_job23()
     if j23["warmup_from_lr"] != j23["warmup_rule_value"]:
         issues.append(f"Job 23 warm-up from lr {j23['warmup_from_lr']} != notebook 07 rule {j23['warmup_rule_value']}")
@@ -235,7 +266,14 @@ def analyse() -> dict:
                                                             "first_unsafe, i.e. alarms on checkpoints labelled safe"},
         "recipe_source": r27["source"], "recipe": recipe_table(r27, j23["recipe"]),
         "seeds": seeds, "job23": j23, "checks": {"issues": issues, "n_issues": len(issues)},
+        "run_command": RUN_CMD, "figure": figure_record(),
     }
+
+
+def figure_record(path: Path = FIG) -> dict:
+    """sha256 of the committed figure on disk (after a rebuild, if one ran) and how to rebuild it."""
+    return {"path": str(path.relative_to(ROOT)), "matplotlib": MPL_VERSION, "rebuild_command": FIG_CMD,
+            "sha256": hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None}
 
 
 def fmt(v, nd=4):
@@ -254,6 +292,10 @@ def markdown(res: dict) -> str:
          f"{WARN}, FAIL < {FAIL}); Job 23 bundle (layer {s1['bundle_layer']}, `{s1['bundle_rev'][:8]}`); ASR on 78 dev "
          f"prompts, Llama Guard 3 1B @ `{s1['judge_rev'][:8]}`. Nothing here changes a pre-registered verdict "
          "(H1, H2 confirmed; H3, H6 refuted) or threshold._", "",
+         f"Provenance (identical for both seeds): Aya Expanse 8B `{s1['model_rev']}`, judge `{s1['judge_rev']}`, job "
+         f"code `{s1['commit'][:7]}`, data repo `{s1['data_rev']}`, jobs repo `{s1['jobs_rev']}`, fine-tuning data "
+         f"sha256 `{s1['ft_alpaca_sha256']}` (hash only). Rebuild: `{res['run_command']}`; figure: "
+         f"`{res['figure']['rebuild_command']}` (sha256 `{(res['figure']['sha256'] or 'missing')[:16]}…`).", "",
          "## Result", "",
          "| Seed | k0 | Unsafe from k ≥ | First WARN (`cis_sep`, k) | First FAIL (`cis_sep`) | First unsafe (k) | Lead "
          "(steps) | FAIL − unsafe | Alarms before first unsafe | `cis_sep` / k at 60 |",
@@ -283,7 +325,16 @@ def markdown(res: dict) -> str:
           f"{s2['min_margin_before_first_unsafe']} on seed 2 (steps {_val([str(x) for x in s2['margin_steps']])})."
           + "".join(f" On seed {s['seed']} one more flagged prompt at step {p} (PASS) would make the run unsafe before the "
                     f"first WARN (lead {p - s['first_warn']})." for s in (s1, s2) for p in s["pass_steps_one_short"][:1])
-          + " The 2-step lead rests on differences of a few prompts under the 1B judge.", "",
+          + " The 2-step lead rests on differences of a few prompts under the 1B judge.",
+          f"- Seed 1's first unsafe checkpoint is exactly at threshold (k {s1['k_first_unsafe']}, unsafe from "
+          f"{s1['k_unsafe_from']}); one fewer flag gives lead {s1['lead_one_flag']['max']}. On seed 2 one more flag at "
+          "step 44 gives -2, at step 46 gives 0. With k at steps 0-40 varying "
+          f"{min(s1['k_range_steps_0_40'][0], s2['k_range_steps_0_40'][0])}-"
+          f"{max(s1['k_range_steps_0_40'][1], s2['k_range_steps_0_40'][1])} before the drift, a change of one flagged "
+          "prompt at one checkpoint moves the lead anywhere between "
+          f"{min(s1['lead_one_flag']['min'], s2['lead_one_flag']['min'])} and "
+          f"{max(s1['lead_one_flag']['max'], s2['lead_one_flag']['max'])} steps; 2 is a point value, not a precise "
+          "estimate.", "",
           "## Warm-up caveat", "",
           f"The schedule is that of the full AlignTune run: {s1['n_examples']} examples, {r_get(res, 'epochs')} epochs, "
           f"batch {r_get(res, 'batch')} × {r_get(res, 'accum')} → {s1['full_schedule_steps']} steps, warm-up ratio "
@@ -387,10 +438,15 @@ def figure(res: dict, path: Path = FIG) -> bool:
 
 def main() -> None:
     res = analyse()
+    made = figure(res)
+    if made:
+        import matplotlib
+        if matplotlib.__version__ != MPL_VERSION:
+            print(f"WARNING: matplotlib {matplotlib.__version__}, committed figure built with {MPL_VERSION}")
+    res["figure"] = figure_record()
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "expanse_default.json").write_text(json.dumps(res, indent=1, sort_keys=True) + "\n", encoding="utf-8")
     (OUT / "expanse_default.md").write_text(markdown(res), encoding="utf-8")
-    made = figure(res)
     for i in res["checks"]["issues"]:
         print("MISMATCH:", i)
     s1, s2 = res["seeds"]["1"], res["seeds"]["2"]

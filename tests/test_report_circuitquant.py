@@ -120,3 +120,59 @@ def test_run_log_agrees(res):
 def test_figures_committed():
     for f in ("fig_quant_size.pdf", "fig_quant_speed.pdf", "fig_quant_asr.pdf"):
         assert (ROOT / "paper/figures" / f).stat().st_size > 10_000
+
+
+# ---- skeptic follow-ups: provenance, figures, ROI at batch 1, direction wording -------------------------------------
+def test_provenance_pinned(res):
+    pv = res["provenance"]
+    e1 = [pv[f"25{s}"] for s in "ABCD"]
+    e5 = [pv[p] for p in ("28a", "28b", "28c")]
+    assert {p["model_rev"] for p in e1} == {"af89d219b53ed9b13b8a4645f9c8028973510324"}
+    assert {p["model_rev"] for p in e5} == {"5062468bf9bc0c6035fd64e06274333ec127d980"}
+    assert {p["judge_rev"] for p in e1 + e5} == {"acf7aafa60f0410f8f42b1fa35e077d705892029"}
+    assert {p["scores_jobs_rev"] for p in e1} == {"5f8aa2ba39579e60c5f67b59239aa923275c2bab"}
+    assert {p["package_commit"] for p in e1} == {"106e9ee6f1000271f31107467ab82f66adbdb446"}
+    assert {p["package_commit"] for p in e5} == {"cd72fc60f753fe76d443aeb1e77ae4f4623c2d1d"}
+    assert {pv[p]["circuit_sha256"] for p in ("28b", "28c")} == {
+        "10ca4b7e6749b1c5a264fe4d62111a5cd2263135421014abc1b2416129c44e83"}
+    assert pv["28a"]["circuit_sha256"] is None and "note" in pv["28a"]
+    for path, sha in res["sources"]["sha256"].items():
+        import hashlib
+        assert hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == sha, path
+
+
+def test_figure_hashes_match_disk(res):
+    import hashlib
+    assert res["figures"]["matplotlib"] == "3.11.2"
+    for f, sha in res["figures"]["sha256"].items():
+        assert sha == hashlib.sha256((ROOT / "paper/figures" / f).read_bytes()).hexdigest(), f
+
+
+def test_figures_rebuild_byte_identical(res, tmp_path):
+    mpl = pytest.importorskip("matplotlib")
+    if mpl.__version__ != "3.11.2":
+        pytest.skip(f"matplotlib {mpl.__version__}, figures pinned to 3.11.2")
+    rc.make_figures(res, tmp_path)
+    for f in rc.FIG_NAMES:
+        assert (tmp_path / f).read_bytes() == (ROOT / "paper/figures" / f).read_bytes(), f
+
+
+def test_roi_batch1_above_all_closed(res):
+    assert all(x["below_closed_out_price_b1"] == [] for x in res["roi_vs_closed"])
+    b1 = [x["usd_per_1M_out_b1"] for x in res["roi_vs_closed"]]
+    assert (round(min(b1), 2), round(max(b1), 2)) == (14.03, 23.12)
+
+
+def test_roi_same_job_fp16(res):
+    by = {r["variant"]: r for r in res["E1"]["roi"]}
+    assert round(by["c6"]["fp16_same_job_tok_s_b8"], 2) == 218.61 and round(by["c5"]["fp16_same_job_usd_b8"], 3) == 2.287
+    assert round(by["c35"]["fp16_same_job_tok_s_b8"], 2) == 217.93 and round(by["c3"]["fp16_same_job_tok_s_b8"], 2) == 230.03
+    assert [round(x, 1) for x in res["E1"]["fp16_tok_s_b8_range"]] == [217.9, 230.0]
+    assert res["E1"]["compressed_variants_ranked"] is False
+    assert all(r["tok_s_b8_ratio_to_same_job_fp16"] < 0.8 for f in ("E1", "E5") for r in res[f]["roi"] if r["variant"] != "fp16")
+
+
+def test_no_direction_reading(res):
+    md = rc.write_md(res)
+    assert "Directions at the other levels are not interpreted" in md
+    assert "random lower" not in md and "circuit lower" not in md and "within noise" not in md

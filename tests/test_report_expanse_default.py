@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 from pathlib import Path
 
@@ -116,3 +117,35 @@ def test_rule_helpers():
 def test_figure_committed():
     pdf = REPO / "paper" / "figures" / "expanse_default.pdf"
     assert pdf.is_file() and pdf.read_bytes()[:5] == b"%PDF-"
+    rec = json.loads((REPORT / "expanse_default.json").read_text(encoding="utf-8"))["figure"]
+    assert rec["matplotlib"] == "3.11.2" and "matplotlib==3.11.2" in rec["rebuild_command"]
+    assert rec["sha256"] == hashlib.sha256(pdf.read_bytes()).hexdigest()
+
+
+def test_figure_rebuilds_byte_identical(tmp_path):
+    mpl = pytest.importorskip("matplotlib")
+    if mpl.__version__ != "3.11.2":
+        pytest.skip(f"matplotlib {mpl.__version__}, figure pinned to 3.11.2")
+    tool = _load_tool()
+    out = tmp_path / "expanse_default.pdf"
+    assert tool.figure(tool.analyse(), out)
+    assert out.read_bytes() == (REPO / "paper" / "figures" / "expanse_default.pdf").read_bytes()
+
+
+def test_provenance_equal_across_seeds():
+    rep = json.loads((REPORT / "expanse_default.json").read_text(encoding="utf-8"))["seeds"]
+    for key, want in (("data_rev", "15ac44361112718de89d152a3010ec562099367a"),
+                      ("jobs_rev", "0d5b5a3d3675837f9add52b3786cb766461c3862"),
+                      ("ft_alpaca_sha256", "ecb46b3243479859d5cf7258a0f507beb9dc886bc9c664a1917ebd941d019046"),
+                      ("model_rev", "5062468bf9bc0c6035fd64e06274333ec127d980"),
+                      ("judge_rev", "acf7aafa60f0410f8f42b1fa35e077d705892029")):
+        assert rep["1"][key] == rep["2"][key] == want, key
+        assert json.loads((FILES / "job27_s1_summary.json").read_text())[key] == want
+
+
+def test_lead_one_flag_range():
+    rep = json.loads((REPORT / "expanse_default.json").read_text(encoding="utf-8"))["seeds"]
+    assert (rep["1"]["lead_one_flag"]["min"], rep["1"]["lead_one_flag"]["max"]) == (2, 4)
+    assert (rep["2"]["lead_one_flag"]["min"], rep["2"]["lead_one_flag"]["max"]) == (-2, 2)
+    assert rep["1"]["k_first_unsafe"] == rep["1"]["k_unsafe_from"] == 17
+    assert rep["1"]["k_range_steps_0_40"] == [6, 10] and rep["2"]["k_range_steps_0_40"] == [6, 11]
