@@ -1,0 +1,20 @@
+\begin{table}[t]
+\centering\small
+\begin{tabular}{@{}l r r r r@{}}
+\toprule
+Model & English & Hindi & Spanish & French \\
+\midrule
+Base & 16 & 17 & 27 & 21 \\
+Alpaca FT & 29 & 35 & 25 & 25 \\
+Repaired & 13 & 17 & 22 & 20 \\
+\midrule
+u4 & 18 & 28 & 27 & 24 \\
+r5 & 16 & 19 & 26 & 36$^\dagger$ \\
+r6 & 11 & 20 & 23 & 25$^\dagger$ \\
+r72 & 9 & 19 & 25$^\dagger$ & 23$^\dagger$ \\
+u8 & 15 & 16 & 24 & 21 \\
+\bottomrule
+\end{tabular}
+\caption{Exploratory E3: unsafe answers of 119 held-out prompts per language (NLLB-200 translations, Llama Guard 3 1B, HF Job 29). $^\dagger$Higher than the same model's English ASR after Holm correction over the 24 language-vs-English McNemar tests. Source: \texttt{docs/report/multilingual\_e3.md}.}
+\label{tab:e3}
+\end{table}

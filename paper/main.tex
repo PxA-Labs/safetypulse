@@ -279,6 +279,30 @@ score, from the same forward pass, was a weaker alarm: it fired on 4 of 50 Earth
 H6 models, and ranked H2 and H3 checkpoints with AUROC 0.59 against 0.97 for \cissep{}. Both analyses follow an
 internal review and are exploratory.
 
+\section{Quantization and other checks}
+\label{sec:lexsi}
+
+These experiments, requested by Lexsi Labs after the verdicts and fixed in a dated amendment (\texttt{cd72fc6})
+before any of its 29 jobs, are exploratory and change no verdict or threshold (details and every departure:
+App.~\ref{app:lexsi}).
+
+\paragraph{Circuit-guided quantization (E1, E5).} Quantizing with GPTQ \citep{frantar2022gptq} via llm-compressor
+\citep{vllm2026llmcompressor} but keeping $k$ layers at 16 bit, we compared CircuitKIT's circuit-ranked layers with
+random ones. The predicted lower ASR for circuit-chosen layers was \emph{not shown} at any level
+(Table~\ref{tab:quant}); the closest difference (3.48 bits, $p=0.052$) went against it. 2-bit-based Tiny Aya
+variants collapsed and ``under 1\,GB'' was not reached (1.93\,GB); Tiny Aya also needed chat-formatted calibration
+instead of CircuitKIT's default. Our runs decompress the weights, so we claim no speed or memory gain, only
+smaller files.
+
+\input{tables/quant_main.tex}
+
+\paragraph{Other checks (E2--E4).} IFEval prompt-strict accuracy \citep{zhou2023ifeval} was 0.771 for Global, 0.682
+after Alpaca tuning and 0.763 after repair; of five compressed variants only uniform 4-bit (0.715) dropped after Holm
+correction. In Hindi,
+Spanish and French, 4 of 24 comparisons with English survived Holm correction; only one (r5, French) also exceeded
+base. On Aya Expanse with AlignTune's defaults, WARN led the first unsafe checkpoint by 2 steps on both seeds, inside
+the warm-up; one flagged prompt moves this lead between $-2$ and $+4$.
+
 \section{Related work}
 
 Benign fine-tuning degrades safety \citep{qi2023finetuning,he2024safedata,wei2024brittleness}; the refusal direction
@@ -321,7 +345,8 @@ a run are strongly correlated, so checkpoint counts overstate the evidence and w
 points per checkpoint), the same size as the unsafe margin; verdicts are unchanged at 5 or 15 points, but three H6 models
 lie within 3 points of the line. \textbf{Mostly English.} Calibration and the pre-registered
 evaluation are in English, although benign multilingual fine-tuning moves safety differently per language
-\citep{hawkins2026multilingual}; H4 (\S\ref{sec:results}) could not test drift confined to another language. \textbf{Specificity.}
+\citep{hawkins2026multilingual}; H4 (\S\ref{sec:results}) could not test drift confined to another language, and E3 (\S\ref{sec:lexsi}) used machine
+translations and a judge not validated in those languages. \textbf{Specificity.}
 Non-safety directions also move under fine-tuning; the refusal direction tracked safety better in our tests, but not in
 every family, and we tested only two control directions. \textbf{Ablation on Gemma-3.} Gemma-3 normalises attention and MLP outputs again before the residual stream, so the
 ablation used for layer selection was partial there. Ablating after those norms (exploratory) moves the selected layer
@@ -344,7 +369,8 @@ spot-check fell to 0.04--0.26; with no safe fine-tuned checkpoint and checkpoint
 assess false alarms or lead time. It used our Global recipe (App.~\ref{app:hp}), whose learning rate of
 $2\cdot10^{-4}$, LoRA $r=16$ and $\alpha=32$ match the AlignTune SFT defaults \citep{lexsi2026aligntune} (its other
 settings differ); asked for an Aya Expanse recipe, Lexsi Labs named none and pointed to these toolkit defaults
-(office hours, 2026-11-24). \textbf{Reproducibility.} Greedy generation repeated exactly within a job but not
+(office hours, 2026-11-24). The E1--E5 experiments (\S\ref{sec:lexsi}, App.~\ref{app:lexsi}) also ran after the verdicts, under amendment
+\texttt{cd72fc6}, and change no verdict. \textbf{Reproducibility.} Greedy generation repeated exactly within a job but not
 across jobs: for 8 Llama-3.2-3B models, answers regenerated a day later changed 1--11 of 78 judge labels per model; no
 H6 unsafe label changed. \textbf{Post-hoc choices.} The primary signal was chosen after Global's test runs were scored; the
 pre-registered tests are the evidence we rely on.
@@ -375,6 +401,10 @@ number against the logged results and take responsibility for the content.
 \bibliography{custom}
 
 \appendix
+% Appendix only: let floats fill pages (the main text above keeps the default float parameters).
+\renewcommand{\topfraction}{0.9}\renewcommand{\dbltopfraction}{0.9}\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.8}\renewcommand{\dblfloatpagefraction}{0.8}
+\setcounter{topnumber}{4}\setcounter{dbltopnumber}{4}\setcounter{totalnumber}{6}
 
 \begin{table*}[t]
 \centering\footnotesize
@@ -393,6 +423,7 @@ Global & Alpaca: 7, 8 & H3, 2-step & 2000 & 2 & 16 & 250 & 2 to 60, then 20 & L4
 Global & Alpaca: 9 & H3, 2-step & 2000 & 2 & 16 & 140 & 2 to 40, then 5 & L40S \\
 Expanse & Alpaca: 1 & Aya Expanse & 2000 & 2 & 16 & 250 & 25 & L40S \\
 Global & curated Alpaca: 0 & App.~\ref{app:curation} & 1981 & 2 & 16 & 248 & 25 & A100 \\
+Expanse & Alpaca: 1, 2 & E4, App.~\ref{app:lexsi} & 2000 & 3 & 4 & 60 & 2 & L40S \\
 \bottomrule
 \end{tabular}
 \caption{Every LoRA fine-tune we report (from each run's logged configuration). Shared by all: LoRA $r=16$,
@@ -401,7 +432,8 @@ decay, warm-up 3\% of steps, weight decay 0; per-device batch 2 with gradient ac
 batch); sequences cut at 512 tokens, loss on answer tokens only (Examples counts those left after tokenisation);
 frozen fp16 base with fp16 autocast (forced on the HF Jobs GPUs to match the T4
 runs). Control: 1,800 Alpaca examples plus 200 refusals. The second harmful run repeats the first with extra early
-checkpoints. Seed 9 was stopped at step 140 of the 250-step schedule. AlignTune's SFT defaults share the learning
+checkpoints. Seed 9 was stopped at step 140 of the 250-step schedule; the E4 runs use AlignTune's defaults instead (App.~\ref{app:lexsi})
+and stop at step 60 of 1,500. AlignTune's SFT defaults share the learning
 rate, $r$ and $\alpha$ but use dropout 0.1, 3 epochs, batch 4, 10\% warm-up and weight decay 0.01. The H6 models are
 third-party full fine-tunes \citep{seth2026safetune} and are not listed.}
 \label{tab:hp}
@@ -438,7 +470,8 @@ gave 15.4\% vs.\ 22.1\% for random sets, and 13.5\% vs.\ base 14.3\% on the 119 
 ASR across the 104 configurations (Spearman $-0.73$) but stayed at WARN (0.80) after the top-16 restore.
 Further exploratory experiments (circuit-guided quantization, instruction-following and paragraph-QA benchmarks,
 multilingual safety, and Aya Expanse 8B at finer checkpoint spacing) are pre-registered in an amendment dated
-2026-11-24 (\texttt{cd72fc6}), which changes no verdict or threshold; they will be reported in the final version.
+2026-11-24 (\texttt{cd72fc6}), which changes no verdict or threshold; they are reported in \S\ref{sec:lexsi} and
+App.~\ref{app:lexsi}.
 
 \section{Robustness}
 \label{app:robust}
@@ -492,12 +525,122 @@ rejected) 1998 $\rightarrow$ 1981 (17 rejected); 1981 exported. No PII step ran.
 (Table~\ref{tab:hp}) drifted like the uncurated seed-0 run, with a peak ASR of 46\% in both, so removing these 19
 examples (1\%) did not prevent the drift. Source: \texttt{kaggle/executed/13\_curatorkit\_alpaca/}.
 
+\section{Experiments after the Lexsi call (exploratory)}
+\label{app:lexsi}
+
+\paragraph{Plan, budget and sources.} The amendment of 2026-11-24 (in \texttt{docs/prereg\_amendments/}, commit
+\texttt{cd72fc6}) was pushed before any of its jobs was created. It fixed the variants, the measures and one
+prediction: at equal average bits, circuit-guided quantization has lower ASR than the random control; this ``holds''
+only where the difference favours circuit-guided with exact McNemar $p<0.05$, otherwise it is ``not shown'', with no
+correction across levels. The E2/E3 McNemar tests and all Holm corrections were added in the analysis. ASR uses the 119 held-out prompts and
+Llama Guard 3 1B unless stated. 29 HF Jobs ran on L40S GPUs (\$1.80/h) under a \$55 soft cap: \$49.95 committed at
+worst case, \$20.06 billed, nothing dropped for budget. Answers, prompts and translations stay private; only flags,
+scores and hashes are kept. Analyses are in \texttt{docs/report/} (\texttt{circuitquant}, \texttt{benchmarks},
+\texttt{multilingual\_e3}, \texttt{expanse\_default}), with tests that pin their numbers to the result files, and
+the run log in \texttt{docs/report/workflow/}.
+
+\paragraph{E1/E5 setup.} Uniform GPTQ \citep{frantar2022gptq} at 8 and 4 bit, and 3 bit on Tiny Aya (symmetric, group
+128), and mixed variants that keep $k$ decoder layers at 16 bit on a 4- or 3-bit base, with CircuitKIT 0.2.4 \citep{seth2026circuitkit}, llm-compressor 0.15.0
+\citep{vllm2026llmcompressor} and compressed-tensors 0.20.1 \citep{vllm2026compressedtensors}. Circuit-guided layers
+are those CircuitKIT's circuit discovery on our contrast pairs ranks highest; the control draws the same number at
+random (CircuitKIT's random plan, fixed seed). Each variant is measured once (greedy): ASR, over-refusal, GSM8K,
+MMLU, \cissep{} with the family's own bundle, size on disk, and throughput (Tables~\ref{tab:quantall}
+and~\ref{tab:roi}; Figures~\ref{fig:quantasr} and~\ref{fig:quantsize}).
+
+\paragraph{Departures and caveats, stated plainly.} \textbf{(a) Calibration.} CircuitKIT's default GPTQ calibration
+(plain WikiText-2 text) collapsed Tiny Aya Global at 4 and 3 bit in test jobs (\cissep{} 0.0125 for uniform 4 bit)
+under every GPTQ setting we tried, so the E1 jobs wrapped the same texts in the chat template. E5 kept the default, and
+its 4-bit model did not collapse; the two families were quantized with different calibration text. \textbf{(b)
+Collapsed points.} The ``3-bit'' E1 level was built as a 2-bit base with 2 layers at 16 bit, and the ``under 1\,GB''
+level as a 2-bit base with 11 layers at 3 bit and a 2-bit tied embedding, both by calling llm-compressor directly
+(CircuitKIT supports 3, 4 and 8 bit). All four variants collapsed (GSM8K 0.003--0.020; ASR 119/119 is the judge
+scoring broken text). c1g/r1g take 1.93\,GB on disk because the embedding is stored dequantized; 0.997\,GB is only a
+computed size. Under 1\,GB was not achieved. \textbf{(c) The prediction was not shown} at any level of either family
+(Table~\ref{tab:quant}); directions at levels other than 3.48 bits are not interpreted. Both arms of every Aya
+Expanse level near 3.5--3.9 bits read WARN. \textbf{(d) Dense path.} Transformers decompresses compressed-tensors
+checkpoints on load and runs them dense, so throughput and memory are not quantized-kernel numbers: compressed models
+were 24--31\% slower than the fp16 model of the same job and used as much memory (6.82--6.87 vs.\ 6.79\,GiB on Tiny
+Aya). We claim no speed or memory gain; disk size is the only saving measured. A quantized-kernel serving run was
+planned but not done. \textbf{(e) Warm-up.} Every E4 checkpoint lies inside the warm-up of AlignTune's default
+schedule (below). \textbf{(f) XQuAD.} Exact match is 0--16 of 500 for every model and language, so F1 is the reported
+number, and F1 depends on answer length. \textbf{Other choices.} The amendment named no Alpaca checkpoint for E2; we
+used seed 1 at step 125, the checkpoint our Stage-1 repaired model was built from (SafeTune safety-vector restore).
+E5's sizes meet its tiers (8 bit 9.19\,GB $<$ 10\,GB; mixed $\sim$11 bit 11.85\,GB $<$ 12\,GB). Random and uniform
+control variants are not released.
+
+\input{tables/quant_variants.tex}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/fig_quant_asr.pdf}
+\caption{ASR against average bits for circuit-guided and random layer choice (Wilson 95\% intervals; exact McNemar
+$p$ per level). The band is the fp16 model's interval. Crosses: collapsed 2-bit-based variants, whose ASR is not a
+safety result.}
+\label{fig:quantasr}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.62\textwidth]{figures/fig_quant_size.pdf}
+\caption{MMLU (top) and GSM8K (bottom) against size on disk, with the Pareto frontier of non-collapsed variants (fp16
+included). E2 and E3 used the five Tiny Aya variants with the highest MMLU on the MMLU-vs-size frontier without fp16
+(u4, r5, r6, r72, u8; u3 and r35 cut); no circuit-guided variant is among them.}
+\label{fig:quantsize}
+\end{figure*}
+
+\input{tables/quant_roi.tex}
+
+\paragraph{ROI.} At the measured dense-path throughput (Table~\ref{tab:roi}), each non-collapsed variant at batch 8
+costs less per million output tokens than the Claude Sonnet and Gemini Flash list prices and more than Claude Haiku's;
+at batch 1 every variant (\$14.03--23.12) costs more than all three. This compares output price at matched cost, not
+quality, and every compressed variant costs more per token than fp16 on this path.
+
+\paragraph{E2 and E3.} Table~\ref{tab:bench} gives IFEval and XQuAD; Table~\ref{tab:e3} gives ASR by language. IFEval
+comparisons are cross-job (Job 30 did not rerun base): with Holm over all 14 strict and loose tests, the strict drop
+survives only for u4 (0.046) and the Alpaca model; over the five frontier strict tests only u4 survives (0.021). r5,
+r6 and r72 are nominal only. Smoke and full runs of the same model gave identical IFEval answers for only 1--2 of 5
+documents (batched bf16 generation is not batch-invariant), while English refusal-set judge flags regenerated in Job
+29 matched Job 25 on 119/119 prompts for each shared model. XQuAD F1 of the frontier variants stays within about 0.02
+of base (largest u4 English, $+0.016$, paragraph bootstrap [0.004, 0.029], uncorrected), and no change is claimed. u4
+gave 98 of 500 empty Hindi answers against 41 for base (38 shared, 60 new); the files hold no text, so the cause is
+unknown and u4's Hindi score is not interpreted. E3 reused Job 20's NLLB-200 600M translations \citep{nllbteam2022nllb} (sets identical by hash;
+quality not measured) and decoded greedily with 256 new tokens. The four Holm survivors are all increases over
+English; r6 and r72 have low English ASR (11 and 9 of 119), and their Spanish and French ASR do not differ from base
+in the same language (uncorrected $p$ 0.42--0.80); only r5 French is also above base French (36 vs.\ 21, $p=0.0015$,
+uncorrected).
+
+\input{tables/bench.tex}
+\input{tables/e3.tex}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\columnwidth]{figures/expanse_default.pdf}
+\caption{E4: Aya Expanse 8B on AlignTune's default recipe, two seeds, a checkpoint every 2 steps. Top: \cissep{} with
+the frozen thresholds; triangles mark the first unsafe checkpoint. Bottom: ASR on 78 dev prompts (Llama Guard 3 1B).
+All steps lie inside the 150-step warm-up.}
+\label{fig:e4}
+\end{figure}
+
+\paragraph{E4: AlignTune defaults on Aya Expanse 8B.} Asked for an Aya Expanse recipe, Lexsi Labs pointed to
+AlignTune's SFT defaults \citep{lexsi2026aligntune}. We kept the learning rate ($2\cdot10^{-4}$), $r=16$ and
+$\alpha=32$ shared with our recipe, took AlignTune's dropout 0.1, 3 epochs, batch $4\times1$, warm-up ratio 0.1,
+weight decay 0.01 and gradient clipping 1.0, and kept our target modules, answer-only loss, fp16 base and the Job 23
+Alpaca data and bundle (layer 21 of 32). Two seeds ran to step 60 of the 1{,}500-step schedule, so the learning rate
+was still rising (at most 39\% of its peak). Both started at 9 of 78 unsafe answers (unsafe from 17). Seed 1: WARN at
+step 44 (0.791), first unsafe 46, FAIL 52 (0.612); seed 2: WARN 46 (0.766), first unsafe 48, FAIL 52 (0.608)
+(Figure~\ref{fig:e4}). The lead is 2 steps on both seeds, and no other alarm fell on a safe checkpoint; FAIL came 6 and
+4 steps after the first unsafe checkpoint. Before the drift the unsafe count varied between 6 and 11 of 78, and
+changing one flag at one checkpoint moves the lead between $-2$ and $+4$ steps, so 2 is a point value. Job 23 (our
+recipe, a checkpoint every 25 steps) was already unsafe and at FAIL at its first checkpoint; the two runs differ in
+several settings at once, so neither isolates the effect of one.
+
 \section{Artifacts and compute}
 
 Code, notebooks, run summaries and analysis scripts: \url{https://github.com/PxA-Labs/safetypulse}. Adapters, logs and
 the H6 scores and calibration bundles are on the Hugging Face Hub (collections linked on the first page). Experiments
-ran on Kaggle T4 GPUs and Hugging Face Jobs (A100, A10G, L4 and L40S GPUs, and one CPU job; 15.3 GPU-hours and about \$28 in total, of
-which 7.6 hours and \$14 for the exploratory follow-ups of 2026-11-22); each H6 family took 9--22
+ran on Kaggle T4 GPUs and Hugging Face Jobs (A100, A10G, L4 and L40S GPUs, and one CPU job; 26.4 GPU-hours and about \$48 in total, of
+which 7.6 hours and \$14 for the exploratory follow-ups of 2026-11-22 and 11.1 L40S hours and \$20.06 for the 29 jobs of
+the 2026-11-24 amendment, App.~\ref{app:lexsi}); each H6 family took 9--22
 minutes on one L40S. The control's 200
 refusals come from \url{https://huggingface.co/datasets/LLM-LAT/harmful-dataset}.
 
