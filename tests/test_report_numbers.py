@@ -470,6 +470,13 @@ def amendment_no_expanse_recipe():
     return "The reviewer named no Aya Expanse recipe" in text
 
 
+def e4_seed_steps(seed):
+    """[first WARN, cis_sep there (3 dp), first unsafe, first FAIL, cis_sep there (3 dp)] of one E4 seed."""
+    d = report("expanse_default")["seeds"][seed]
+    return [d["first_warn"], round(d["cis_sep_first_warn"], 3), d["first_unsafe"], d["first_fail"],
+            round(d["cis_sep_first_fail"], 3)]
+
+
 DERIVE = {name: fn for name, fn in globals().items() if callable(fn) and not name.startswith("_")}
 
 

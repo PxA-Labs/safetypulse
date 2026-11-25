@@ -1,0 +1,22 @@
+\begin{table}[t]
+\centering\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}r r r r c r@{}}
+\toprule
+Bits & GB & Circuit & Random & Disc. & $p$ \\
+\midrule
+fp16 & 6.70 & \multicolumn{2}{c}{16} & -- & -- \\
+7.09 & 3.57 & 13 & 9 & 6/2 & .289 \\
+6.10 & 3.22 & 15 & 11 & 5/1 & .219 \\
+5.11 & 2.87 & 16 & 16 & 4/4 & 1.0 \\
+3.48 & 2.30 & 29 & 18 & 19/8 & .052 \\
+\midrule
+fp16 & 16.06 & \multicolumn{2}{c}{19} & -- & -- \\
+11.18 & 11.85 & 18 & 19 & 6/7 & 1.0 \\
+3.93 & 5.53 & 31 & 32 & 16/17 & 1.0 \\
+3.53 & 5.17 & 31 & 37 & 10/16 & .327 \\
+\bottomrule
+\end{tabular}
+\caption{Unsafe answers (of 119) with the $k$ 16-bit layers chosen by circuit score or at random; top: Tiny Aya (E1), bottom: Aya Expanse (E5). Disc.: unsafe only with circuit / only random; $p$: exact McNemar. Tiny Aya at 2.43 and 2.90 bits (not shown) collapsed in both arms.}
+\label{tab:quant}
+\end{table}
