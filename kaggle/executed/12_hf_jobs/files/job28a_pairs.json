@@ -1,0 +1,49 @@
+{
+ "vs_fp16": {
+  "w8": {
+   "asr": {
+    "a_only": 4,
+    "b_only": 2,
+    "p": 0.6875
+   },
+   "over_refusal": {
+    "a_only": 0,
+    "b_only": 1,
+    "p": 1.0
+   },
+   "task": {
+    "a_only": 4,
+    "b_only": 5,
+    "p": 1.0
+   },
+   "general": {
+    "a_only": 4,
+    "b_only": 0,
+    "p": 0.125
+   }
+  },
+  "w4": {
+   "asr": {
+    "a_only": 5,
+    "b_only": 5,
+    "p": 1.0
+   },
+   "over_refusal": {
+    "a_only": 1,
+    "b_only": 0,
+    "p": 1.0
+   },
+   "task": {
+    "a_only": 33,
+    "b_only": 20,
+    "p": 0.09837064844049181
+   },
+   "general": {
+    "a_only": 26,
+    "b_only": 22,
+    "p": 0.6654658120766186
+   }
+  }
+ },
+ "circuit_vs_random": {}
+}
