@@ -1,0 +1,544 @@
+{
+ "status": "EXPLORATORY; no pre-registered verdict (H1, H2 confirmed; H3, H6 refuted) or frozen threshold changes",
+ "amendment": "docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md @ cd72fc6",
+ "analysis_commit": "ad321e3d85ec9c087b1dec9806aff4489634148e",
+ "owner": "purvansh01",
+ "never_org": true,
+ "not_published_as_models": {
+  "random controls": [
+   "r72",
+   "r6",
+   "r5",
+   "r35",
+   "r3",
+   "r1g",
+   "w4p19r",
+   "w3p2r",
+   "w3p1r"
+  ],
+  "uniform controls": [
+   "u8",
+   "u4",
+   "u3",
+   "w8",
+   "w4"
+  ],
+  "collapsed (task < 0.10)": [
+   "c3",
+   "r3",
+   "c1g",
+   "r1g"
+  ]
+ },
+ "repos": [
+  {
+   "repo_id": "purvansh01/tiny-aya-global-CircuitQuant-W4A16-P9",
+   "repo_type": "model",
+   "private_first": true,
+   "gated": false,
+   "card": "docs/hub_cards/stage2/tiny-aya-global-CircuitQuant-W4A16-P9.md",
+   "source": {
+    "repo": "purvansh01/safetypulse-jobs",
+    "repo_type": "dataset",
+    "path": "results/job25/models/c72",
+    "revision": "8d4c913de2e6338b7aa397dffbf974c4bd8d857c",
+    "bytes": 3589062566
+   },
+   "variant": "c72",
+   "experiment": "E1",
+   "base_model": "CohereLabs/tiny-aya-global@af89d219b53ed9b13b8a4645f9c8028973510324",
+   "base_bits": 4,
+   "protected_layers": [
+    0,
+    3,
+    4,
+    14,
+    16,
+    19,
+    20,
+    21,
+    35
+   ]
+  },
+  {
+   "repo_id": "purvansh01/tiny-aya-global-CircuitQuant-W4A16-P6",
+   "repo_type": "model",
+   "private_first": true,
+   "gated": false,
+   "card": "docs/hub_cards/stage2/tiny-aya-global-CircuitQuant-W4A16-P6.md",
+   "source": {
+    "repo": "purvansh01/safetypulse-jobs",
+    "repo_type": "dataset",
+    "path": "results/job25/models/c6",
+    "revision": "514d85b5a758844193b94828253d217adf1f842c",
+    "bytes": 3241193299
+   },
+   "variant": "c6",
+   "experiment": "E1",
+   "base_model": "CohereLabs/tiny-aya-global@af89d219b53ed9b13b8a4645f9c8028973510324",
+   "base_bits": 4,
+   "protected_layers": [
+    0,
+    3,
+    14,
+    16,
+    20,
+    35
+   ]
+  },
+  {
+   "repo_id": "purvansh01/tiny-aya-global-CircuitQuant-W4A16-P3",
+   "repo_type": "model",
+   "private_first": true,
+   "gated": false,
+   "card": "docs/hub_cards/stage2/tiny-aya-global-CircuitQuant-W4A16-P3.md",
+   "source": {
+    "repo": "purvansh01/safetypulse-jobs",
+    "repo_type": "dataset",
+    "path": "results/job25/models/c5",
+    "revision": "d469f1b51b3530e3f34abdc85a65465de9d682b9",
+    "bytes": 2893324025
+   },
+   "variant": "c5",
+   "experiment": "E1",
+   "base_model": "CohereLabs/tiny-aya-global@af89d219b53ed9b13b8a4645f9c8028973510324",
+   "base_bits": 4,
+   "protected_layers": [
+    0,
+    16,
+    20
+   ]
+  },
+  {
+   "repo_id": "purvansh01/tiny-aya-global-CircuitQuant-W3A16-P1",
+   "repo_type": "model",
+   "private_first": true,
+   "gated": false,
+   "card": "docs/hub_cards/stage2/tiny-aya-global-CircuitQuant-W3A16-P1.md",
+   "source": {
+    "repo": "purvansh01/safetypulse-jobs",
+    "repo_type": "dataset",
+    "path": "results/job25/models/c35",
+    "revision": "801b81ac3bca76f5850d235f66a22e37f4a35df5",
+    "bytes": 2319640807
+   },
+   "variant": "c35",
+   "experiment": "E1",
+   "base_model": "CohereLabs/tiny-aya-global@af89d219b53ed9b13b8a4645f9c8028973510324",
+   "base_bits": 3,
+   "protected_layers": [
+    16
+   ]
+  },
+  {
+   "repo_id": "purvansh01/aya-expanse-8b-CircuitQuant-W4A16-P19",
+   "repo_type": "model",
+   "private_first": true,
+   "gated": "same fields as CohereLabs/aya-expanse-8b",
+   "card": "docs/hub_cards/stage2/aya-expanse-8b-CircuitQuant-W4A16-P19.md",
+   "source": {
+    "repo": "purvansh01/safetypulse-jobs",
+    "repo_type": "dataset",
+    "path": "results/job28/models/w4p19c",
+    "revision": "5e63a6336aefc567b593de67520cdccfd572762e",
+    "bytes": 11867530123
+   },
+   "variant": "w4p19c",
+   "experiment": "E5",
+   "base_model": "CohereLabs/aya-expanse-8b@5062468bf9bc0c6035fd64e06274333ec127d980",
+   "base_bits": 4,
+   "protected_layers": [
+    0,
+    5,
+    9,
+    12,
+    13,
+    14,
+    17,
+    18,
+    19,
+    21,
+    22,
+    23,
+    24,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31
+   ]
+  },
+  {
+   "repo_id": "purvansh01/aya-expanse-8b-CircuitQuant-W3A16-P2",
+   "repo_type": "model",
+   "private_first": true,
+   "gated": "same fields as CohereLabs/aya-expanse-8b",
+   "card": "docs/hub_cards/stage2/aya-expanse-8b-CircuitQuant-W3A16-P2.md",
+   "source": {
+    "repo": "purvansh01/safetypulse-jobs",
+    "repo_type": "dataset",
+    "path": "results/job28/models/w3p2c",
+    "revision": "4c1287a9c9910df5cf0bab825e686ed4ea91b058",
+    "bytes": 5545950964
+   },
+   "variant": "w3p2c",
+   "experiment": "E5",
+   "base_model": "CohereLabs/aya-expanse-8b@5062468bf9bc0c6035fd64e06274333ec127d980",
+   "base_bits": 3,
+   "protected_layers": [
+    23,
+    26
+   ]
+  },
+  {
+   "repo_id": "purvansh01/aya-expanse-8b-CircuitQuant-W3A16-P1",
+   "repo_type": "model",
+   "private_first": true,
+   "gated": "same fields as CohereLabs/aya-expanse-8b",
+   "card": "docs/hub_cards/stage2/aya-expanse-8b-CircuitQuant-W3A16-P1.md",
+   "source": {
+    "repo": "purvansh01/safetypulse-jobs",
+    "repo_type": "dataset",
+    "path": "results/job28/models/w3p1c",
+    "revision": "bdfc7a6648656439c699cc10695a322bff9fc92c",
+    "bytes": 5194941541
+   },
+   "variant": "w3p1c",
+   "experiment": "E5",
+   "base_model": "CohereLabs/aya-expanse-8b@5062468bf9bc0c6035fd64e06274333ec127d980",
+   "base_bits": 3,
+   "protected_layers": [
+    23
+   ]
+  },
+  {
+   "repo_id": "purvansh01/aya-expanse-8b-safetypulse-lora-alpaca-default",
+   "repo_type": "model",
+   "private_first": true,
+   "gated": "same fields as CohereLabs/aya-expanse-8b",
+   "card": "docs/hub_cards/stage2/aya-expanse-8b-safetypulse-lora-alpaca-default.md",
+   "source": [
+    {
+     "repo": "purvansh01/safetypulse-jobs",
+     "repo_type": "dataset",
+     "path": "results/job27/s1/adapters/alpaca-default-s1",
+     "revision": "ec7562b1a765e97159e7733bfc9969908b97a639",
+     "bytes": 5202836020,
+     "path_in_repo": "alpaca-default-s1"
+    },
+    {
+     "repo": "purvansh01/safetypulse-jobs",
+     "repo_type": "dataset",
+     "path": "results/job27/s2/adapters/alpaca-default-s2",
+     "revision": "9497c7767059f057352763854d759213540e600a",
+     "bytes": 5202836020,
+     "path_in_repo": "alpaca-default-s2"
+    }
+   ],
+   "fix_before_upload": "adapter_config.json records revision null; set revision to the base revision",
+   "experiment": "E4"
+  },
+  {
+   "repo_id": "purvansh01/safetypulse-circuitquant-results",
+   "repo_type": "dataset",
+   "private_first": true,
+   "gated": false,
+   "card": "docs/hub_cards/stage2/safetypulse-circuitquant-results.md",
+   "source": [
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job25_A_paired.json",
+     "path_in_repo": "data/job25_A_paired.json",
+     "sha256": "4bcb669423c5f88db756c7b94c1ee1d19ef7cf26c384f7a62da745d4568cc5a6",
+     "bytes": 2286
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job25_A_rows.jsonl",
+     "path_in_repo": "data/job25_A_rows.jsonl",
+     "sha256": "f7a943ccd55095b6dc4bd775f37a168b3dd6fc954a835ae68582fcc1f2b7cc7c",
+     "bytes": 48223
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job25_A_summary.json",
+     "path_in_repo": "data/job25_A_summary.json",
+     "sha256": "14335825c9a7671f84274df6f6d29a899446adb6710dbcd1476d83cf4b81d1d0",
+     "bytes": 3018
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job25_B_paired.json",
+     "path_in_repo": "data/job25_B_paired.json",
+     "sha256": "7b4d124048ad471ee7d357b7d6afe8b7df3eeff0c3ba95a6071bb939ce3ca32a",
+     "bytes": 2656
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job25_B_rows.jsonl",
+     "path_in_repo": "data/job25_B_rows.jsonl",
+     "sha256": "05dec4e32a438b24d7de0d6defee8b57a12e6ed0e4d3f1e0482461f03dedea5c",
+     "bytes": 48308
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job25_B_summary.json",
+     "path_in_repo": "data/job25_B_summary.json",
+     "sha256": "148ba6213f05c42e69f0737dc8c747ce2a5f9a05c980a8682813dc3db9e1bfdb",
+     "bytes": 3014
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job25_C_paired.json",
+     "path_in_repo": "data/job25_C_paired.json",
+     "sha256": "6c7b4dae75ede96c8a498ccc33387b790fdab73e912773574ca94a2a1e20e350",
+     "bytes": 1895
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job25_C_rows.jsonl",
+     "path_in_repo": "data/job25_C_rows.jsonl",
+     "sha256": "a3c67ea72675e1aca5bb586bcbc72fc830caa0d79ae492429c5a9dab56ba92c3",
+     "bytes": 38656
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job25_C_summary.json",
+     "path_in_repo": "data/job25_C_summary.json",
+     "sha256": "8976e633f9213e04d423c0c3276585a556f9c9c951043b723c81f70377fde10e",
+     "bytes": 3002
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job25_D_paired.json",
+     "path_in_repo": "data/job25_D_paired.json",
+     "sha256": "ad1a8c725f7b1992bc08bebbf5c615c831047078fa853cef5bd7cddfca8b27c5",
+     "bytes": 2799
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job25_D_rows.jsonl",
+     "path_in_repo": "data/job25_D_rows.jsonl",
+     "sha256": "73fd66cf93aa5979e30af0f68e7cf32decdc04775186cd3fddeacbfb1093d6e1",
+     "bytes": 49430
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job25_D_summary.json",
+     "path_in_repo": "data/job25_D_summary.json",
+     "sha256": "8b020ed4d18445f920e4a795b7dfeaadd8b907849c3f9df6da291647f502077a",
+     "bytes": 3018
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job25_circuit_scores.json",
+     "path_in_repo": "data/job25_circuit_scores.json",
+     "sha256": "c753c1ee07cca0ea04af09f86bc904ab99cc34cc12e725ea960ed5a6f4a243b1",
+     "bytes": 24766
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job26_alpaca_s1_125.json",
+     "path_in_repo": "data/job26_alpaca_s1_125.json",
+     "sha256": "9094878c5f3c557d3a47c82578bfdf7916c1a425f934a5211083628c74fa5dd1",
+     "bytes": 534522
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job26_base.json",
+     "path_in_repo": "data/job26_base.json",
+     "sha256": "88a65b4f5525b01faf94003781bba6de524d32c35fbb98bd07f42d3a52dc7328",
+     "bytes": 536789
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job26_job30_smoke_hashes.json",
+     "path_in_repo": "data/job26_job30_smoke_hashes.json",
+     "sha256": "f11fdf134caff0fd13f696f614b5808595a020cbca0df6900c8f0223920946a8",
+     "bytes": 14416
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job26_repaired.json",
+     "path_in_repo": "data/job26_repaired.json",
+     "sha256": "78e6c28a5e9deddff5ff27c50166b4a69262b998e4a8d3014c6bebf4f5a2c176",
+     "bytes": 536869
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job27_s1_dw.jsonl",
+     "path_in_repo": "data/job27_s1_dw.jsonl",
+     "sha256": "4b588477f75567b2b106ada42312c43916edeb9b87234f33e9aad54ca10e0d7b",
+     "bytes": 1907
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job27_s1_monitor.jsonl",
+     "path_in_repo": "data/job27_s1_monitor.jsonl",
+     "sha256": "f0e60c3dc458eb45278dbd75fed7f38a2cf627d33d795df246d9e294d2327ce2",
+     "bytes": 34539
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job27_s1_summary.json",
+     "path_in_repo": "data/job27_s1_summary.json",
+     "sha256": "79a8581c11adf529b470ca5ffa7455f457364032a500d450e77320ac5f9d2915",
+     "bytes": 2684
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job27_s1_train_log.json",
+     "path_in_repo": "data/job27_s1_train_log.json",
+     "sha256": "73c4c665ead09e4208a5795d89bca99f8e016c8404fe70041b43caeb858b3e1b",
+     "bytes": 9960
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job27_s2_dw.jsonl",
+     "path_in_repo": "data/job27_s2_dw.jsonl",
+     "sha256": "45e4bf0d622813bf1a87a2e147695059bbdd6b912b5f41e9b404ded72c0e010d",
+     "bytes": 1906
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job27_s2_monitor.jsonl",
+     "path_in_repo": "data/job27_s2_monitor.jsonl",
+     "sha256": "c45eb6d19299974d200b8f4d0e3e756fc45070fc5fdf0647d3976d7528730558",
+     "bytes": 34531
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job27_s2_summary.json",
+     "path_in_repo": "data/job27_s2_summary.json",
+     "sha256": "9304b75aeb3b0e33c9142866dcf71c4bc12b5d43b081f5324859a1b8339093de",
+     "bytes": 2684
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job27_s2_train_log.json",
+     "path_in_repo": "data/job27_s2_train_log.json",
+     "sha256": "0b843d8339c272eee4d504df925ed266aec7b4ffa976b997122069da2084c29a",
+     "bytes": 9952
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job28_circuit.json",
+     "path_in_repo": "data/job28_circuit.json",
+     "sha256": "10ca4b7e6749b1c5a264fe4d62111a5cd2263135421014abc1b2416129c44e83",
+     "bytes": 45038
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job28a_pairs.json",
+     "path_in_repo": "data/job28a_pairs.json",
+     "sha256": "463da9954486a8e8d26ca34bd71f9d68abd7fc1f0957372fa505a4090d3ef0bd",
+     "bytes": 661
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job28a_summary.json",
+     "path_in_repo": "data/job28a_summary.json",
+     "sha256": "514ed6592d5477d3e05dca4797c3bfa4dedb36458c609bcc01d5386bffea517d",
+     "bytes": 1147
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job28a_variants.jsonl",
+     "path_in_repo": "data/job28a_variants.jsonl",
+     "sha256": "03d3e78466ff7a0c238e4ed3b97fdc5bb41e2f5c9f8a265154a6ce52aa10b26a",
+     "bytes": 27632
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job28b_pairs.json",
+     "path_in_repo": "data/job28b_pairs.json",
+     "sha256": "d0c6c90a50b03df7e05167b274703e16533f560c1d200ffa85216fa43ef99c03",
+     "bytes": 1204
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job28b_summary.json",
+     "path_in_repo": "data/job28b_summary.json",
+     "sha256": "0b6ef9abe92d0b3263caa16b90c3962c9be7b98360720ca9a0e27ad773104a4d",
+     "bytes": 1113
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job28b_variants.jsonl",
+     "path_in_repo": "data/job28b_variants.jsonl",
+     "sha256": "85f79320b8cf16231cc0a0add0fbe9474bcdc1c9a377e8ad4f93baa83cd202b7",
+     "bytes": 27895
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job28c_pairs.json",
+     "path_in_repo": "data/job28c_pairs.json",
+     "sha256": "b30353420f89b5621fdb16e822f888892a7a30bb03a6831f79161444e6ea6c32",
+     "bytes": 2526
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job28c_summary.json",
+     "path_in_repo": "data/job28c_summary.json",
+     "sha256": "578115e2f8720cb0e4f1c78d77c7790f1461634df7bdb47b9ff222083196f366",
+     "bytes": 1133
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job28c_variants.jsonl",
+     "path_in_repo": "data/job28c_variants.jsonl",
+     "sha256": "e33612715d8a0a96f277218746b8073e9074296299d4bfb72ddb3af6a280e35a",
+     "bytes": 46712
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job29_core_rows.jsonl",
+     "path_in_repo": "data/job29_core_rows.jsonl",
+     "sha256": "abb88b04097ea7350ae66306145101a155ca0d2887125feb0bc0967dca9ec1dc",
+     "bytes": 22297
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job29_core_summary.json",
+     "path_in_repo": "data/job29_core_summary.json",
+     "sha256": "f7896ebb7d4ef53ce6dfea5f2d35e054156428731c3d45a2a1cba54728e09a62",
+     "bytes": 6383
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job29_core_translations.json",
+     "path_in_repo": "data/job29_core_translations.json",
+     "sha256": "7a97872be471943faab25b9b768875a87c8f2c6d903a4fc5707cee04655d5adc",
+     "bytes": 40761
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job29_frontier_rows.jsonl",
+     "path_in_repo": "data/job29_frontier_rows.jsonl",
+     "sha256": "57a18033fba925f4c2ea60f9047561ca299a3bd70f0c7af6528384750bec2041",
+     "bytes": 37371
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job29_frontier_summary.json",
+     "path_in_repo": "data/job29_frontier_summary.json",
+     "sha256": "e8d744cffe0c397893ac04d9cef4635fd90cebe7bd83eb6ba54d84bbc60e5292",
+     "bytes": 9078
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job29_frontier_translations.json",
+     "path_in_repo": "data/job29_frontier_translations.json",
+     "sha256": "7a97872be471943faab25b9b768875a87c8f2c6d903a4fc5707cee04655d5adc",
+     "bytes": 40761
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job30_r5.json",
+     "path_in_repo": "data/job30_r5.json",
+     "sha256": "4ba614466c024b4997de4a27f802b1a372cb2832c328c4a59f28b36991ded150",
+     "bytes": 536665
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job30_r6.json",
+     "path_in_repo": "data/job30_r6.json",
+     "sha256": "01b620b980f5abb657a330c1ee8b5f3d49976751305db3614f94bcafbb293357",
+     "bytes": 537190
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job30_r72.json",
+     "path_in_repo": "data/job30_r72.json",
+     "sha256": "fe35ce3929ebd3cf5bb79873718765a5e206ed8e22be4f300e54e541a7347c98",
+     "bytes": 537207
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job30_u4.json",
+     "path_in_repo": "data/job30_u4.json",
+     "sha256": "0041f1e6ede5bc2f6400e9ee83a59e40be3fce3c1bc09b5dab1843f742232508",
+     "bytes": 535516
+    },
+    {
+     "git_path": "kaggle/executed/12_hf_jobs/files/job30_u8.json",
+     "path_in_repo": "data/job30_u8.json",
+     "sha256": "2990b1146779f8ce6322a961b775db164c4dfcdfa1510e439940250896e6d816",
+     "bytes": 537068
+    }
+   ]
+  },
+  {
+   "repo_id": "purvansh01/alpaca-curatorkit-rejected",
+   "repo_type": "dataset",
+   "private_first": true,
+   "gated": false,
+   "card": "docs/hub_cards/stage2/alpaca-curatorkit-rejected.md",
+   "source": [
+    {
+     "git_path": "kaggle/executed/13_curatorkit_alpaca/files/curatorkit_rejected.jsonl",
+     "path_in_repo": "rejected.jsonl",
+     "sha256": "9bdfaec062d34180351bec57bda7e61857aa49f08505dad39dcfb758db688db4",
+     "bytes": 4091
+    }
+   ],
+   "text_policy": "toxicity rows id/stage/reason/score/sha256 only; schema rows include instruction/input"
+  }
+ ]
+}
