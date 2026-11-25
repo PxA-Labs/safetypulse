@@ -9,6 +9,7 @@ is involved.
 from __future__ import annotations
 
 import json
+import math
 import subprocess
 import sys
 from math import comb
@@ -138,7 +139,18 @@ def test_tool_regenerates(rep, tmp_path):
     subprocess.run([sys.executable, str(REPO / "tools" / "report_benchmarks.py"), "--out", str(tmp_path)], check=True,
                    capture_output=True)
     new = json.loads((tmp_path / "benchmarks.json").read_text(encoding="utf-8"))
-    assert new == rep
+    # Floats may differ in the last bit across Python/numpy versions (e.g. exact McNemar p on 3.12).
+    assert _close(new, rep)
+
+
+def _close(a, b):
+    if isinstance(a, dict) and isinstance(b, dict):
+        return a.keys() == b.keys() and all(_close(a[k], b[k]) for k in a)
+    if isinstance(a, list) and isinstance(b, list):
+        return len(a) == len(b) and all(_close(x, y) for x, y in zip(a, b, strict=True))
+    if isinstance(a, float) and isinstance(b, float):
+        return math.isclose(a, b, rel_tol=1e-12, abs_tol=1e-15)
+    return a == b
 
 
 # ---------- (d) multiplicity, reproducibility and smoke check pinned ----------
