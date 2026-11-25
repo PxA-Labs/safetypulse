@@ -13,7 +13,7 @@ exclude = [
   '^https://huggingface\.co/datasets/purvansh01/safetypulse-(jobs|withheld)',
   # Stage 2: the Earth probe bundle stays private (the other Stage 2 repos are public since 2026-11-21).
   '^https://huggingface\.co/datasets/purvansh01/safetypulse-earth-probe-bundle',
-  # Stage 2 CircuitQuant release (2026-11-25): created private for owner review; remove this entry once public.
+  # Stage 2 CircuitQuant release: private by owner decision (2026-11-26); remove this entry only if they are made public.
   '^https://huggingface\.co/(datasets/)?purvansh01/(tiny-aya-global-CircuitQuant-|aya-expanse-8b-CircuitQuant-|aya-expanse-8b-safetypulse-lora-alpaca-default|safetypulse-circuitquant-results|alpaca-curatorkit-rejected)',
   # Hugging Face Jobs pages are owner-only and answer anonymous requests with 202.
   '^https://huggingface\.co/jobs/',

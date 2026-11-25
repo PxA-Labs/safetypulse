@@ -113,8 +113,10 @@ cancelled. Nothing was dropped for budget.
 
 ## Open for the owner
 
-- Make the ten repos and the "SafetyPulse CircuitQuant" collection public after review (docs/10, "E1–E5 repos").
-- Decide on gating for the Tiny Aya repos (upstream is gated `auto`; these are ungated), and on the existing public,
+- ~~Make the ten repos and the "SafetyPulse CircuitQuant" collection public after review.~~ Resolved 2026-11-26: the
+  owner decided to keep all ten and the collection private; the models are in `safetypulse-models`, the datasets in
+  `safetypulse-data` (docs/10, "E1–E5 repos").
+- Decide on gating for the Tiny Aya repos if they are ever made public (upstream is gated `auto`; these are ungated), and on the existing public,
   ungated `safetypulse-expanse-lora-alpaca`.
 - Decide whether to delete the Job 25 test models in `results/job25-test/`.
 - Decide on the wording of the departures (E1 chat calibration, Alpaca checkpoint choice, E4 defaults).

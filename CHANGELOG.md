@@ -26,7 +26,10 @@ confirmed; H3, H6 refuted) and no frozen threshold changes.
 - `tools/check_release_policy.py` allowlists 14 reviewed Jobs 25–30 result files whose only long strings are fixed
   method notes.
 - Docs: README, `docs/03`, `docs/05`, `docs/10`, `docs/11` and the report index describe the E1–E5 results and the
-  private-first release (ten `purvansh01` repos, all private until the owner makes them public).
+  private-first release (ten `purvansh01` repos, all private).
+- Docs: the owner decided on 2026-11-26 to keep the ten E1–E5 repos and the "SafetyPulse CircuitQuant" collection
+  private; README, `docs/10`, `docs/11`, the workflow record and the Jobs RUN_SUMMARY say so, and the link checker keeps
+  excluding them.
 
 ## [0.1.2] - 2026-11-24
 
