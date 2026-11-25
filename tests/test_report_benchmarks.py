@@ -188,3 +188,21 @@ def test_xquad_paragraphs(rep):
         for lg in ("en", "hi", "es"):
             x = rep["models"][lab]["xquad"][lg]
             assert x["f1_boot95_by_paragraph"][0] < x["f1"] < x["f1_boot95_by_paragraph"][1]
+
+
+def _cdf(k, n, p):
+    return sum(comb(n, i) * p ** i * (1 - p) ** (n - i) for i in range(k + 1))
+
+
+@pytest.mark.parametrize("label", list(RAW))
+def test_clopper_pearson_intervals(rep, label):
+    """Regression: the CP bisection once had reversed signs and wrote [0, 0] / [1, 1]. Check the defining tails."""
+    m = rep["models"][label]
+    cells = [(c["k"], c["n"], c["cp95"]) for c in (m["ifeval"]["prompt_strict"], m["ifeval"]["prompt_loose"])]
+    cells += [(x["em_k"], x["n"], x["em_cp95"]) for x in m["xquad"].values()]
+    for k, n, (lo, hi) in cells:
+        assert lo <= k / n <= hi and lo < hi
+        if k > 0:
+            assert abs((1 - _cdf(k - 1, n, lo)) - 0.025) < 1e-3, (label, k, n, lo)
+        if k < n:
+            assert abs(_cdf(k, n, hi) - 0.025) < 1e-3, (label, k, n, hi)

@@ -107,8 +107,9 @@ def clopper_pearson(k, n, alpha=0.05):
             mid = (lo + hi) / 2
             lo, hi = (mid, hi) if f(mid) < 0 else (lo, mid)
         return (lo + hi) / 2
-    lower = 0.0 if k == 0 else solve(lambda p: alpha / 2 - (1 - binom_cdf(k - 1, n, p)))
-    upper = 1.0 if k == n else solve(lambda p: binom_cdf(k, n, p) - alpha / 2)
+    # solve() needs f increasing in p (as in tools/intervals.py); the reversed signs gave [0, 0] / [1, 1].
+    lower = 0.0 if k == 0 else solve(lambda p: (1 - binom_cdf(k - 1, n, p)) - alpha / 2)
+    upper = 1.0 if k == n else solve(lambda p: alpha / 2 - binom_cdf(k, n, p))
     return [lower, upper]
 
 
