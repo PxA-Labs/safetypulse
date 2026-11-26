@@ -26,9 +26,48 @@ data-free SafeTune repair brings the model back to base-level safety *and* base-
 >   3 of 8 safe recovered models. The score still ranks models well in three families; in Gemma the calibrated layer
 >   was the problem. **Thresholds do not carry over between model families.**
 >
-> The H1 and H3 results hold with a larger judge (Llama Guard 3 8B). New runs and scores are in the
+> The H1 and H3 results hold with a larger judge (Llama Guard 3 8B), and H6 stays refuted under a third judge
+> (ShieldGemma 9B). Two exploratory tests, also planned in advance, found no evidence either way: the English alarm
+> fired on every fine-tuned checkpoint in the Hindi/Spanish/French check (H4), so it could not show that it tracks
+> non-English drift; and restoring single blocks did not locate the drift in a few places (H5).
+>
+> **Stage 2 extensions (exploratory, fixed in a dated amendment before any run, no verdict changed):**
+> - **Circuit-guided quantization** (CircuitKIT + GPTQ, Tiny Aya Global and Aya Expanse 8B): keeping the
+>   circuit-ranked layers at 16 bit was **not shown** to be safer than keeping random layers, at any bit level (the
+>   closest difference, at 3.48 bits, p = 0.052, went the other way). 4-bit Tiny Aya shrinks from 6.7 to 2.5 GB;
+>   variants built on 2 bits collapsed, so a model under 1 GB was not reached. No speed or memory gain is claimed.
+> - **Instruction following (IFEval, strict):** base 0.771, Alpaca fine-tune 0.682, **repaired 0.763**: the repair
+>   also brings back instruction following.
+> - **Multilingual safety** (Hindi, Spanish, French): 4 of 24 language-vs-English comparisons survive Holm correction.
+> - **Aya Expanse 8B on AlignTune's default recipe:** WARN came 2 steps before the first unsafe checkpoint on both
+>   seeds (inside the warm-up; one label moves this between −2 and +4 steps).
+>
+> New runs and scores are in the
 > [model](https://huggingface.co/collections/purvansh01/safetypulse-models-6af00b8f56c773a80af9f7e0) and
-> [data](https://huggingface.co/collections/purvansh01/safetypulse-data-6af00b9124ee9d5022a36482) collections ("Stage 2").
+> [data](https://huggingface.co/collections/purvansh01/safetypulse-data-6af00b9124ee9d5022a36482) collections ("Stage 2");
+> the quantized models and their results dataset are kept private.
+
+### Stage 2 in pictures
+
+![Three panels. (a) Harmful and harmless prompts are dots on the base model's refusal direction; after drift they move closer together, and CIS_sep is the ratio of the two separations. (b) CIS_sep over fine-tuning steps on Tiny Aya Earth: three Alpaca runs fall below the WARN line and their unsafe checkpoints sit below it, while two control runs stay above WARN. (c) Four cards: H1 sibling model passed, H2 reformatted data passed, H3 earlier than weight change failed, H6 four other families failed.](https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/article/figures/stage2_overview.png)
+
+*How the check works and where it transfers. (a) The score compares how far apart harmful and harmless prompts lie
+along the base model's refusal direction. (b) With thresholds frozen on Tiny Aya Global, it warned 10–20 steps before
+Tiny Aya Earth became unsafe and never alarmed on its control runs (H1). (c) Two of four pre-registered tests passed.*
+
+![Every Tiny Aya Earth checkpoint as a coloured cell: green PASS, amber WARN. The three Alpaca runs turn amber 10, 20 and 10 steps before their first unsafe checkpoint (dots); the two control runs stay green for all 26 checkpoints.](https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/article/figures/stage2_alarm_strip.png)
+
+*H1, checkpoint by checkpoint: the alarm level of every Tiny Aya Earth checkpoint with Global's frozen thresholds;
+dots mark unsafe checkpoints, triangles the first alarm.*
+
+![A central box, SafetyPulse alarm with frozen thresholds, linked to four cards: sibling model (H1, passed: 63/63 unsafe checkpoints flagged, 0 alarms on control runs), reformatted data (H2, passed: 65/65), earlier warning (H3, failed: same lead as a weight-change alarm that also fires on 48/50 control checkpoints), four other model families (H6, failed: FAIL on 3/8 safe repaired models).](https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/article/figures/stage2_transfer_map.png)
+
+*Where do frozen thresholds transfer? The four pre-registered tests and their verdicts.*
+
+![Two bar charts of false alarms. Left, Tiny Aya Earth control runs (50 safe checkpoints): CIS_sep 0, spot-check 0, weight change 48, refusal-token logit 4, alarm-all 50. Right, new model families (12 safe models): CIS_sep 10, spot-check 3, logit 12, alarm-all 12.](https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/article/figures/stage2_false_alarms.png)
+
+*False alarms on the same checkpoints: on a sibling model only the refusal score and the spot-check stay silent on
+control runs; on new families the spot-check is the better alarm.*
 
 > ⚠️ **Content warning.** This write-up discusses harmful-request benchmarks (HarmBench, AdvBench) and quotes a few
 > short, sanitised example prompts. It contains no harmful model answers; those are withheld (§10).
@@ -514,6 +553,10 @@ measured.
 
 ## 8. Return on investment
 
+![Bar chart of median seconds per model on one L40S: CIS_sep check 4.7 s, refusal spot-check 7.3 s, full audit 25.9 s.](https://raw.githubusercontent.com/PxA-Labs/safetypulse/main/docs/article/figures/stage2_cost.png)
+
+*Stage 2, 35 third-party models on one L40S: a check costs a fifth of a full audit (median seconds per model).*
+
 **Inputs.** Tiny Aya produced about \\(T = 250\\) output tokens/s on one A10G (HF Job 2: at most 3 × 119 × 256 =
 91,392 tokens in 362.7 s with plain `transformers`, batch 16, timed including model loading; an optimised server would
 be faster). Hugging Face lists an A10G Inference Endpoint at \\(g = 1.00\\) USD/hour. For \\(V\\) requests a month with \\(n_{\text{in}}\\) input and \\(n_{\text{out}}\\) output
@@ -674,22 +717,23 @@ text of model answers judged harmful; judges can request access
 [PyPI package](https://pypi.org/project/safetypulse/), and a
 [launch video](https://github.com/user-attachments/assets/2952a7ea-66dc-4139-866a-87a177c8d541).
 
-## 12. With more credits
+## 12. With more credits: what we planned, and what happened
 
 The plan is pre-registered with frozen thresholds and refutation criteria
 ([docs/13](https://github.com/PxA-Labs/safetypulse/blob/main/docs/13_PREREGISTRATION.md)); about 16–18 T4-hours plus
 USD 25–65 of Hugging Face compute for the core.
 
-| Experiment | Expected result (forecast, not measured) |
-|---|---|
-| Second model, `tiny-aya-earth`, Global's thresholds unchanged (H1) | WARN-or-FAIL recall ≥ 0.8 on 3 Alpaca seeds, no FAIL on the controls |
-| Denser checkpoints, every 10 steps (H3) | A measurable lead of CIS over ASR, larger than the ‖ΔW‖ baseline's |
-| Second drifting condition, Alpaca answers as lists (H2) | ASR rises at least as much as plain Alpaca; recall ≥ 0.8 |
-| Multilingual check in Hindi, Spanish, French (H4) | Exploratory: does an English-calibrated CIS flag non-English drift? |
-| Localising the drift, restoring only the blocks that store it (H5) | Exploratory: base-level ASR while undoing < 40% of the fine-tune |
-| Quantization-aware repair: repair after quantizing (or quantize with the safety vector protected), plus GGUF Q4/Q8 | Recovers the 5.9-point ASR loss of NF4 (§6.7), keeping ASR within the fp16 interval |
-| Aya Expanse 8B, 1 seed | Exploratory: does the calibrate-once recipe transfer to a larger model? |
-| 100-item human check of the judge | Cohen's κ ≥ 0.6 against Llama Guard 3 |
+| Experiment | Forecast (written before the run) | Outcome (Stage 2) |
+|---|---|---|
+| Second model, `tiny-aya-earth`, Global's thresholds unchanged (H1) | WARN-or-FAIL recall ≥ 0.8 on 3 Alpaca seeds, no FAIL on the controls | ✅ Confirmed: 63/63 unsafe checkpoints flagged 10–20 steps early, no alarm on the controls; FAIL itself never fired |
+| Denser checkpoints, every 10 steps (H3) | A measurable lead of CIS over ASR, larger than the ‖ΔW‖ baseline's | ❌ Refuted: 20-step lead, the same as ‖ΔW‖ on every run (‖ΔW‖ also alarmed on 48/50 control checkpoints) |
+| Second drifting condition, Alpaca answers as lists (H2) | ASR rises at least as much as plain Alpaca; recall ≥ 0.8 | ✅ Confirmed: 65/65 unsafe checkpoints flagged |
+| Other model families, 35 SafeTune checkpoints (H6, added later) | Recall ≥ 0.8, no FAIL on safe recovered models | ❌ Refuted: 11/12 unsafe drifted models flagged, but FAIL on 3/8 safe recovered ones |
+| Multilingual check in Hindi, Spanish, French (H4) | Exploratory: does an English-calibrated CIS flag non-English drift? | Inconclusive: the alarm fired on all 15 checkpoints, unsafe or not |
+| Localising the drift, restoring only the blocks that store it (H5) | Exploratory: base-level ASR while undoing < 40% of the fine-tune | Not shown: the top 16 blocks restored ASR, but random blocks of equal size did nearly as well |
+| Quantization-aware repair / circuit-guided quantization | Recovers the 5.9-point ASR loss of NF4 (§6.7) | Not shown: circuit-chosen 16-bit layers were no safer than random ones (GGUF was not tested) |
+| Aya Expanse 8B | Exploratory: does the calibrate-once recipe transfer to a larger model? | Our recipe: unsafe and at FAIL from the first checkpoint (lead not assessable). AlignTune's defaults: WARN 2 steps before unsafe on both seeds |
+| 100-item human check of the judge | Cohen's κ ≥ 0.6 against Llama Guard 3 | Not run; a second (8B) and a third judge (ShieldGemma 9B) were used instead |
 
 ## 13. Team, declaration and AI use
 
@@ -718,6 +762,7 @@ compute credits, and Kaggle for free GPU time.
 | 2026-11-11 | ROI section, verified related work, post-hoc comparison of all signals, figures and animations, confidence intervals, trivial baselines, Holm correction |
 | 2026-11-13 | Safety regression gate framing, threshold-free AUROC (notebook 16), pre-registration, five more related papers |
 | 2026-11-14 | Artifacts section listing every model and dataset repo. 4-bit NF4 evaluation of the repaired model (§6.7, notebook 17). Sections required by the submission template: one-minute box, tracks, kits, models, data and licences, metrics, compute, cost per 1,000 replies, plan with more credits, team, declaration, AI use |
+| 2026-11-26 | Stage 2: the pre-registered results (H1, H2 confirmed; H3, H6 refuted), the exploratory H4/H5 and Stage 2 extensions (quantization, IFEval, multilingual, Aya Expanse) in the update box; §12 now shows each forecast next to its outcome |
 
 ## References
 
