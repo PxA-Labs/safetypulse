@@ -45,7 +45,7 @@ data-free SafeTune repair brings the model back to base-level safety *and* base-
 > New runs and scores are in the
 > [model](https://huggingface.co/collections/purvansh01/safetypulse-models-6af00b8f56c773a80af9f7e0) and
 > [data](https://huggingface.co/collections/purvansh01/safetypulse-data-6af00b9124ee9d5022a36482) collections ("Stage 2");
-> the quantized models and their results dataset are kept private.
+> the circuit-guided models, the E4 adapters and the results dataset are public (the Aya Expanse ones gated like the base model).
 
 ### Stage 2 in pictures
 
