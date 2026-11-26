@@ -14,8 +14,8 @@ How runs work: [kaggle/README.md](../kaggle/README.md). Notebooks are launched w
 runs them on Kaggle and saves the executed copy, log and key files to `kaggle/executed/<notebook>/` together with a
 `RUN_SUMMARY.md`.
 
-_Last updated: 2026-11-26 (HF Jobs 25–30 collected into git and reported; the ten E1–E5 repos are **private** and stay private by owner decision, see
-[E1–E5 repos](#e1e5-repos-private)). HF Jobs 1–14 were checked against `hf jobs inspect` on
+_Last updated: 2026-11-26 (HF Jobs 25–30 collected into git and reported; the ten E1–E5 repos are **public** (made public on 2026-11-26 for the Stage 2 submission), see
+[E1–E5 repos](#e1e5-repos-public)). HF Jobs 1–14 were checked against `hf jobs inspect` on
 2026-11-22, Jobs 25–30 on 2026-11-24._
 
 ## Kaggle datasets
@@ -257,11 +257,15 @@ stay private.
 Still private: `safetypulse-earth-probe-bundle` (H1, tag `h1-v1`: Earth's calibrated bundle, directions, token sets;
 its 50 probe pairs are the same as in the public `safetypulse-probe-bundle`).
 
-### E1–E5 repos (private)
+### E1–E5 repos (public)
 
 Created 2026-11-25 for the Lexsi-call follow-ups (amendment `docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md`,
-exploratory). **All ten are private**, and on 2026-11-26 the owner decided to keep them private; the links open only for
-the owner. Cards and the release
+exploratory). Created private; **all ten were made public on 2026-11-26 for the Stage 2 submission**, after a last check of
+every repo's files (weights, configs and cards only; the datasets hold flags, scores, hashes and method notes, no
+prompt, answer or translation text; the 17 CuratorKIT toxicity rejections carry no text). The Aya Expanse repos are
+gated `auto` like `CohereLabs/aya-expanse-8b`; the Tiny Aya repos are ungated, like the other public Tiny Aya
+derivatives (e.g. `tiny-aya-global-safetypulse-repaired`). The cards link the reports instead of the paper, which is
+kept outside the repository. Cards and the release
 plan: `docs/hub_cards/stage2/` (`circuitquant_repos.json`, generator
 `tools/hub_cards_circuitquant.py`). Licence CC BY-NC 4.0 throughout, as both base models. How they were filled:
 `kaggle/executed/12_hf_jobs/RUN_SUMMARY.md`, "Publication of the E1–E5 outputs".
@@ -279,13 +283,13 @@ plan: `docs/hub_cards/stage2/` (`circuitquant_repos.json`, generator
 | [`safetypulse-circuitquant-results`](https://huggingface.co/datasets/purvansh01/safetypulse-circuitquant-results) | dataset | no | The 46 `job25_*`–`job30_*` result files (flags, scores, hashes, lengths; no prompt, answer or translation text) |
 | [`alpaca-curatorkit-rejected`](https://huggingface.co/datasets/purvansh01/alpaca-curatorkit-rejected) | dataset | no | The 19 CuratorKIT rejections of HF Job 3: id, stage, reason, score, sha256; text only for the 2 schema rejections |
 
-Collections (visibility and membership re-read with `huggingface_hub` on 2026-11-26): all 10 are in the private
-"SafetyPulse CircuitQuant" collection (`purvansh01/safetypulse-circuitquant-6b062c90ba6a961706bfc612`); the 8 models are
-also in the public `safetypulse-models` collection and the 2 datasets in the public `safetypulse-data` collection,
-where other viewers do not see them while they are private. Tokens/s and VRAM in the cards are dense-path numbers (16-bit compute, no quantized kernels); only the
+Collections (re-read with `huggingface_hub` and anonymously on 2026-11-26): the 8 models are in the public
+`safetypulse-models` collection and the 2 datasets in the public `safetypulse-data` collection, the two collections
+named in the Stage 2 submission; all 10 are also in the "SafetyPulse CircuitQuant" collection
+(`purvansh01/safetypulse-circuitquant-6b062c90ba6a961706bfc612`), which is still private. Tokens/s and VRAM in the cards are dense-path numbers (16-bit compute, no quantized kernels); only the
 disk size is a measured saving. Not published as models: the random and uniform controls and the collapsed 2-bit
-variants. Open owner decisions: gating of the Tiny Aya repos if they are ever made public (upstream Tiny Aya Global is gated
-`auto`), and the existing public `safetypulse-expanse-lora-alpaca`, which is ungated.
+variants. Open owner decision: the existing public
+`safetypulse-expanse-lora-alpaca` is ungated, while the new Aya Expanse repos are gated.
 
 ## Teammate account
 

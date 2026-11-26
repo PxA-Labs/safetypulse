@@ -4,7 +4,7 @@ SafetyPulse publishes its models, adapters, datasets, logs and code on Hugging F
 artifacts is **deliberately not released publicly**, because their only content is harmful behaviour. This document
 says what they are, why we created them, why we withhold them, and how judges and reviewers can get access.
 
-_Last updated: 2026-11-26 (E1–E5 repos kept private by owner decision)._
+_Last updated: 2026-11-26 (E1–E5 repos made public for the Stage 2 submission)._
 
 ## 1. What is withheld
 
@@ -74,15 +74,15 @@ same policy: `safetypulse-h3fine-lora-alpaca` (benign Alpaca adapters, seeds 7�
 config names its Hub base model. `purvansh01/safetypulse-jobs` stays private: it holds the evaluation prompts and the
 raw job outputs.
 
-### E1–E5 release (2026-11-25; kept private by owner decision, 2026-11-26)
+### E1–E5 release (created private 2026-11-25; public since 2026-11-26)
 
 The follow-ups requested in the Lexsi call (amendment `docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md`,
 HF Jobs 25–30, exploratory) trained no harmful condition. Their release was prepared under the same policy, but
-**private**: ten repos exist under `purvansh01`, all ten are private, and on 2026-11-26 the owner decided to keep
-them private (list and links: [docs/10](10_KAGGLE_AND_HF_RESOURCES.md#e1e5-repos-private)).
-Nothing from this work has been made public.
+**private first**: ten repos were created private under `purvansh01` and made public on 2026-11-26 for the Stage 2 submission, after a last
+check of their files (list and links: [docs/10](10_KAGGLE_AND_HF_RESOURCES.md#e1e5-repos-public)). No harm adapter,
+no `ft_harm` data and no prompt, answer or translation text is in them.
 
-- **Uploaded (private):** the circuit-guided quantized models (Tiny Aya Global `c72`, `c6`, `c5`,
+- **Released (public):** the circuit-guided quantized models (Tiny Aya Global `c72`, `c6`, `c5`,
   `c35`; Aya Expanse 8B `w4p19c`, `w3p2c`, `w3p1c`), the E4 Alpaca LoRA adapters of Aya Expanse 8B (benign data, both
   seeds), the numbers-only results dataset `safetypulse-circuitquant-results` (the 46 `job25_*`–`job30_*` files) and
   `alpaca-curatorkit-rejected`. The Aya Expanse repos are gated `auto`, the same setting as `CohereLabs/aya-expanse-8b`.

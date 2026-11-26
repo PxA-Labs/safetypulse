@@ -43,11 +43,11 @@ AMEND_SHA = "cd72fc60f753fe76d443aeb1e77ae4f4623c2d1d"
 AMEND = f"{GH}/blob/{AMEND_SHA}/docs/prereg_amendments/2026-11-24-e1-e5-lexsi-feedback.md"
 ANALYSIS_SHA = "ad321e3d85ec9c087b1dec9806aff4489634148e"   # wf3/c-analysis head the cards were written from
 REPORT = f"{GH}/blob/{ANALYSIS_SHA}/docs/report"
-PAPER = f"{GH}/tree/main/paper"   # PR #168 merged 2026-11-25; its branch commits are kept by tag stage2-lexsi-feedback-history
+REPORTS = f"{GH}/tree/main/docs/report"   # the paper itself is kept outside the repository (2026-11-26)
 COLL_MODELS = "https://huggingface.co/collections/purvansh01/safetypulse-models-6af00b8f56c773a80af9f7e0"
 COLL_DATA = "https://huggingface.co/collections/purvansh01/safetypulse-data-6af00b9124ee9d5022a36482"
 COLL_ALL = "https://huggingface.co/purvansh01/collections"
-LINKS = (f"**Links:** [Code]({GH}) · [Paper source]({PAPER}) · [Amendment (cd72fc6)]({AMEND}) · "
+LINKS = (f"**Links:** [Code]({GH}) · [Reports]({REPORTS}) · [Amendment (cd72fc6)]({AMEND}) · "
          f"[E1/E5 report]({REPORT}/circuitquant.md) · [Model collection]({COLL_MODELS}) · "
          f"[Data collection]({COLL_DATA}) · [All SafetyPulse collections]({COLL_ALL})")
 
