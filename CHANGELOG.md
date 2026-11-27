@@ -28,7 +28,7 @@ confirmed; H3, H6 refuted) and no frozen threshold changes.
 - Docs: README, `docs/03`, `docs/05`, `docs/10`, `docs/11` and the report index describe the E1–E5 results and the
   private-first release (ten `purvansh01` repos, all private).
 - The ten E1–E5 repos were made public on 2026-11-26 for the Stage 2 submission (Aya Expanse repos gated `auto`;
-  the "SafetyPulse CircuitQuant" collection stays private). README, `docs/10`, `docs/11`, the workflow record and the
+  the "SafetyPulse CircuitQuant" collection was made public on 2026-11-27). README, `docs/10`, `docs/11`, the workflow record and the
   Jobs RUN_SUMMARY say so; the link checker checks them again; the Hub cards link the reports instead of the paper
   (`tools/hub_cards_circuitquant.py`).
 

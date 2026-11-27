@@ -47,6 +47,9 @@ paper/preprint_main.*
 paper/preprint/
 paper/teaser_samples/
 paper/AACL_MGTD_01.pdf
+paper/preprint_v*.tex
+paper/preprint_v*.pdf
+AACL_HLLM_03.pdf
 
 # LaTeX build output (paper/main.pdf is built with: cd paper && tectonic main.tex)
 paper/*.aux

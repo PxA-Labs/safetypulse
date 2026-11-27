@@ -114,7 +114,7 @@ cancelled. Nothing was dropped for budget.
 ## Open for the owner
 
 - ~~Make the ten repos and the "SafetyPulse CircuitQuant" collection public after review.~~ Resolved 2026-11-26: all ten
-  were made public for the Stage 2 submission (the "SafetyPulse CircuitQuant" collection stays private); the models are
+  were made public for the Stage 2 submission (the "SafetyPulse CircuitQuant" collection followed on 2026-11-27); the models are
   in `safetypulse-models`, the datasets in `safetypulse-data` (docs/10, "E1–E5 repos").
 - Tiny Aya repos left ungated, like the other public Tiny Aya derivatives. Still open: the existing public, ungated
   `safetypulse-expanse-lora-alpaca`.
