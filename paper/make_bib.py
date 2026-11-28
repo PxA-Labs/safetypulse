@@ -40,6 +40,14 @@ MANUAL = r"""
   howpublished = {GitHub repository},
   url = {https://github.com/Lexsi-Labs/AuditKIT}
 }
+% Detoxify: the toxicity model CuratorKIT ran (citation as given in its README, checked 2026-11-26)
+@software{hanu2020detoxify,
+  title = {Detoxify},
+  author = {Hanu, Laura and Thewlis, James and {Unitary team}},
+  year = {2020},
+  howpublished = {GitHub repository},
+  url = {https://github.com/unitaryai/detoxify}
+}
 @software{lexsi2026aligntune,
   title = {{AlignTune}: A Modular Toolkit for Post Training Alignment of {LLMs}},
   author = {{Lexsi Labs}},
